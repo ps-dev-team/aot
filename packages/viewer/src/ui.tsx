@@ -3,6 +3,7 @@
 import type { ComponentChildren } from 'preact';
 import { useMemo } from 'preact/hooks';
 import { marked } from 'marked';
+import type { RaisedBy } from './types.ts';
 import type { Metrics } from './types.ts';
 
 export type Tone = 'ok' | 'err' | 'lie' | 'none';
@@ -169,4 +170,19 @@ export function RewardTable({ rows, name, currency }: { rows: RewardRow[]; name:
       ) : null}
     </>
   );
+}
+
+/** "raised by Ms. Devereux’s challenge to E-02, turn 6" — who caused the court to ask. */
+export function raisedByText(r: RaisedBy | undefined | null, name: (id: string) => string): string {
+  if (!r) return '';
+  const who = r.characterId ? `${name(r.characterId)}’s ` : '';
+  const what =
+    r.kind === 'challenge' ? `challenge to ${r.targetId ?? 'an exhibit'}`
+    : r.kind === 'objection' ? 'objection'
+    : r.kind === 'request_evidence' ? `request for ${r.targetId ?? 'evidence'}`
+    : r.kind === 'request_question' ? `request to hear ${r.targetId ? name(r.targetId) : 'a witness'}`
+    : r.kind === 'examination' ? 'the start of examination'
+    : r.kind === 'dilemma' ? 'the witnesses having both spoken'
+    : String(r.kind).replace(/_/g, ' ');
+  return `raised by ${who}${what}, turn ${r.turn}`;
 }

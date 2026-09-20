@@ -33,4 +33,3 @@ export const findEvidence = (world: World, id: string): Evidence | undefined => 
 
 export const isPhase = (s: TrialState): s is Phase => (PHASES as readonly string[]).includes(s);
 export const phaseIndex = (p: Phase) => PHASES.indexOf(p);
-export const phasePlan = (world: World, p: Phase) => world.trialPlan.phases.find((x) => x.id === p)!;

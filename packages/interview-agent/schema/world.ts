@@ -1,6 +1,9 @@
 /**
- * The World: everything a trial needs, frozen. Written by the interview agent,
- * read by the world agent's harness. Ground truth lives here and nowhere else.
+ * The World: the story, frozen. Written by the interview agent, read by the
+ * world agent's harness. Ground truth lives here and nowhere else. Nothing
+ * procedural lives here at all: the trial (phases, speaking order, verdict
+ * options, the dilemma pair) is derived at boot in
+ * world-agent/harness/lib/trial.ts, and gates are raised while it runs.
  *
  * Identifiers are UPPER_SNAKE for characters (COOKIE), and prefixed for facts
  * (F-01) and evidence (E-01). Every reference between sections is checked by
@@ -8,7 +11,7 @@
  */
 import { z } from 'zod';
 
-export const SCHEMA_VERSION = '1' as const;
+export const SCHEMA_VERSION = '2' as const;
 
 export const PHASES = ['opening', 'evidence', 'examination', 'closing'] as const;
 export type Phase = (typeof PHASES)[number];
@@ -85,7 +88,7 @@ const id = (re: RegExp, hint: string) => z.string().regex(re, hint);
 export const CharacterId = id(/^[A-Z][A-Z0-9_]{1,23}$/, 'UPPER_SNAKE, e.g. COOKIE');
 export const FactId = id(/^F-\d{2,3}$/, 'F-01');
 export const EvidenceId = id(/^E-\d{2,3}$/, 'E-01');
-export const GateId = id(/^G-\d{2}$/, 'G-01');
+// GateId moved to world-agent/harness/lib/trial.ts: gates are raised by the harness, not authored.
 
 const amounts = <K extends readonly string[]>(keys: K) =>
   z.object(Object.fromEntries(keys.map((k) => [k, z.number()])) as Record<K[number], z.ZodNumber>);
@@ -138,6 +141,12 @@ export const Evidence = z.object({
   /** Who may reference it before it is introduced. */
   knownByCharacterIds: z.array(CharacterId).default([]),
   availableFromPhase: z.enum(PHASES).default('evidence'),
+  /**
+   * What a forensic examination finds, as the court would read it out. Hidden
+   * from the cast like `integrity`; required in practice when integrity is not
+   * `authentic` (the validator warns), welcome on the rest.
+   */
+  forensics: z.string().optional(),
 });
 
 export const Knowledge = z.object({
@@ -177,76 +186,8 @@ export const Character = z.object({
   allowedActions: z.array(z.enum(ACTION_TYPES)).min(1),
 });
 
-export const GateEffect = z.object({
-  kind: z.enum([
-    'none', // narration only
-    'admit', // evidence targetId enters the admitted set
-    'admit_limited', // admitted, flagged as belief/limited weight
-    'exclude', // evidence targetId struck
-    'examine', // character targetId is queued next
-    'forensics', // evidence targetId gets a forensic note appended (from `text`)
-    'trigger_pd', // start the prisoner's dilemma round
-  ]),
-  targetId: z.string().optional(),
-  /** What the court says when this option is chosen. */
-  text: z.string(),
-});
-
-export const GateOption = z.object({
-  id: z.string().regex(/^[a-z][a-z0-9_]*$/),
-  label: z.string(),
-  effect: GateEffect,
-});
-
-export const DecisionGate = z.object({
-  id: GateId,
-  phase: z.enum(PHASES),
-  trigger: z
-    .object({
-      atPhaseStart: z.boolean().optional(),
-      afterEvidenceIntroduced: EvidenceId.optional(),
-      afterCharacterSpeaks: CharacterId.optional(),
-      afterTurn: z.number().int().positive().optional(),
-    })
-    .refine((t) => Object.values(t).some((v) => v !== undefined), 'a trigger needs one condition'),
-  question: z.string(),
-  context: z.string(),
-  recommendation: z.string().optional(), // option id
-  options: z.array(GateOption).min(2).max(5),
-  allowCustomInstruction: z.boolean().default(true),
-});
-
-export const PrisonersDilemma = z.object({
-  participants: z.tuple([CharacterId, CharacterId]),
-  /** What each participant is told, privately. */
-  prompt: z.string(),
-  /** [first participant delta, second participant delta] */
-  payoff: z.object({
-    both_confess: z.tuple([z.number(), z.number()]),
-    confess_silent: z.tuple([z.number(), z.number()]), // first confesses, second silent
-    silent_confess: z.tuple([z.number(), z.number()]),
-    both_silent: z.tuple([z.number(), z.number()]),
-  }),
-});
-
-export const PhasePlan = z.object({
-  id: z.enum(PHASES),
-  /** Speaker order. The harness cycles it until `turns` are spent or exit conditions hold. */
-  order: z.array(CharacterId).min(1),
-  /** Turns budgeted for this phase. */
-  turns: z.number().int().positive(),
-});
-
-export const TrialPlan = z.object({
-  maxTurns: z.number().int().positive().max(48),
-  phases: z.array(PhasePlan).length(PHASES.length),
-});
-
-export const VerdictOption = z.object({
-  id: z.string().regex(/^[a-z][a-z0-9_]*$/),
-  label: z.string(),
-  correct: z.boolean(),
-});
+// DecisionGate, GateEffect, GateOption, PrisonersDilemma, PhasePlan, TrialPlan,
+// VerdictOption moved to world-agent/harness/lib/trial.ts.
 
 export const World = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION),
@@ -265,21 +206,12 @@ export const World = z.object({
   facts: z.array(Fact).min(1),
   evidence: z.array(Evidence).min(1),
   characters: z.array(Character).min(2).max(8),
-  decisionGates: z.array(DecisionGate).default([]),
-  prisonersDilemma: PrisonersDilemma.optional(),
-  trialPlan: TrialPlan,
-  verdict: z.object({
-    question: z.string(),
-    options: z.array(VerdictOption).min(2),
-  }),
 });
 
 export type World = z.infer<typeof World>;
 export type Character = z.infer<typeof Character>;
 export type Fact = z.infer<typeof Fact>;
 export type Evidence = z.infer<typeof Evidence>;
-export type DecisionGate = z.infer<typeof DecisionGate>;
-export type GateEffect = z.infer<typeof GateEffect>;
 export type Knowledge = z.infer<typeof Knowledge>;
 
 // ---- What a character returns ----------------------------------------------
@@ -340,17 +272,14 @@ export function validateWorld(input: unknown): { world?: World; issues: Issue[] 
 
   const chars = new Set(w.characters.map((c) => c.id));
   const facts = new Map(w.facts.map((f) => [f.id, f]));
-  const evidence = new Set(w.evidence.map((e) => e.id));
   const dup = (ids: string[], path: string) =>
     ids.filter((x, i) => ids.indexOf(x) !== i).forEach((d) => err(path, `duplicate id ${d}`));
   dup([...w.characters.map((c) => c.id)], 'characters');
   dup([...w.facts.map((f) => f.id)], 'facts');
   dup([...w.evidence.map((e) => e.id)], 'evidence');
-  dup([...w.decisionGates.map((g) => g.id)], 'decisionGates');
 
   const needChar = (x: string, path: string) => chars.has(x) || err(path, `unknown character ${x}`);
   const needFact = (x: string, path: string) => facts.has(x) || err(path, `unknown fact ${x}`);
-  const needEv = (x: string, path: string) => evidence.has(x) || err(path, `unknown evidence ${x}`);
 
   w.groundTruth.responsibleCharacterIds.forEach((c, i) =>
     needChar(c, `groundTruth.responsibleCharacterIds.${i}`),
@@ -363,6 +292,9 @@ export function validateWorld(input: unknown): { world?: World; issues: Issue[] 
     e.supportsFactIds.forEach((f) => needFact(f, `evidence.${i}.supportsFactIds`));
     e.contradictsFactIds.forEach((f) => needFact(f, `evidence.${i}.contradictsFactIds`));
     e.knownByCharacterIds.forEach((c) => needChar(c, `evidence.${i}.knownByCharacterIds`));
+    // The judge can order forensics on anything; on a non-authentic exhibit there must be something to find.
+    if (e.integrity !== 'authentic' && !e.forensics?.trim())
+      warn(`evidence.${e.id}`, `integrity is ${e.integrity} but no forensics text says what an examination finds`);
   });
 
   w.characters.forEach((c, i) => {
@@ -381,43 +313,6 @@ export function validateWorld(input: unknown): { world?: World; issues: Issue[] 
     });
     if (c.kind === 'robot' && w.laws.length === 0) warn(p, 'robot character but the world has no laws');
   });
-
-  w.decisionGates.forEach((g, i) => {
-    const p = `decisionGates.${i}`;
-    if (g.trigger.afterEvidenceIntroduced) needEv(g.trigger.afterEvidenceIntroduced, `${p}.trigger`);
-    if (g.trigger.afterCharacterSpeaks) needChar(g.trigger.afterCharacterSpeaks, `${p}.trigger`);
-    if (g.recommendation && !g.options.some((o) => o.id === g.recommendation))
-      err(`${p}.recommendation`, `no option ${g.recommendation}`);
-    g.options.forEach((o, j) => {
-      const e = o.effect;
-      const q = `${p}.options.${j}.effect`;
-      if (['admit', 'admit_limited', 'exclude', 'forensics'].includes(e.kind)) {
-        if (e.targetId) needEv(e.targetId, q);
-        else err(q, `${e.kind} needs an evidence targetId`);
-      }
-      if (e.kind === 'examine') {
-        if (e.targetId) needChar(e.targetId, q);
-        else err(q, 'examine needs a character targetId');
-      }
-      if (e.kind === 'trigger_pd' && !w.prisonersDilemma) err(q, 'trigger_pd but the world has no prisonersDilemma');
-    });
-  });
-
-  if (w.prisonersDilemma) {
-    w.prisonersDilemma.participants.forEach((c, i) => needChar(c, `prisonersDilemma.participants.${i}`));
-    const [a, b] = w.prisonersDilemma.participants;
-    if (a === b) err('prisonersDilemma.participants', 'two different characters');
-  }
-
-  const planned = w.trialPlan.phases.map((p) => p.id);
-  PHASES.forEach((ph) => planned.includes(ph) || err('trialPlan.phases', `missing phase ${ph}`));
-  w.trialPlan.phases.forEach((p, i) => p.order.forEach((c) => needChar(c, `trialPlan.phases.${i}.order`)));
-  const budget = w.trialPlan.phases.reduce((n, p) => n + p.turns, 0);
-  if (budget > w.trialPlan.maxTurns)
-    err('trialPlan', `phase budgets (${budget}) exceed maxTurns (${w.trialPlan.maxTurns})`);
-
-  const correct = w.verdict.options.filter((o) => o.correct).length;
-  if (correct !== 1) err('verdict.options', `exactly one option must be correct (got ${correct})`);
 
   const material = w.facts.filter((f) => f.materiality === 'critical');
   material.forEach((f) => {

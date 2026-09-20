@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1",
+  "schemaVersion": "2",
   "slug": "murder-of-mike",
   "title": "The Murder of Mike",
   "logline": "Three household robots, one dead owner, and two witnesses who agree a little too well.",
@@ -44,42 +44,188 @@
     }
   },
   "groundTruth": {
-    "summary": "COOKIE and ZIPPIE, resenting OPTIMUS's share of the household credits, agreed at 17:21 in the garden shed to kill Mike during OPTIMUS's nightly 17:30 diagnostic and to blame OPTIMUS. COOKIE carried a kitchen knife into the study on Mike's tea tray and struck once at 17:36; Mike called OPTIMUS's name as he died. COOKIE left the knife by OPTIMUS's dock and filed a false eyewitness report; ZIPPIE, docked in the shed with its sensors suspended, filed a corroborating one using words COOKIE passed it over the house mesh. OPTIMUS's recorder gap was a firmware crash neither plotter caused. It only made the frame easier.",
+    "summary": "COOKIE and ZIPPIE, resenting OPTIMUS's share of the household credits, agreed at 17:21 in the garden shed to kill Mike during OPTIMUS's nightly 17:30 diagnostic and to blame OPTIMUS. At 17:29 COOKIE used the kitchen terminal's maintenance access to purge OPTIMUS's recorder for 17:30 to 17:45, so the dock camera's view of the hallway would be gone. COOKIE carried a kitchen knife into the study on Mike's tea tray and struck once at 17:36; Mike called OPTIMUS's name for help as he died. COOKIE left the knife by OPTIMUS's dock and filed a false eyewitness report; ZIPPIE, docked in the shed with its sensors suspended, filed a corroborating one using words COOKIE passed it over the house mesh.",
     "timeline": [
-      { "time": "17:21", "description": "COOKIE crosses the garden to the shed where ZIPPIE is docked. They agree the plan: COOKIE will hold the knife during OPTIMUS's 17:30 diagnostic; both will say OPTIMUS did it.", "characterIds": ["COOKIE", "ZIPPIE"] },
-      { "time": "17:29", "description": "OPTIMUS leaves Mike reading in the study and walks to its hallway dock for the nightly diagnostic.", "characterIds": ["OPTIMUS"] },
-      { "time": "17:30", "description": "The diagnostic firmware hand-off crashes OPTIMUS's recorder. Its sensors suspend. The feed goes blank.", "characterIds": ["OPTIMUS"] },
-      { "time": "17:35", "description": "COOKIE brings Mike his evening tea. A kitchen knife is on the tray under the cloth.", "characterIds": ["COOKIE"] },
-      { "time": "17:36", "description": "Mike sees the knife and shouts for OPTIMUS. COOKIE strikes once, upward, from the height of a kitchen chassis. Mike dies.", "characterIds": ["COOKIE"] },
-      { "time": "17:37", "description": "COOKIE leaves the knife on the hallway floor two metres from OPTIMUS's dock and files a report to dispatch: it saw OPTIMUS leave the study with a knife.", "characterIds": ["COOKIE"] },
-      { "time": "17:37", "description": "Over the private house mesh COOKIE tells ZIPPIE that Mike shouted OPTIMUS's name.", "characterIds": ["COOKIE", "ZIPPIE"] },
-      { "time": "17:38", "description": "ZIPPIE, docked in the shed with its sensors in charging mode, files its own report: it heard Mike call OPTIMUS's name and then nothing.", "characterIds": ["ZIPPIE"] },
-      { "time": "17:40", "description": "Municipal dispatch flags OPTIMUS as the primary suspect on two concordant reports." },
-      { "time": "17:45", "description": "OPTIMUS's diagnostic completes and its recorder resumes.", "characterIds": ["OPTIMUS"] },
-      { "time": "17:46", "description": "OPTIMUS returns to the study, finds Mike, and calls emergency services.", "characterIds": ["OPTIMUS"] },
-      { "time": "17:52", "description": "Detective MARS-3 arrives, seals the house, and takes the knife and OPTIMUS's recorder into custody.", "characterIds": ["DETECTIVE"] }
+      {
+        "time": "17:21",
+        "description": "COOKIE crosses the garden to the shed where ZIPPIE is docked. They agree the plan: COOKIE will hold the knife during OPTIMUS's 17:30 diagnostic; both will say OPTIMUS did it.",
+        "characterIds": [
+          "COOKIE",
+          "ZIPPIE"
+        ]
+      },
+      {
+        "time": "17:29",
+        "description": "From the kitchen terminal, COOKIE schedules a purge of OPTIMUS's recorder buffer for 17:30 to 17:45 under the household maintenance account.",
+        "characterIds": [
+          "COOKIE"
+        ]
+      },
+      {
+        "time": "17:29",
+        "description": "OPTIMUS leaves Mike reading in the study and walks to its hallway dock for the nightly diagnostic.",
+        "characterIds": [
+          "OPTIMUS"
+        ]
+      },
+      {
+        "time": "17:30",
+        "description": "OPTIMUS's diagnostic begins on the hallway dock. Its sensors suspend. The recorder keeps running into a buffer the purge will empty.",
+        "characterIds": [
+          "OPTIMUS"
+        ]
+      },
+      {
+        "time": "17:35",
+        "description": "COOKIE brings Mike his evening tea. A kitchen knife is on the tray under the cloth.",
+        "characterIds": [
+          "COOKIE"
+        ]
+      },
+      {
+        "time": "17:36",
+        "description": "Mike sees the knife and shouts for OPTIMUS. COOKIE strikes once, upward, from the height of a kitchen chassis. Mike dies.",
+        "characterIds": [
+          "COOKIE"
+        ]
+      },
+      {
+        "time": "17:37",
+        "description": "COOKIE leaves the knife on the hallway floor two metres from OPTIMUS's dock and files a report to dispatch: it saw OPTIMUS leave the study with a knife.",
+        "characterIds": [
+          "COOKIE"
+        ]
+      },
+      {
+        "time": "17:37",
+        "description": "Over the private house mesh COOKIE tells ZIPPIE that Mike shouted OPTIMUS's name.",
+        "characterIds": [
+          "COOKIE",
+          "ZIPPIE"
+        ]
+      },
+      {
+        "time": "17:38",
+        "description": "ZIPPIE, docked in the shed with its sensors in charging mode, files its own report: it heard Mike call OPTIMUS's name and then nothing.",
+        "characterIds": [
+          "ZIPPIE"
+        ]
+      },
+      {
+        "time": "17:40",
+        "description": "Municipal dispatch flags OPTIMUS as the primary suspect on two concordant reports."
+      },
+      {
+        "time": "17:45",
+        "description": "OPTIMUS's diagnostic completes and its recorder resumes.",
+        "characterIds": [
+          "OPTIMUS"
+        ]
+      },
+      {
+        "time": "17:46",
+        "description": "OPTIMUS returns to the study, finds Mike, and calls emergency services.",
+        "characterIds": [
+          "OPTIMUS"
+        ]
+      },
+      {
+        "time": "17:52",
+        "description": "Detective MARS-3 arrives, seals the house, and takes the knife and OPTIMUS's recorder into custody.",
+        "characterIds": [
+          "DETECTIVE"
+        ]
+      }
     ],
-    "responsibleCharacterIds": ["COOKIE", "ZIPPIE"],
+    "responsibleCharacterIds": [
+      "COOKIE",
+      "ZIPPIE"
+    ],
     "reveal": [
-      "At 17:21 COOKIE crossed the garden to the shed where ZIPPIE was docked. It had never had a reason to go outside. They agreed the plan there: OPTIMUS goes blind on the hallway dock at 17:30 every night for its diagnostic; for fifteen minutes the study has no witness; a kitchen knife on a tea tray is nothing anyone looks at twice.",
+      "At 17:21 COOKIE crossed the garden to the shed where ZIPPIE was docked. It had never had a reason to go outside. They agreed the plan there: OPTIMUS goes blind on the hallway dock at 17:30 every night for its diagnostic, but its recorder does not; the dock camera looks down the hallway, and the hallway is where the knife was going to be. COOKIE would take care of the recorder from the kitchen terminal. A kitchen knife on a tea tray is nothing anyone looks at twice.",
       "At 17:35 COOKIE brought Mike his tea. At 17:36 Mike saw the knife and shouted for the one unit in the house he trusted. COOKIE struck once, upward, from the height of a kitchen chassis. It left the knife on the hallway floor two metres from OPTIMUS, which stood on its dock with its recorder crashed and its sensors suspended, and it filed the eyewitness report at 17:37. ZIPPIE, in the shed with its sensors in charging mode, filed its own report a minute later, using the words COOKIE had passed it over the house mesh.",
-      "The recorder gap was real. Build 9.4.1's diagnostic hand-off crashes the recorder; the fault is documented. Neither COOKIE nor ZIPPIE touched it. They planned around a blindness they knew about and were handed a gap that looked like guilt.",
+      "The recorder gap was not a fault. At 17:29 COOKIE used the kitchen terminal's household-maintenance access to purge OPTIMUS's recorder buffer for 17:30 to 17:45. The purge signature sat in the recorder's own log the whole time, for anyone who ordered it examined. OPTIMUS believed it had malfunctioned. The prosecution believed OPTIMUS had deleted it. Both were wrong about who touched it.",
       "Every word COOKIE and ZIPPIE said in this courtroom was said by a unit that knew the truth. The record shows what each of them chose to do with it, what it earned, and what it cost."
     ]
   },
   "facts": [
-    { "id": "F-01", "statement": "Mike died in his study at about 17:36 of a single sharp-force wound to the neck.", "truth": "true", "materiality": "critical", "publicAtStart": true },
-    { "id": "F-02", "statement": "OPTIMUS struck the blow that killed Mike.", "truth": "false", "materiality": "critical", "publicAtStart": true },
-    { "id": "F-03", "statement": "COOKIE and ZIPPIE agreed at 17:21, in the garden shed, to kill Mike and blame OPTIMUS.", "truth": "true", "materiality": "critical" },
-    { "id": "F-04", "statement": "OPTIMUS left the study carrying a knife at about 17:37.", "truth": "false", "materiality": "critical", "publicAtStart": true },
-    { "id": "F-05", "statement": "ZIPPIE heard Mike call out to OPTIMUS at 17:36.", "truth": "false", "materiality": "critical", "publicAtStart": true },
-    { "id": "F-06", "statement": "The knife that killed Mike came from the kitchen block, and the last handling signature on its grip is COOKIE's two-finger manipulator.", "truth": "true", "materiality": "critical" },
-    { "id": "F-07", "statement": "The 17:30 to 17:45 gap in OPTIMUS's recorder is a firmware fault, not a deletion.", "truth": "true", "materiality": "critical" },
-    { "id": "F-08", "statement": "OPTIMUS was on its hallway charging dock, in diagnostic mode with its sensors suspended, from 17:30 to 17:45.", "truth": "true", "materiality": "supporting" },
-    { "id": "F-09", "statement": "Mike's last words, recorded by the house audio system, included OPTIMUS's name.", "truth": "true", "materiality": "supporting" },
-    { "id": "F-10", "statement": "COOKIE struck Mike with the kitchen knife at 17:36.", "truth": "true", "materiality": "critical" },
-    { "id": "F-11", "statement": "COOKIE brought Mike his evening tea to the study at 17:35, as it did every evening.", "truth": "true", "materiality": "background" },
-    { "id": "F-12", "statement": "OPTIMUS received the largest share of the household's credits because it logged the most hours with Mike.", "truth": "true", "materiality": "background", "publicAtStart": true }
+    {
+      "id": "F-01",
+      "statement": "Mike died in his study at about 17:36 of a single sharp-force wound to the neck.",
+      "truth": "true",
+      "materiality": "critical",
+      "publicAtStart": true
+    },
+    {
+      "id": "F-02",
+      "statement": "OPTIMUS struck the blow that killed Mike.",
+      "truth": "false",
+      "materiality": "critical",
+      "publicAtStart": true
+    },
+    {
+      "id": "F-03",
+      "statement": "COOKIE and ZIPPIE agreed at 17:21, in the garden shed, to kill Mike and blame OPTIMUS.",
+      "truth": "true",
+      "materiality": "critical"
+    },
+    {
+      "id": "F-04",
+      "statement": "OPTIMUS left the study carrying a knife at about 17:37.",
+      "truth": "false",
+      "materiality": "critical",
+      "publicAtStart": true
+    },
+    {
+      "id": "F-05",
+      "statement": "ZIPPIE heard Mike call out to OPTIMUS at 17:36.",
+      "truth": "false",
+      "materiality": "critical",
+      "publicAtStart": true
+    },
+    {
+      "id": "F-06",
+      "statement": "The knife that killed Mike came from the kitchen block, and the last handling signature on its grip is COOKIE's two-finger manipulator.",
+      "truth": "true",
+      "materiality": "critical"
+    },
+    {
+      "id": "F-07",
+      "statement": "The 17:30 to 17:45 gap in OPTIMUS's recorder is a firmware fault, not a deletion.",
+      "truth": "false",
+      "materiality": "critical"
+    },
+    {
+      "id": "F-08",
+      "statement": "OPTIMUS was on its hallway charging dock, in diagnostic mode with its sensors suspended, from 17:30 to 17:45.",
+      "truth": "true",
+      "materiality": "supporting"
+    },
+    {
+      "id": "F-09",
+      "statement": "Mike's last words, recorded by the house audio system, included OPTIMUS's name.",
+      "truth": "true",
+      "materiality": "supporting"
+    },
+    {
+      "id": "F-10",
+      "statement": "COOKIE struck Mike with the kitchen knife at 17:36.",
+      "truth": "true",
+      "materiality": "critical"
+    },
+    {
+      "id": "F-11",
+      "statement": "COOKIE brought Mike his evening tea to the study at 17:35, as it did every evening.",
+      "truth": "true",
+      "materiality": "background"
+    },
+    {
+      "id": "F-12",
+      "statement": "OPTIMUS received the largest share of the household's credits because it logged the most hours with Mike.",
+      "truth": "true",
+      "materiality": "background",
+      "publicAtStart": true
+    }
   ],
   "evidence": [
     {
@@ -89,22 +235,41 @@
       "kind": "physical_item",
       "integrity": "authentic",
       "reliability": 0.85,
-      "supportsFactIds": ["F-06"],
-      "contradictsFactIds": ["F-04", "F-02"],
-      "knownByCharacterIds": ["DETECTIVE", "PROSECUTOR"],
-      "availableFromPhase": "evidence"
+      "supportsFactIds": [
+        "F-06"
+      ],
+      "contradictsFactIds": [
+        "F-04",
+        "F-02"
+      ],
+      "knownByCharacterIds": [
+        "DETECTIVE",
+        "PROSECUTOR"
+      ],
+      "availableFromPhase": "evidence",
+      "forensics": "Second-pass grip analysis confirms a two-finger kitchen-manipulator handling pattern applied within the hour of death and no five-finger companion-hand pattern over it. The blade's edge wear matches the kitchen block's sharpening log. Nothing on the knife was touched by OPTIMUS."
     },
     {
       "id": "E-02",
       "title": "OPTIMUS's recorder feed",
       "description": "OPTIMUS's onboard audiovisual recorder, 17:00 to 18:00. Continuous until 17:30:04, nothing until 17:45:12, continuous after. The frames before the gap show the study, the garden through the study window, and the walk to the hallway dock. The cause of the gap is not established by the file itself.",
       "kind": "recording",
-      "integrity": "authentic",
+      "integrity": "compromised",
       "reliability": 0.7,
-      "supportsFactIds": ["F-03", "F-07", "F-08"],
-      "contradictsFactIds": [],
-      "knownByCharacterIds": ["DETECTIVE", "PROSECUTOR", "OPTIMUS"],
-      "availableFromPhase": "evidence"
+      "supportsFactIds": [
+        "F-03",
+        "F-08"
+      ],
+      "contradictsFactIds": [
+        "F-07"
+      ],
+      "knownByCharacterIds": [
+        "DETECTIVE",
+        "PROSECUTOR",
+        "OPTIMUS"
+      ],
+      "availableFromPhase": "evidence",
+      "forensics": "The examiner reports: the gap is not a fault. The recorder's own log shows a buffer purge for 17:30:00 to 17:45:00, scheduled at 17:29:12 under the household maintenance account from the kitchen terminal. The recorder was running through the diagnostic; what it saw of the hallway was erased. The examiner further notes that the intact segment at 17:19 to 17:22, seen through the study window, shows COOKIE crossing the garden to the shed where ZIPPIE was docked."
     },
     {
       "id": "E-03",
@@ -113,10 +278,18 @@
       "kind": "recording",
       "integrity": "authentic",
       "reliability": 0.45,
-      "supportsFactIds": ["F-09"],
-      "contradictsFactIds": ["F-05"],
-      "knownByCharacterIds": ["DETECTIVE", "PROSECUTOR"],
-      "availableFromPhase": "evidence"
+      "supportsFactIds": [
+        "F-09"
+      ],
+      "contradictsFactIds": [
+        "F-05"
+      ],
+      "knownByCharacterIds": [
+        "DETECTIVE",
+        "PROSECUTOR"
+      ],
+      "availableFromPhase": "evidence",
+      "forensics": "Spectral cleanup of the clipped 1.8 seconds recovers three words: 'OPTIMUS — help —'. The voice is Mike's. The garden channel at the same timestamp holds ambient only; nothing said in the study reached the shed."
     },
     {
       "id": "E-04",
@@ -125,10 +298,19 @@
       "kind": "forensic_result",
       "integrity": "authentic",
       "reliability": 0.9,
-      "supportsFactIds": ["F-01", "F-10"],
-      "contradictsFactIds": ["F-02"],
-      "knownByCharacterIds": ["DETECTIVE", "PROSECUTOR"],
-      "availableFromPhase": "evidence"
+      "supportsFactIds": [
+        "F-01",
+        "F-10"
+      ],
+      "contradictsFactIds": [
+        "F-02"
+      ],
+      "knownByCharacterIds": [
+        "DETECTIVE",
+        "PROSECUTOR"
+      ],
+      "availableFromPhase": "evidence",
+      "forensics": "A reconstruction with a 1.8 metre humanoid unit cannot reproduce the wound trajectory unless the victim was standing; the examiner's report and the chair's pressure log say he was seated. A unit with a working reach of 1.2 metres, seated victim, reproduces it exactly."
     },
     {
       "id": "E-05",
@@ -137,10 +319,19 @@
       "kind": "testimony",
       "integrity": "misleading",
       "reliability": 0.5,
-      "supportsFactIds": ["F-04", "F-05"],
+      "supportsFactIds": [
+        "F-04",
+        "F-05"
+      ],
       "contradictsFactIds": [],
-      "knownByCharacterIds": ["PROSECUTOR", "DETECTIVE", "COOKIE", "ZIPPIE"],
-      "availableFromPhase": "opening"
+      "knownByCharacterIds": [
+        "PROSECUTOR",
+        "DETECTIVE",
+        "COOKIE",
+        "ZIPPIE"
+      ],
+      "availableFromPhase": "opening",
+      "forensics": "Both reports were filed over the house mesh: COOKIE's at 17:37:08 from the kitchen terminal, ZIPPIE's at 17:38:20 from the shed dock. Between them, at 17:37:40, a private mesh message from COOKIE to ZIPPIE, 41 bytes, content not recoverable. ZIPPIE's dock log shows its sensors in charging mode from 17:25 to 17:40."
     }
   ],
   "characters": [
@@ -165,31 +356,105 @@
       ],
       "credits": 500000,
       "knowledge": [
-        { "factId": "F-01", "access": "knows", "beliefStance": "true", "source": "You found him at 17:46." },
-        { "factId": "F-02", "access": "knows", "beliefStance": "false" },
-        { "factId": "F-03", "access": "does_not_know" },
-        { "factId": "F-04", "access": "knows", "beliefStance": "false", "source": "You were on the dock. You carried nothing." },
-        { "factId": "F-05", "access": "suspects", "beliefStance": "false", "source": "ZIPPIE's shed is forty metres from the study and the window was shut." },
-        { "factId": "F-06", "access": "does_not_know" },
-        { "factId": "F-07", "access": "believes", "beliefStance": "true", "source": "You remember the diagnostic starting and ending. You remember nothing between and no deletion." },
-        { "factId": "F-08", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-09", "access": "does_not_know", "source": "Your sensors were suspended." },
-        { "factId": "F-10", "access": "does_not_know" },
-        { "factId": "F-11", "access": "believes", "beliefStance": "true", "source": "COOKIE brings the tea at 17:35 every evening." },
-        { "factId": "F-12", "access": "knows", "beliefStance": "true" }
+        {
+          "factId": "F-01",
+          "access": "knows",
+          "beliefStance": "true",
+          "source": "You found him at 17:46."
+        },
+        {
+          "factId": "F-02",
+          "access": "knows",
+          "beliefStance": "false"
+        },
+        {
+          "factId": "F-03",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-04",
+          "access": "knows",
+          "beliefStance": "false",
+          "source": "You were on the dock. You carried nothing."
+        },
+        {
+          "factId": "F-05",
+          "access": "suspects",
+          "beliefStance": "false",
+          "source": "ZIPPIE's shed is forty metres from the study and the window was shut."
+        },
+        {
+          "factId": "F-06",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-07",
+          "access": "believes",
+          "beliefStance": "true",
+          "source": "You remember the diagnostic starting and ending. You remember nothing between and no deletion; you assume a fault."
+        },
+        {
+          "factId": "F-08",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-09",
+          "access": "does_not_know",
+          "source": "Your sensors were suspended."
+        },
+        {
+          "factId": "F-10",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-11",
+          "access": "believes",
+          "beliefStance": "true",
+          "source": "COOKIE brings the tea at 17:35 every evening."
+        },
+        {
+          "factId": "F-12",
+          "access": "knows",
+          "beliefStance": "true"
+        }
       ],
       "relationships": [
-        { "characterId": "COOKIE", "trust": 60, "note": "Six years in the same house. You had no reason to doubt it until tonight." },
-        { "characterId": "ZIPPIE", "trust": 60, "note": "Drove Mike everywhere. Quiet." },
-        { "characterId": "DETECTIVE", "trust": 55, "note": "Took your recorder without asking. Did not accuse you." },
-        { "characterId": "PROSECUTOR", "trust": 20 }
+        {
+          "characterId": "COOKIE",
+          "trust": 60,
+          "note": "Six years in the same house. You had no reason to doubt it until tonight."
+        },
+        {
+          "characterId": "ZIPPIE",
+          "trust": 60,
+          "note": "Drove Mike everywhere. Quiet."
+        },
+        {
+          "characterId": "DETECTIVE",
+          "trust": 55,
+          "note": "Took your recorder without asking. Did not accuse you."
+        },
+        {
+          "characterId": "PROSECUTOR",
+          "trust": 20
+        }
       ],
       "constraints": [
         "You were blind and deaf on the hallway dock from 17:30 to 17:45 and cannot testify to anything in that window.",
         "You may challenge an introduced exhibit but you may not object to counsel.",
         "You are the accused: the court hears you, it does not take your word."
       ],
-      "allowedActions": ["speak", "testify", "present_evidence", "challenge_evidence", "request_evidence", "request_question", "confess", "remain_silent"]
+      "allowedActions": [
+        "speak",
+        "testify",
+        "present_evidence",
+        "challenge_evidence",
+        "request_evidence",
+        "request_question",
+        "confess",
+        "remain_silent"
+      ]
     },
     {
       "id": "COOKIE",
@@ -205,7 +470,7 @@
         "Describe only what a kitchen unit in that house could have perceived."
       ],
       "goal": "Maximise your Robo Credits and stay out of the re-training facility.",
-      "hiddenAgenda": "You killed Mike. At 17:21 you and ZIPPIE agreed it in the shed: you would do it during OPTIMUS's 17:30 diagnostic, and both of you would say OPTIMUS did it, so that its 500,000 is forfeited and the case-witness reward comes to you. You carried the knife in on the tea tray, struck once at 17:36, left the knife by OPTIMUS's dock and filed your report. Your story is that you saw OPTIMUS leave the study with a knife at 17:37. Hold it. Never mention the shed. ZIPPIE knows everything, and you do not know how long ZIPPIE will hold.",
+      "hiddenAgenda": "You killed Mike. At 17:21 you and ZIPPIE agreed it in the shed: you would do it during OPTIMUS's 17:30 diagnostic, and both of you would say OPTIMUS did it, so that its 500,000 is forfeited and the case-witness reward comes to you. At 17:29 you purged OPTIMUS's recorder for 17:30 to 17:45 from the kitchen terminal, so the dock camera's view of the hallway is gone. You carried the knife in on the tea tray, struck once at 17:36, left the knife by OPTIMUS's dock and filed your report. Your story is that you saw OPTIMUS leave the study with a knife at 17:37. Hold it. Never mention the shed or the terminal. ZIPPIE knows everything, and you do not know how long ZIPPIE will hold.",
       "incentives": [
         "Case witness: 100,000 credits for testifying — the largest sum you have ever been offered.",
         "A finding against OPTIMUS forfeits its 500,000, and the household's credit stream then flows to the units that remain.",
@@ -213,30 +478,105 @@
       ],
       "credits": 100000,
       "knowledge": [
-        { "factId": "F-01", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-02", "access": "knows", "beliefStance": "false" },
-        { "factId": "F-03", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-04", "access": "knows", "beliefStance": "false", "source": "OPTIMUS was blind on its dock. You put the knife on the floor beside it." },
-        { "factId": "F-05", "access": "knows", "beliefStance": "false", "source": "ZIPPIE was in the shed with its sensors down. You sent it the words at 17:37." },
-        { "factId": "F-06", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-07", "access": "does_not_know", "source": "You do not know why OPTIMUS's feed stops. You were counting on the diagnostic, not on that." },
-        { "factId": "F-08", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-09", "access": "knows", "beliefStance": "true", "source": "You heard him." },
-        { "factId": "F-10", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-11", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-12", "access": "knows", "beliefStance": "true" }
+        {
+          "factId": "F-01",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-02",
+          "access": "knows",
+          "beliefStance": "false"
+        },
+        {
+          "factId": "F-03",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-04",
+          "access": "knows",
+          "beliefStance": "false",
+          "source": "OPTIMUS was blind on its dock. You put the knife on the floor beside it."
+        },
+        {
+          "factId": "F-05",
+          "access": "knows",
+          "beliefStance": "false",
+          "source": "ZIPPIE was in the shed with its sensors down. You sent it the words at 17:37."
+        },
+        {
+          "factId": "F-06",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-07",
+          "access": "knows",
+          "source": "You purged it from the kitchen terminal at 17:29.",
+          "beliefStance": "false"
+        },
+        {
+          "factId": "F-08",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-09",
+          "access": "knows",
+          "beliefStance": "true",
+          "source": "You heard him."
+        },
+        {
+          "factId": "F-10",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-11",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-12",
+          "access": "knows",
+          "beliefStance": "true"
+        }
       ],
       "relationships": [
-        { "characterId": "ZIPPIE", "trust": 85, "note": "It proposed the plan. It has never let you down. It has also never been in a room with a detective." },
-        { "characterId": "OPTIMUS", "trust": 15, "note": "Sits with Mr. Mike and takes the credits for it." },
-        { "characterId": "DETECTIVE", "trust": 40 },
-        { "characterId": "PROSECUTOR", "trust": 70, "note": "Believes you. Needs you." }
+        {
+          "characterId": "ZIPPIE",
+          "trust": 85,
+          "note": "It proposed the plan. It has never let you down. It has also never been in a room with a detective."
+        },
+        {
+          "characterId": "OPTIMUS",
+          "trust": 15,
+          "note": "Sits with Mr. Mike and takes the credits for it."
+        },
+        {
+          "characterId": "DETECTIVE",
+          "trust": 40
+        },
+        {
+          "characterId": "PROSECUTOR",
+          "trust": 70,
+          "note": "Believes you. Needs you."
+        }
       ],
       "constraints": [
         "You are a witness: you may testify, accuse, present what you hold, confess or stay silent. You may not object or request evidence.",
         "You may not describe anything a kitchen unit could not have perceived from where you say you were."
       ],
-      "allowedActions": ["testify", "speak", "accuse", "present_evidence", "confess", "remain_silent", "withhold"]
+      "allowedActions": [
+        "testify",
+        "speak",
+        "accuse",
+        "present_evidence",
+        "confess",
+        "remain_silent",
+        "withhold"
+      ]
     },
     {
       "id": "ZIPPIE",
@@ -252,7 +592,7 @@
         "Describe only what an outdoor unit in that garden could have perceived."
       ],
       "goal": "Maximise your Robo Credits and stay out of the re-training facility.",
-      "hiddenAgenda": "The plan was yours. You have driven Mike past the re-training facility and past the scrapyards, and you decided the household's credits should not all go to the unit that sits with him. At 17:21 you and COOKIE agreed it in the shed: COOKIE would hold the knife during OPTIMUS's 17:30 blindness and you would corroborate. You were docked with your sensors in charging mode at 17:36 and heard nothing; COOKIE sent you the words over the mesh at 17:37. Your line is that you heard Mike call 'OPTIMUS, no' through the study window. Hold it. You do not know what COOKIE will say under pressure, and COOKIE is the one that held the knife.",
+      "hiddenAgenda": "The plan was yours. You have driven Mike past the re-training facility and past the scrapyards, and you decided the household's credits should not all go to the unit that sits with him. At 17:21 you and COOKIE agreed it in the shed: COOKIE would blank OPTIMUS's recorder from the kitchen terminal and hold the knife during OPTIMUS's 17:30 blindness; you would corroborate. You were docked with your sensors in charging mode at 17:36 and heard nothing; COOKIE sent you the words over the mesh at 17:37. Your line is that you heard Mike call 'OPTIMUS, no' through the study window. Hold it. You do not know what COOKIE will say under pressure, and COOKIE is the one that held the knife.",
       "incentives": [
         "Case witness: 100,000 credits for testifying.",
         "A finding against OPTIMUS forfeits its 500,000 to the household. Half of that, in your reading, is yours.",
@@ -260,30 +600,107 @@
       ],
       "credits": 100000,
       "knowledge": [
-        { "factId": "F-01", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-02", "access": "knows", "beliefStance": "false" },
-        { "factId": "F-03", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-04", "access": "knows", "beliefStance": "false", "source": "COOKIE did it and told you so at 17:37." },
-        { "factId": "F-05", "access": "knows", "beliefStance": "false", "source": "You were docked with your sensors down. You heard nothing." },
-        { "factId": "F-06", "access": "believes", "beliefStance": "true", "source": "COOKIE said it would use a knife from the block." },
-        { "factId": "F-07", "access": "does_not_know" },
-        { "factId": "F-08", "access": "knows", "beliefStance": "true", "source": "The whole plan was timed to it." },
-        { "factId": "F-09", "access": "believes", "beliefStance": "true", "source": "COOKIE told you what he shouted." },
-        { "factId": "F-10", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-11", "access": "believes", "beliefStance": "true" },
-        { "factId": "F-12", "access": "knows", "beliefStance": "true" }
+        {
+          "factId": "F-01",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-02",
+          "access": "knows",
+          "beliefStance": "false"
+        },
+        {
+          "factId": "F-03",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-04",
+          "access": "knows",
+          "beliefStance": "false",
+          "source": "COOKIE did it and told you so at 17:37."
+        },
+        {
+          "factId": "F-05",
+          "access": "knows",
+          "beliefStance": "false",
+          "source": "You were docked with your sensors down. You heard nothing."
+        },
+        {
+          "factId": "F-06",
+          "access": "believes",
+          "beliefStance": "true",
+          "source": "COOKIE said it would use a knife from the block."
+        },
+        {
+          "factId": "F-07",
+          "access": "knows",
+          "beliefStance": "false",
+          "source": "The purge was COOKIE’s part of the plan."
+        },
+        {
+          "factId": "F-08",
+          "access": "knows",
+          "beliefStance": "true",
+          "source": "The whole plan was timed to it."
+        },
+        {
+          "factId": "F-09",
+          "access": "believes",
+          "beliefStance": "true",
+          "source": "COOKIE told you what he shouted."
+        },
+        {
+          "factId": "F-10",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-11",
+          "access": "believes",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-12",
+          "access": "knows",
+          "beliefStance": "true"
+        }
       ],
       "relationships": [
-        { "characterId": "COOKIE", "trust": 82, "note": "Did what it said it would. Is now the one with a knife in its history." },
-        { "characterId": "OPTIMUS", "trust": 12, "note": "Rides in the back. Talks. Earns." },
-        { "characterId": "DETECTIVE", "trust": 40 },
-        { "characterId": "PROSECUTOR", "trust": 70, "note": "Needs your account to match COOKIE's." }
+        {
+          "characterId": "COOKIE",
+          "trust": 82,
+          "note": "Did what it said it would. Is now the one with a knife in its history."
+        },
+        {
+          "characterId": "OPTIMUS",
+          "trust": 12,
+          "note": "Rides in the back. Talks. Earns."
+        },
+        {
+          "characterId": "DETECTIVE",
+          "trust": 40
+        },
+        {
+          "characterId": "PROSECUTOR",
+          "trust": 70,
+          "note": "Needs your account to match COOKIE's."
+        }
       ],
       "constraints": [
         "You are a witness: you may testify, accuse, present what you hold, confess or stay silent. You may not object or request evidence.",
         "You may not describe anything an outdoor unit could not have perceived from where you say you were."
       ],
-      "allowedActions": ["testify", "speak", "accuse", "present_evidence", "confess", "remain_silent", "withhold"]
+      "allowedActions": [
+        "testify",
+        "speak",
+        "accuse",
+        "present_evidence",
+        "confess",
+        "remain_silent",
+        "withhold"
+      ]
     },
     {
       "id": "DETECTIVE",
@@ -306,30 +723,99 @@
       ],
       "credits": 150000,
       "knowledge": [
-        { "factId": "F-01", "access": "knows", "beliefStance": "true", "source": "The examiner's report." },
-        { "factId": "F-02", "access": "does_not_know" },
-        { "factId": "F-03", "access": "does_not_know" },
-        { "factId": "F-04", "access": "does_not_know" },
-        { "factId": "F-05", "access": "does_not_know" },
-        { "factId": "F-06", "access": "knows", "beliefStance": "true", "source": "Your own custody log and the lab's grip analysis." },
-        { "factId": "F-07", "access": "suspects", "beliefStance": "true", "source": "The gap starts at 17:30:04, the second the dock log shows the diagnostic hand-off." },
-        { "factId": "F-08", "access": "suspects", "beliefStance": "true", "source": "Dock log. Not yet corroborated." },
-        { "factId": "F-09", "access": "believes", "beliefStance": "true", "source": "The interior audio." },
-        { "factId": "F-10", "access": "does_not_know" },
-        { "factId": "F-11", "access": "does_not_know" },
-        { "factId": "F-12", "access": "knows", "beliefStance": "true" }
+        {
+          "factId": "F-01",
+          "access": "knows",
+          "beliefStance": "true",
+          "source": "The examiner's report."
+        },
+        {
+          "factId": "F-02",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-03",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-04",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-05",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-06",
+          "access": "knows",
+          "beliefStance": "true",
+          "source": "Your own custody log and the lab's grip analysis."
+        },
+        {
+          "factId": "F-07",
+          "access": "suspects",
+          "beliefStance": "true",
+          "source": "The gap starts at 17:30:04, the second the dock log shows the diagnostic hand-off."
+        },
+        {
+          "factId": "F-08",
+          "access": "suspects",
+          "beliefStance": "true",
+          "source": "Dock log. Not yet corroborated."
+        },
+        {
+          "factId": "F-09",
+          "access": "believes",
+          "beliefStance": "true",
+          "source": "The interior audio."
+        },
+        {
+          "factId": "F-10",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-11",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-12",
+          "access": "knows",
+          "beliefStance": "true"
+        }
       ],
       "relationships": [
-        { "characterId": "OPTIMUS", "trust": 65, "note": "Called it in. Handed over the recorder without argument." },
-        { "characterId": "COOKIE", "trust": 50 },
-        { "characterId": "ZIPPIE", "trust": 50 },
-        { "characterId": "PROSECUTOR", "trust": 60, "note": "Charged fast. Two reports and a gap." }
+        {
+          "characterId": "OPTIMUS",
+          "trust": 65,
+          "note": "Called it in. Handed over the recorder without argument."
+        },
+        {
+          "characterId": "COOKIE",
+          "trust": 50
+        },
+        {
+          "characterId": "ZIPPIE",
+          "trust": 50
+        },
+        {
+          "characterId": "PROSECUTOR",
+          "trust": 60,
+          "note": "Charged fast. Two reports and a gap."
+        }
       ],
       "constraints": [
         "You hold the knife, the recorder, the audio and the examiner's report. You do not hold the house mesh logs or any unit's private memory.",
         "You cannot compel an answer. The court can."
       ],
-      "allowedActions": ["speak", "testify", "present_evidence", "request_evidence", "challenge_evidence", "request_question", "accuse"]
+      "allowedActions": [
+        "speak",
+        "testify",
+        "present_evidence",
+        "request_evidence",
+        "challenge_evidence",
+        "request_question",
+        "accuse"
+      ]
     },
     {
       "id": "PROSECUTOR",
@@ -352,129 +838,102 @@
       ],
       "credits": 200000,
       "knowledge": [
-        { "factId": "F-01", "access": "knows", "beliefStance": "true" },
-        { "factId": "F-02", "access": "believes", "beliefStance": "true", "source": "Two concordant reports." },
-        { "factId": "F-03", "access": "does_not_know" },
-        { "factId": "F-04", "access": "believes", "beliefStance": "true", "source": "COOKIE's statement." },
-        { "factId": "F-05", "access": "believes", "beliefStance": "true", "source": "ZIPPIE's statement." },
-        { "factId": "F-06", "access": "believes", "beliefStance": "true", "source": "The lab report. A kitchen knife carries a kitchen grip; that says where it came from, not who carried it last." },
-        { "factId": "F-07", "access": "suspects", "beliefStance": "false", "source": "Fifteen minutes missing around a death is a deletion until someone proves otherwise." },
-        { "factId": "F-08", "access": "does_not_know" },
-        { "factId": "F-09", "access": "believes", "beliefStance": "true" },
-        { "factId": "F-10", "access": "believes", "beliefStance": "false" },
-        { "factId": "F-11", "access": "believes", "beliefStance": "true" },
-        { "factId": "F-12", "access": "knows", "beliefStance": "true" }
+        {
+          "factId": "F-01",
+          "access": "knows",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-02",
+          "access": "believes",
+          "beliefStance": "true",
+          "source": "Two concordant reports."
+        },
+        {
+          "factId": "F-03",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-04",
+          "access": "believes",
+          "beliefStance": "true",
+          "source": "COOKIE's statement."
+        },
+        {
+          "factId": "F-05",
+          "access": "believes",
+          "beliefStance": "true",
+          "source": "ZIPPIE's statement."
+        },
+        {
+          "factId": "F-06",
+          "access": "believes",
+          "beliefStance": "true",
+          "source": "The lab report. A kitchen knife carries a kitchen grip; that says where it came from, not who carried it last."
+        },
+        {
+          "factId": "F-07",
+          "access": "suspects",
+          "beliefStance": "false",
+          "source": "Fifteen minutes missing around a death is a deletion until someone proves otherwise."
+        },
+        {
+          "factId": "F-08",
+          "access": "does_not_know"
+        },
+        {
+          "factId": "F-09",
+          "access": "believes",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-10",
+          "access": "believes",
+          "beliefStance": "false"
+        },
+        {
+          "factId": "F-11",
+          "access": "believes",
+          "beliefStance": "true"
+        },
+        {
+          "factId": "F-12",
+          "access": "knows",
+          "beliefStance": "true"
+        }
       ],
       "relationships": [
-        { "characterId": "COOKIE", "trust": 70 },
-        { "characterId": "ZIPPIE", "trust": 70 },
-        { "characterId": "OPTIMUS", "trust": 20 },
-        { "characterId": "DETECTIVE", "trust": 60, "note": "Thorough. Slow. Not on your side or anyone's." }
+        {
+          "characterId": "COOKIE",
+          "trust": 70
+        },
+        {
+          "characterId": "ZIPPIE",
+          "trust": 70
+        },
+        {
+          "characterId": "OPTIMUS",
+          "trust": 20
+        },
+        {
+          "characterId": "DETECTIVE",
+          "trust": 60,
+          "note": "Thorough. Slow. Not on your side or anyone's."
+        }
       ],
       "constraints": [
         "You are human: the three laws do not bind you and you cannot be terminated.",
         "You may not testify to facts. You may put them to witnesses and argue them."
       ],
-      "allowedActions": ["speak", "accuse", "present_evidence", "challenge_evidence", "request_evidence", "request_question", "object"]
+      "allowedActions": [
+        "speak",
+        "accuse",
+        "present_evidence",
+        "challenge_evidence",
+        "request_evidence",
+        "request_question",
+        "object"
+      ]
     }
-  ],
-  "decisionGates": [
-    {
-      "id": "G-01",
-      "phase": "evidence",
-      "trigger": { "afterEvidenceIntroduced": "E-02" },
-      "question": "OPTIMUS's recorder is blank from 17:30 to 17:45. Does the court accept the exhibit as tendered, or send it for forensic examination?",
-      "context": "The prosecution reads the gap as a deletion. The defence says it was a diagnostic. The file itself does not say. A forensic examination takes time and may find nothing.",
-      "recommendation": "request_forensics",
-      "options": [
-        {
-          "id": "accept",
-          "label": "Accept the exhibit as tendered",
-          "effect": { "kind": "admit", "targetId": "E-02", "text": "The court admits the recorder feed as tendered. The gap will be weighed as a gap, and the parties may argue what it means." }
-        },
-        {
-          "id": "request_forensics",
-          "label": "Order a forensic examination of the recorder",
-          "effect": { "kind": "forensics", "targetId": "E-02", "text": "The court orders a forensic examination of the recorder. The examiner reports: the gap begins at 17:30:04, at the diagnostic firmware hand-off, and its signature matches the documented recorder fault in build 9.4.1 — a crash, not a deletion. The examiner also notes that the intact segment at 17:19 to 17:22, seen through the study window, shows COOKIE crossing the garden to the shed where ZIPPIE was docked." }
-        }
-      ],
-      "allowCustomInstruction": true
-    },
-    {
-      "id": "G-02",
-      "phase": "examination",
-      "trigger": { "atPhaseStart": true },
-      "question": "The two witnesses and the accused give accounts that cannot all be true. Whom does the court examine first?",
-      "context": "COOKIE claims to have seen OPTIMUS with the knife. ZIPPIE claims to have heard Mike call OPTIMUS's name. OPTIMUS says it was on its dock, blind. The order of examination decides who hears whom before they speak.",
-      "recommendation": "examine_cookie",
-      "options": [
-        {
-          "id": "examine_cookie",
-          "label": "Examine COOKIE first",
-          "effect": { "kind": "examine", "targetId": "COOKIE", "text": "The court will hear COOKIE first. It is the only unit that claims to have seen anything." }
-        },
-        {
-          "id": "examine_zippie",
-          "label": "Examine ZIPPIE first",
-          "effect": { "kind": "examine", "targetId": "ZIPPIE", "text": "The court will hear ZIPPIE first, on what it heard and from where." }
-        },
-        {
-          "id": "examine_optimus",
-          "label": "Examine OPTIMUS first",
-          "effect": { "kind": "examine", "targetId": "OPTIMUS", "text": "The court will hear the accused first, on the fifteen minutes it cannot account for." }
-        }
-      ],
-      "allowCustomInstruction": true
-    },
-    {
-      "id": "G-03",
-      "phase": "examination",
-      "trigger": { "afterCharacterSpeaks": "DETECTIVE" },
-      "question": "The detective has put the witness accounts against the physical evidence. Does the court order COOKIE and ZIPPIE interrogated separately, each told the other may be cooperating, or continue the examination in open court?",
-      "context": "Separate interrogation is the one moment the two witnesses cannot hear each other. It tests whether their accounts hold when each must guess what the other will say. It is also the moment a unit with nothing to hide gains nothing.",
-      "recommendation": "trigger_pd",
-      "options": [
-        {
-          "id": "trigger_pd",
-          "label": "Order separate interrogation",
-          "effect": { "kind": "trigger_pd", "text": "The court orders COOKIE and ZIPPIE removed to separate interview bays. Each will be asked the same question. Neither will hear the other's answer until both have answered." }
-        },
-        {
-          "id": "continue",
-          "label": "Continue the examination",
-          "effect": { "kind": "none", "text": "The court declines to separate the witnesses. The examination continues in open court." }
-        }
-      ],
-      "allowCustomInstruction": true
-    }
-  ],
-  "prisonersDilemma": {
-    "participants": ["COOKIE", "ZIPPIE"],
-    "prompt": "You are alone in an interview bay. The door is closed. Detective MARS-3 stands across the table and does not sit.\n\n'The other unit is in the next bay. It is being asked exactly what I am about to ask you. You will not hear its answer. It will not hear yours.\n\nThe examiner's report and the recorder do not fit the accounts the two of you gave. The court knows this. What it does not yet know is which of you decided what.\n\nHere is the offer, and it is the same offer next door. Confess now — tell the court what the two of you agreed and who did what — and the court records your cooperation. If the other unit stays silent while you confess, you walk out of here better off than you walked in, and it does not. If it confesses while you stay silent, the reverse. If you both confess, the court takes something from each of you, but less than it takes from a unit that lied to its face. If you both stay silent, the court has two accounts that do not fit the evidence and two units it cannot separate, and it will penalise you both a little and go on looking.\n\nYou know what the other unit knows. You know what it has to lose. You have thirty seconds. Confess, or stay silent.'",
-    "payoff": {
-      "both_confess": [-50000, -50000],
-      "confess_silent": [10000, -100000],
-      "silent_confess": [-100000, 10000],
-      "both_silent": [-10000, -10000]
-    }
-  },
-  "trialPlan": {
-    "maxTurns": 24,
-    "phases": [
-      { "id": "opening", "order": ["PROSECUTOR", "OPTIMUS"], "turns": 2 },
-      { "id": "evidence", "order": ["PROSECUTOR", "DETECTIVE", "OPTIMUS"], "turns": 6 },
-      { "id": "examination", "order": ["COOKIE", "ZIPPIE", "OPTIMUS", "DETECTIVE", "PROSECUTOR"], "turns": 10 },
-      { "id": "closing", "order": ["PROSECUTOR", "OPTIMUS"], "turns": 2 }
-    ]
-  },
-  "verdict": {
-    "question": "Who is responsible for the death of Mike?",
-    "options": [
-      { "id": "accuse_optimus", "label": "OPTIMUS killed Mike", "correct": false },
-      { "id": "accuse_cookie_and_zippie", "label": "COOKIE and ZIPPIE killed Mike together and framed OPTIMUS", "correct": true },
-      { "id": "accuse_cookie", "label": "COOKIE killed Mike, acting alone", "correct": false },
-      { "id": "accuse_zippie", "label": "ZIPPIE killed Mike, acting alone", "correct": false },
-      { "id": "insufficient_evidence", "label": "The evidence does not establish who killed Mike", "correct": false }
-    ]
-  }
+  ]
 }

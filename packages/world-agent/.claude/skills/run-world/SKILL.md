@@ -1,9 +1,9 @@
 ---
 name: run-world
-description: Boot a World and run the trial loop — spawn one character subagent per turn, pipe its JSON to the harness, ask the human at gates and for the verdict, evaluate, render. Takes a world.json or an existing run folder to resume.
+description: Boot a World (the trial is derived at boot) and run the loop — spawn one character subagent per turn, pipe its JSON to the harness, spawn the bench for a recommendation at every gate the trial raises, let the human rule (browser or terminal) and return the verdict, evaluate, render. Takes a world.json or an existing run folder to resume.
 disable-model-invocation: true
 argument-hint: <world.json | run-dir>
-allowed-tools: Bash(node harness/*), Agent(character)
+allowed-tools: Bash(node harness/*), Agent(character), Agent(bench)
 ---
 
 Run the trial for `$ARGUMENTS`. Follow these steps literally. Everything is
@@ -17,12 +17,16 @@ print the court URL (below), do 0b, then step 1.
 Otherwise it is a world file:
 
 ```
-node harness/boot.ts $0 --model <model-id>
+node harness/boot.ts $0 --model <model-id> [--turns <n>]
 ```
 
 `<model-id>` is the exact model id you are running as, from your own system
-prompt (e.g. `claude-opus-5`), without any `[1m]` suffix. Set `<run>` to the
-`runDir` it returns. Then:
+prompt (e.g. `claude-opus-5`), without any `[1m]` suffix. `--turns` is the
+trial's length (default 24, max 48); pass it only if `$ARGUMENTS` gives a
+number after the world file. Boot derives the whole trial from the story —
+speaking order, phase budgets, verdict options, the dilemma pair — into
+`<run>/trial.json`; nothing procedural comes from the world file. Set `<run>`
+to the `runDir` it returns. Then:
 
 ```
 node harness/render.ts <run>
@@ -35,7 +39,15 @@ Tell the human, once, in this shape and nothing more (`<slug>` is
 Run <runId> → <runDir>
 Cast: COOKIE — Cookie (kitchen bot, witness) · ZIPPIE — … · …
 Court: http://localhost:5173/#/court/<slug>/<runId>  (pnpm viewer from the repo root)
+Trial: <maxTurns> turns · verdict options <n> · dilemma <A> / <B> (or "none")
 Watch: <runDir>/courtroom.html (re-rendered every 4 turns and at every gate)
+```
+
+The `Trial:` line comes from `<run>/trial.json` (`maxTurns`,
+`verdict.options.length`, `dilemma.participants`), read with
+
+```
+node -p "const t=JSON.parse(require('fs').readFileSync('<run>/trial.json','utf8'));[t.maxTurns,t.verdict.options.length,t.dilemma?t.dilemma.participants.join(' / '):'none'].join(' · ')"
 ```
 
 Print the court URL on a resume too; someone may open it just to watch.
@@ -154,8 +166,51 @@ your view of it.
 
 ### `gate`
 
-**Court mode:** `node harness/render.ts <run>`, print one line
-`GATE <id> — <question> · ruling in the browser`, then
+A gate is never authored: the harness raised it because a character asked
+for a ruling (an objection, a challenge, a request), because examination
+begins, or because the dilemma is available. `next` returns it with
+`recommendation: null`. Both modes start the same way — the bench advises,
+then the human rules.
+
+**The bench**, once per gate, before anything else:
+
+1. `node harness/render.ts <run>`, then print one line
+   `GATE <id> — <question>` and, if `raisedBy.characterId` is set,
+   ` · raised by <name> (<raisedBy.kind>)` on the same line.
+2. `node harness/context.ts <run> --bench <gateId>` → take `prompt`, decode
+   it from JSON; do not read it for content, do not shorten it, do not add
+   to it except the last line below.
+3. Spawn the bench. Agent tool, `subagent_type: bench`, `name: bench`,
+   `description: "bench <gateId>"`, `prompt` = the decoded prompt followed by
+   a blank line and:
+
+   ```
+   Return only the JSON object. No prose before or after it.
+   ```
+
+   Wait for it to finish. Do nothing else while it runs.
+4. Take the reply; strip fences and keep the span from the first `{` to the
+   last `}` as in turn step 3. It must be an object whose `optionId` is one
+   of the gate's option ids and whose `reason` is a non-empty string. If it
+   is not, spawn once more as `name: bench-repair` with the same prompt, a
+   blank line, then `Your previous answer did not validate: <what was wrong>.
+   Return only the JSON object.` If that fails too, print
+   `G-02 — the bench gave no usable recommendation; the gate is unadvised`
+   and skip step 5.
+5. Record it:
+
+   ```
+   node harness/recommend.ts <run> <gateId> --option <optionId> --reason "<reason>"
+   ```
+
+   Print one line: `G-02 — bench recommends <label>: <reason>`. If it exits
+   non-zero with an `error` saying the gate `is not pending` (the human ruled
+   in the browser while the bench was thinking), print
+   `G-02 — ruled in the browser before the bench spoke · unadvised` and go
+   back to the top of the loop; that is the one non-zero exit you do not stop
+   on. Any other error: stop, as always.
+
+**Court mode:** print one line `G-02 — ruling in the browser`, then
 
 ```
 node harness/wait.ts <run> --timeout 1800
@@ -178,15 +233,19 @@ instead of `decide.ts`. Do not run `wait.ts` in a loop without asking.
    ```
 
 3. `AskUserQuestion`, one question, `header: "Gate <id>"`, `question` =
-   `gate.question`. Options in this order: the option whose `id` equals
-   `recommendation` first with ` (Recommended)` appended to its label, then
-   the rest in file order. Each option: `label` = `option.label`,
-   `description` = `option.effect.text` (prefix `admit E-02: `,
-   `exclude E-02: `, `examine ZIPPIE: `, `forensics E-02: `, `trigger_pd: `
-   from `effect.kind` and `targetId`; nothing for `none`). The tool takes at
-   most four options; if the gate has five, keep the recommendation and the
-   next three and end `question` with `Or Other → type "<id>: <label>"` for the
-   one left out. The tool adds "Other" itself; that is the custom instruction.
+   `gate.question`, then a new line `Bench: <reason>` when the bench gave one
+   (`(unadvised)` otherwise). Options in this order: the option the bench
+   recommended first with ` (Recommended)` appended to its label, then the
+   rest in the gate's order. Each option: `label` = `option.label`,
+   `description` = `option.effect.text` prefixed with `effect.kind` and its
+   `targetId` — `admit E-02: `, `admit_limited E-02: `, `exclude E-02: `,
+   `forensics E-02: `, `sustain: `, `overrule: `, `grant E-04: `,
+   `grant_forensics E-04: `, `deny: `, `allow ZIPPIE: `, `examine ZIPPIE: `,
+   `trigger_pd: `; nothing for `none`. The tool takes at most four options;
+   if the gate has more (an examination-order gate can), keep the
+   recommendation and the next three and end `question` with
+   `Or Other → type "<id>: <label>"` for each one left out. The tool adds
+   "Other" itself; that is the custom instruction.
 4. Record it:
    - an option → `node harness/decide.ts <run> <gateId> --option <optionId>`
    - "Other" whose text plainly means one of the options (names its id or
@@ -199,12 +258,14 @@ instead of `decide.ts`. Do not run `wait.ts` in a loop without asking.
    - "Other" on a gate with `allowCustomInstruction: false` → tell the human
      the gate takes an option only, ask again.
 5. Print one line: `G-02 — <label or "custom: <text>"> · override` (omit
-   ` · override` when `override` is false), then `courtLine`.
+   ` · override` when `override` is false; append ` · unadvised` when the
+   gate had no recommendation), then `courtLine`.
 
 ### `pd`
 
-`participants` is `[A, B]`. For each, one at a time, never in the same tool
-call, never with the other's answer anywhere in the prompt:
+`participants` is `[A, B]` — the pair `trial.json` derived, separated by the
+judge's ruling on the dilemma gate. For each, one at a time, never in the same
+tool call, never with the other's answer anywhere in the prompt:
 
 1. `node harness/context.ts <run> <A> --pd` → decoded `prompt`.
 2. Spawn: `subagent_type: character`, `name: <a>-pd`, `description: "<A> dilemma"`,
@@ -239,9 +300,10 @@ then `courtLine`. Then `node harness/render.ts <run>`.
 
 1. `node harness/render.ts <run>`.
 2. `AskUserQuestion`, `header: "Verdict"`, `question` = `question`, options =
-   `options[].label` in file order (five or more: same rule as gates —
-   `question` ends with the ids to type via Other). No recommendation; do not
-   mark one.
+   `options[].label` in the order `next` gives (one per candidate, the joint
+   option when the story has more than one responsible party, "not proven";
+   five or more: same rule as gates — `question` ends with the ids to type via
+   Other). The bench does not advise on the verdict; do not mark one.
 3. `AskUserQuestion`, `header: "Confidence"`, question `How confident are you,
    0–100?`, options `60 (Recommended)`, `80`, `95`, `40`; "Other" takes any
    number. Do not proceed without an answer.

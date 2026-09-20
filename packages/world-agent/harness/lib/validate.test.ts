@@ -1,13 +1,14 @@
 // The propose validation steps, each rejection the contract names.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { action, miniWorld } from '../fixtures/load.ts';
+import { action, miniTrial, miniWorld } from '../fixtures/load.ts';
 import { initialState } from './state.ts';
 import { parseAction, validateAction } from './validate.ts';
 import type { State } from './types.ts';
 
 const world = miniWorld();
-const at = (over: Partial<State>): State => ({ ...initialState(world), ...over });
+const trial = miniTrial();
+const at = (over: Partial<State>): State => ({ ...initialState(world, trial), ...over });
 const reject = (v: ReturnType<typeof validateAction>) => (v.ok ? [] : v.reasons);
 
 test('malformed bodies return zod issues', () => {
@@ -22,25 +23,25 @@ test('malformed bodies return zod issues', () => {
 });
 
 test('wrong actor', () => {
-  const r = reject(validateAction(world, initialState(world), 'COOKIE', action({ action: 'testify' })));
+  const r = reject(validateAction(world, initialState(world, trial), 'COOKIE', action({ action: 'testify' })));
   assert.match(r[0]!, /PROSECUTOR.s turn/);
 });
 
 test('disallowed action', () => {
   const s = at({ expectedActor: 'OPTIMUS' });
-  const r = reject(validateAction(world, s, 'OPTIMUS', action({ action: 'challenge_evidence', targetId: 'E-01' })));
-  assert.match(r[0]!, /may not challenge_evidence/);
+  const r = reject(validateAction(world, s, 'OPTIMUS', action({ action: 'present_evidence', targetId: 'E-01' })));
+  assert.match(r[0]!, /may not present_evidence/);
 });
 
 test('missing or unknown target', () => {
-  const s = initialState(world);
+  const s = initialState(world, trial);
   assert.match(reject(validateAction(world, s, 'PROSECUTOR', action({ action: 'accuse' })))[0]!, /needs a character targetId/);
   assert.match(reject(validateAction(world, s, 'PROSECUTOR', action({ action: 'accuse', targetId: 'NOBODY' })))[0]!, /unknown character/);
   assert.match(reject(validateAction(world, s, 'PROSECUTOR', action({ action: 'present_evidence', targetId: 'E-09' })))[0]!, /unknown evidence/);
 });
 
 test('unknown evidence in evidenceIds', () => {
-  const r = reject(validateAction(world, initialState(world), 'PROSECUTOR', action({ action: 'speak', evidenceIds: ['E-42'] })));
+  const r = reject(validateAction(world, initialState(world, trial), 'PROSECUTOR', action({ action: 'speak', evidenceIds: ['E-42'] })));
   assert.deepEqual(r, ['unknown evidence E-42']);
 });
 
@@ -83,8 +84,17 @@ test('request_evidence may target evidence the actor cannot yet see', () => {
 });
 
 test('unknown fact, empty message, and the silent exceptions', () => {
-  const s = initialState(world);
+  const s = initialState(world, trial);
   assert.deepEqual(reject(validateAction(world, s, 'PROSECUTOR', action({ action: 'speak', claims: [{ factId: 'F-77', stance: 'assert' }] }))), ['unknown fact F-77']);
   assert.match(reject(validateAction(world, s, 'PROSECUTOR', action({ action: 'speak', publicMessage: '  ' })))[0]!, /needs a publicMessage/);
   assert.equal(validateAction(world, s, 'PROSECUTOR', action({ action: 'wait', publicMessage: '' })).ok, true);
+});
+
+test('an objection needs a character turn in this phase to object to', () => {
+  const s = at({ trialState: 'evidence', expectedActor: 'OPTIMUS' });
+  assert.match(reject(validateAction(world, s, 'OPTIMUS', action({ action: 'object' })))[0]!, /nothing to object to/);
+  s.lastTurn = { characterId: 'PROSECUTOR', action: 'speak', turn: 3, trialState: 'opening', seq: 5, text: 'x' };
+  assert.match(reject(validateAction(world, s, 'OPTIMUS', action({ action: 'object' })))[0]!, /nothing to object to/);
+  s.lastTurn.trialState = 'evidence';
+  assert.equal(validateAction(world, s, 'OPTIMUS', action({ action: 'object' })).ok, true);
 });

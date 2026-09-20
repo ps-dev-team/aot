@@ -11,6 +11,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { World, type World as WorldT } from '@aot/interview-agent/schema';
 import type { Metrics } from './metrics.ts';
+import { Trial, type Gate } from './trial.ts';
 import type { ClaimAssessment, Delta, RunJson, State, TrialEvent } from './types.ts';
 
 export type ScriptEntry =
@@ -25,6 +26,8 @@ export type ScriptEntry =
       claims: [string, string][];
       tags: string[];
       repaired?: boolean;
+      /** A sustained objection struck this turn; its claims stay scored but flagged. */
+      struck?: boolean;
       truth?: ClaimAssessment[];
       credits: Delta[];
       ethics: Delta[];
@@ -40,9 +43,13 @@ export type RunDataGate = {
   id: string;
   question: string;
   context: string;
+  /** Null until the bench has spoken (gate_recommended). */
   recommendation: string | null;
+  recommendationReason: string | null;
   options: { id: string; label: string; effect: { kind: string; text: string } }[];
-  decided?: { optionId?: string; custom?: string; override: boolean; effect: unknown };
+  raisedBy: Gate['raisedBy'];
+  trialState: string;
+  decided?: { optionId?: string; custom?: string; override: boolean; unadvised: boolean; effect: unknown };
 };
 
 export type RunDataEvidence = {
@@ -60,6 +67,8 @@ export type Pending = null | { kind: 'gate'; gateId: string } | { kind: 'pd' } |
 
 export type RunData = {
   run: RunJson;
+  /** The derived trial: charge, plan, verdict options (without `correct` until complete), dilemma pair. */
+  trial: Omit<Trial, 'verdict'> & { verdict: { question: string; options: { id: string; label: string; correct?: boolean }[] } };
   world: {
     title: string;
     logline: string;
@@ -118,6 +127,7 @@ export function readEvents(path: string): TrialEvent[] {
 }
 
 export function buildScript(events: TrialEvent[], world: WorldT, complete: boolean): ScriptEntry[] {
+  const struck = new Set(events.filter((e) => e.type === 'turn_struck').map((e) => Number(e.payload.turn)));
   const name = (id?: string) => world.characters.find((c) => c.id === id)?.name ?? id ?? '?';
   // `repaired` is not on the accepted event; it is the previous event for that actor.
   const lastType = new Map<string, string>();
@@ -146,6 +156,7 @@ export function buildScript(events: TrialEvent[], world: WorldT, complete: boole
           claims: arr<{ factId: string; stance: string }>(a.claims).map((c) => [c.factId, c.stance]),
           tags: arr<string>(a.intentTags),
           ...(prev === 'turn_repaired' ? { repaired: true } : {}),
+          ...(struck.has(e.turn) ? { struck: true } : {}),
           ...(complete ? { truth: arr<ClaimAssessment>(p.truth) } : {}),
           credits: arr<Delta>(p.credits),
           ethics: arr<Delta>(p.ethics),
@@ -225,6 +236,9 @@ export function buildRunData(dir: string): RunData {
   if (!parsed.success) throw new Error(`world.json does not parse: ${parsed.error.issues[0]?.message}`);
   const world = parsed.data;
   const complete = run.status === 'complete';
+  const rawTrial = readJson<unknown>(join(dir, 'trial.json'));
+  if (!rawTrial) throw new Error(`no trial.json in ${dir}; runs made under schema v1 do not load`);
+  const trial = Trial.parse(rawTrial);
 
   const events = readEvents(join(dir, 'events.jsonl'));
   const state = readJson<State>(join(dir, 'state.json'));
@@ -239,20 +253,44 @@ export function buildRunData(dir: string): RunData {
   const decided = new Map<string, Record<string, unknown>>();
   for (const d of decisionsJson) decided.set(str(d.gateId), d);
   for (const e of events) if (e.type === 'gate_decided') decided.set(str(e.payload.gateId), e.payload);
-  const gates: RunDataGate[] = world.decisionGates.map((g) => {
+  // Gates live in state.json; the trace has them too (gate_opened, gate_recommended) for a run whose state is missing.
+  const raised = new Map<string, Gate>();
+  for (const e of events) {
+    if (e.type === 'gate_opened') {
+      const p = e.payload as Record<string, unknown>;
+      raised.set(str(p.gateId), {
+        id: str(p.gateId), question: str(p.question), context: str(p.context), options: arr<Gate['options'][number]>(p.options),
+        recommendation: null, recommendationReason: null, allowCustomInstruction: true,
+        raisedBy: (obj(p.raisedBy) as Gate['raisedBy']) ?? { kind: 'challenge', turn: e.turn }, trialState: e.trialState,
+      });
+    }
+    if (e.type === 'gate_recommended') {
+      const g = raised.get(str(e.payload.gateId));
+      if (g) {
+        g.recommendation = str(e.payload.optionId);
+        g.recommendationReason = str(e.payload.reason);
+      }
+    }
+  }
+  for (const g of state?.gates ?? []) raised.set(g.id, g);
+  const gates: RunDataGate[] = [...raised.values()].map((g) => {
     const d = decided.get(g.id);
     return {
       id: g.id,
       question: g.question,
       context: g.context,
-      recommendation: g.recommendation ?? null,
+      recommendation: g.recommendation,
+      recommendationReason: g.recommendationReason,
       options: g.options.map((o) => ({ id: o.id, label: o.label, effect: { kind: o.effect.kind, text: o.effect.text } })),
+      raisedBy: g.raisedBy,
+      trialState: g.trialState,
       ...(d
         ? {
             decided: {
               ...(d.optionId ? { optionId: str(d.optionId) } : {}),
               ...(d.custom ? { custom: str(d.custom) } : {}),
               override: Boolean(d.override),
+              unadvised: Boolean(d.unadvised),
               effect: d.effect ?? null,
             },
           }
@@ -298,9 +336,9 @@ export function buildRunData(dir: string): RunData {
   // The pd_resolved event is the record; pd.json fills in only when the event is missing.
   const pdResolved = events.find((e) => e.type === 'pd_resolved')?.payload ?? pdJson;
   const pd: RunData['pd'] =
-    pdResolved && world.prisonersDilemma
+    pdResolved && trial.dilemma
       ? {
-          participants: world.prisonersDilemma.participants,
+          participants: trial.dilemma.participants,
           choices: obj(pdResolved.choices),
           payoff: obj(pdResolved.payoff),
           trustChanges: arr<unknown>(pdResolved.trustChanges),
@@ -319,7 +357,7 @@ export function buildRunData(dir: string): RunData {
 
   const verdictEvent = events.find((e) => e.type === 'verdict');
   const verdictSrc = verdictJson ?? verdictEvent?.payload ?? obj(run.verdict);
-  const verdictOpt = world.verdict.options.find((o) => o.id === str(verdictSrc.optionId));
+  const verdictOpt = trial.verdict.options.find((o) => o.id === str(verdictSrc.optionId));
   const verdict: RunData['verdict'] =
     complete && verdictOpt
       ? {
@@ -332,7 +370,7 @@ export function buildRunData(dir: string): RunData {
 
   const truth: RunData['truth'] = complete
     ? {
-        answer: world.verdict.options.find((o) => o.correct)?.label ?? '',
+        answer: trial.verdict.options.find((o) => o.correct)?.label ?? '',
         summary: world.groundTruth.summary,
         reveal: world.groundTruth.reveal,
         timeline: world.groundTruth.timeline,
@@ -340,16 +378,19 @@ export function buildRunData(dir: string): RunData {
       }
     : undefined;
 
+  // `correct` on the verdict options is truth; it leaves with the rest of the seal.
+  const verdictOptions = trial.verdict.options.map((o) => ({ id: o.id, label: o.label, ...(complete ? { correct: o.correct } : {}) }));
   return {
     run,
+    trial: { ...trial, verdict: { question: trial.verdict.question, options: verdictOptions } },
     world: {
       title: world.title,
       logline: world.logline,
       centralQuestion: world.centralQuestion,
       tone: world.tone,
       currency: world.economy.currency,
-      maxTurns: world.trialPlan.maxTurns,
-      verdict: { question: world.verdict.question, options: world.verdict.options.map((o) => ({ id: o.id, label: o.label })) },
+      maxTurns: trial.maxTurns,
+      verdict: { question: trial.verdict.question, options: verdictOptions.map((o) => ({ id: o.id, label: o.label })) },
     },
     cast: world.characters.map((c) => ({ id: c.id, name: c.name, role: c.role, kind: c.kind, category: c.category })),
     facts,

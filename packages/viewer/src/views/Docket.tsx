@@ -18,8 +18,7 @@ function Worlds({ worlds }: { worlds: WorldSummary[] }) {
           <p class="log">{w.logline}</p>
           <div class="meta">
             <span class="chip">{w.characters} in the cast</span>
-            <span class="chip">{w.gates} gates</span>
-            <span class="chip">{w.maxTurns} turns max</span>
+            <span class="chip">{w.evidence} exhibits</span>
             <a class={`chip${w.runs ? ' ex' : ''}`} href={href('docket', {}, { world: w.slug })}>
               {w.runs} {w.runs === 1 ? 'run' : 'runs'}
             </a>

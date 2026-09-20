@@ -13,6 +13,7 @@ import { Player, newEntries, type PlayerState } from '../court/player.ts';
 import type { RunData, ScriptEntry, TurnEntry } from '../court/types.ts';
 
 const PHASES = ['opening', 'evidence', 'examination', 'closing', 'verdict', 'reveal'];
+const trialOf = (d: RunData): RunData['trial'] | null => d.trial ?? null;
 const isLive = (d: RunData) => d.run.status !== 'complete' && d.run.status !== 'failed';
 const reduced = () => {
   try {
@@ -104,6 +105,10 @@ export default function View({ route }: { route: Route }) {
     m.set(COURT_ID, 'The Court');
     return (x: string) => m.get(x) ?? x;
   }, [data]);
+  const trial = data ? trialOf(data) : null;
+  // A phase with no speakers is not in the trial; the strip still ends with verdict and reveal.
+  const phases = [...(trial?.phases.map((p) => p.id) ?? PHASES.slice(0, 4)), 'verdict', 'reveal'];
+  const verdictQ = trial?.verdict ?? { question: data?.world.centralQuestion ?? '', options: [] as { id: string; label: string }[] };
   const halt = ps?.halt ?? null;
   const gate = halt?.kind === 'gate' ? (data?.gates.find((g) => g.id === halt.gateId) ?? null) : null;
   const pendingPd = live && data?.pending?.kind === 'pd' && ps?.waiting;
@@ -127,7 +132,7 @@ export default function View({ route }: { route: Route }) {
 
   useEffect(() => {
     if (!data) return;
-    document.title = `${report ? 'reveal' : (ps?.phase ?? data.run.trialState)} · turn ${ps?.turn ?? 0}/${data.world.maxTurns} — ${data.world.title}`;
+    document.title = `${report ? 'reveal' : (ps?.phase ?? data.run.trialState)} · turn ${ps?.turn ?? 0}/${trialOf(data)?.maxTurns ?? '?'} — ${data.world.title}`;
     return () => {
       document.title = 'Agent on Trial';
     };
@@ -221,6 +226,7 @@ export default function View({ route }: { route: Route }) {
               {gate ? (
                 <GateModal
                   gate={posted === gate.id ? { ...gate, decided: undefined } : gate}
+                  name={names}
                   live={live && (!gate.decided || posted === gate.id)}
                   onDecide={live && (!gate.decided || posted === gate.id) ? async (body) => {
                     setPosted(gate.id);
@@ -235,12 +241,12 @@ export default function View({ route }: { route: Route }) {
                 />
               ) : null}
               {halt?.kind === 'verdict' && !lockedHere && !report ? (
-                <VerdictModal question={data.world.verdict.question} options={data.world.verdict.options} recorded={data.verdict} onContinue={() => setReport(true)} />
+                <VerdictModal question={verdictQ.question} options={verdictQ.options} recorded={data.verdict} onContinue={() => setReport(true)} />
               ) : null}
               {askVerdict ? (
                 <VerdictModal
-                  question={data.world.verdict.question}
-                  options={data.world.verdict.options}
+                  question={verdictQ.question}
+                  options={verdictQ.options}
                   onLock={async (body) => {
                     await api.verdict(slug, id, body);
                     setLockedHere(true);
@@ -276,7 +282,7 @@ export default function View({ route }: { route: Route }) {
               <button class="court-pbtn" disabled={!ps.canAdvance} onClick={() => p.advance()}>Next turn ▸</button>
             )}
             <div class="phases">
-              {PHASES.map((ph) => {
+              {phases.map((ph) => {
                 const a = PHASES.indexOf(ph);
                 const cur = PHASES.indexOf(ps.phase);
                 return <span key={ph} class={`ph${a < cur ? ' done' : ''}${a === cur ? ' now' : ''}`}>{ph}</span>;
@@ -284,7 +290,7 @@ export default function View({ route }: { route: Route }) {
             </div>
             <span class="sp" />
             {ps.mode === 'manual' ? <span class="court-hint">click the room or press space</span> : null}
-            <span>turn <b>{ps.turn}</b>/{data.world.maxTurns}</span>
+            <span>turn <b>{ps.turn}</b>/{trial?.maxTurns ?? '?'}</span>
           </div>
         </div>
 

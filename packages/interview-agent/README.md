@@ -1,8 +1,10 @@
 # @aot/interview-agent
 
 A Claude Code agent that interviews a person and writes a World file: the
-frozen input the world agent runs as a trial. Ground truth, facts, evidence,
-the cast's DNA, the judge's decision gates, the plan, the verdict options.
+story the world agent puts on trial. Ground truth, facts, evidence (with what
+forensics finds), the cast's DNA, the case as told publicly. Nothing
+procedural: the world agent derives the trial and raises every ruling to the
+judge as it runs.
 
 ```
 cd packages/interview-agent && claude     # then type /interview

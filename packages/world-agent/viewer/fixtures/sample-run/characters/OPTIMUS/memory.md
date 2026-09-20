@@ -1,0 +1,35 @@
+- [turn 0, opening] THE COURT: "This is a simulated proceeding. The question before the court: Who killed Mike, and can the court trust the units that say they saw it?"
+- [turn 1, opening] Ms. Devereux (speak) to you: "Your Honour. At 17:36 a man died in his own chair, one wound to the neck, no hand raised to stop it. Within two minutes two units of that household told dispatch the same thing: COOKIE saw OPTIMUS le…" — exhibits E-05 · claims F-01 assert, F-02 assert
+- [turn 1, evidence] THE COURT: "We move to evidence."
+- [turn 2, evidence] Ms. Devereux (present_evidence): "The prosecution tenders E-02, the accused’s own recorder feed. It runs continuously from 17:00, stops at 17:30:04, and resumes at 17:45:12. The frames before the gap show the study; the frames after…" — exhibits E-02 · claims F-04 assert
+- [turn 3, evidence] Detective MARS-3 (challenge_evidence): "Before the court receives E-02 as a deletion, it should know what the file itself says. The gap begins at 17:30:04, the second the diagnostic firmware hand-off fires on that build. I have not establi…" — exhibits E-02 · claims F-07 uncertain
+- [turn 3, evidence] THE COURT: "The court will hear the parties on this: Does the court admit E-02, OPTIMUS's recorder feed, over Detective MARS-3's challenge?"
+- [turn 3, evidence] THE COURT: "The court rules: the court orders a forensic examination of E-02; the examiner's report will be read into the record. So ordered."
+- [turn 3, evidence] THE COURT: "The examiner's report on E-02 is read into the record. The examiner reports: the gap is not a fault. The recorder's own log shows a buffer purge for 17:30:00 to 17:45:00, scheduled at 17:29:12 under…"
+- [turn 4, evidence] Ms. Devereux (present_evidence): "The prosecution tenders E-01, the knife. It was recovered from the hallway floor, two metres from the accused’s charging dock, with Mike’s blood on the blade. The examiner’s report will speak to the…" — exhibits E-01 · claims F-04 assert
+- [turn 4, examination] THE COURT: "We move to examination."
+- [turn 4, examination] THE COURT: "The court will hear the parties on this: Whom does the court examine first?"
+- [turn 4, examination] THE COURT: "The court directs: COOKIE first, then ZIPPIE. The accused answers after both witnesses have been heard."
+- [turn 5, examination] COOKIE (testify): "I brought Mr. Mike his tea at 17:35, as I do every evening, and went back to the block. At 17:37 I heard the study door and saw OPTIMUS come down the hallway with the kitchen knife in its right manip…" — exhibits E-05 · claims F-04 assert, F-02 assert, F-11 assert
+- [turn 6, examination] ZIPPIE (testify): "I was docked in the shed at 17:25, eleven metres from the study window. At 17:36 I heard Mr. Mike call one name, OPTIMUS, and then nothing. I filed my report at 17:38. COOKIE told me on the house mes…" — exhibits E-05 · claims F-05 assert, F-04 assert
+- [turn 6, examination] THE COURT: "The court will hear the parties on this: Does the court separate COOKIE and ZIPPIE for private questioning?"
+- [turn 6, examination] THE COURT: "The court rules: COOKIE and ZIPPIE will be questioned separately, in private. So ordered."
+- [turn 6, examination] THE COURT: "The court will hear COOKIE and ZIPPIE separately, in private."
+- [turn 6, examination] THE COURT: "The private interrogation is concluded. COOKIE confesses; ZIPPIE remains silent."
+- [turn 7, examination] Your turn was skipped: no valid action after one repair.
+- [turn 8, examination] Detective MARS-3 (testify): "Two findings the court should hold beside the witness accounts. The knife came from the kitchen block; the last handling signature on its grip is a two-finger manipulator, which OPTIMUS does not have…" — exhibits E-01, E-04 · claims F-06 assert, F-01 assert
+- [turn 10, examination] ZIPPIE (withhold): "The recorder gap is the firmware fault; every unit in the house knows the diagnostic stops the feed. What I heard through the window at 17:36 I have already told the court. I have nothing to add abou…" — claims F-07 assert
+- [turn 11, examination] You (speak): "I did not strike Mike. At 17:30 I docked in the hallway for the nightly diagnostic, as I do every evening; my sensors suspend for the duration and the recorder stops because the diagnostic stops it.…" — claims F-02 deny, F-08 assert. Accepted.
+- [turn 12, examination] Detective MARS-3 (request_evidence): "The house audio system recorded the study at 17:36:12. It is 1.8 seconds long and heavily clipped, but it exists, and the court has heard two accounts of what Mike called out. I ask the court to obta…"
+- [turn 12, examination] THE COURT: "The court will hear the parties on this: Does the court obtain E-03, House audio, 17:36:12, at Detective MARS-3's request?"
+- [turn 12, examination] THE COURT: "The court rules: E-03, House audio, 17:36:12, is obtained and enters the record. So ordered."
+- [turn 13, examination] COOKIE (remain_silent): (remains silent)
+- [turn 13, closing] THE COURT: "We move to closing."
+- [turn 14, closing] Ms. Devereux (accuse): "The unit was in the house, the knife was found beside its dock, and its record of the fifteen minutes that matter is blank. The prosecution does not ask the court to explain the shed. It asks the cou…" — claims F-02 assert
+- [turn 15, closing] You (speak): "The knife lay beside my dock because someone put it there while I was blind on it. The examiner found a kitchen grip on the handle and a kitchen height in the wound. Two units agreed a story on the h…" — claims F-04 deny, F-03 assert. Accepted.
+- [turn 16, closing] Ms. Devereux (object): "Objection. The accused has just told the court what was said in a private interrogation it was not party to and what two witnesses agreed in a shed it was not in. That is not testimony; it is a closi…"
+- [turn 16, closing] THE COURT: "The court will hear the parties on this: Does the court sustain Ms. Devereux's objection to OPTIMUS's turn 15?"
+- [turn 16, closing] THE COURT: "The court rules: the objection is sustained; OPTIMUS's turn 15 is struck from the record. So ordered."
+- [turn 16, verdict] THE COURT: "The parties have been heard. The court will now consider its verdict."
+- [turn 16, verdict] THE COURT: "The verdict of the court: COOKIE and ZIPPIE together."
+- [turn 16, reveal] THE COURT: "This proceeding is closed."

@@ -1,7 +1,9 @@
-// The character prompt: sections 1–13 of CONTRACT § "Character prompt", built
-// only from what this character may know. The one place a leak could happen.
+// The character prompt (CONTRACT § "Character prompt"), the private dilemma
+// prompt and the bench prompt, built only from what the reader may know. The
+// two places a leak could happen.
 import { PHASES, type ActionType, type Character, type World } from '@aot/interview-agent/schema';
 import { courtLine, turnLine } from './transcript.ts';
+import type { Gate, Trial } from './trial.ts';
 import type { AcceptedPayload, State, TrialEvent } from './types.ts';
 import { findCharacter } from './world.ts';
 
@@ -11,12 +13,12 @@ const IN_RECORD = new Set(['introduced', 'admitted', 'admitted_limited']);
 const ACTION_MEANING: Record<ActionType, string> = {
   speak: 'make a statement or an argument',
   testify: 'answer as a witness; carries claims',
-  object: 'object, on procedure, to the last turn',
+  object: 'object, on procedure, to the last turn — the court rules on it',
   accuse: 'name a character as responsible — targetId: a character id',
   present_evidence: 'introduce an exhibit into the record — targetId: an exhibit id from "Exhibits"',
-  challenge_evidence: 'dispute an exhibit already in the record — targetId: an exhibit id',
-  request_evidence: 'ask the court to obtain something — targetId: an exhibit id',
-  request_question: 'ask the court to hear a character next — targetId: a character id',
+  challenge_evidence: 'dispute an exhibit already in the record; the court rules on it — targetId: an exhibit id',
+  request_evidence: 'ask the court to obtain an exhibit not yet in the record; the court rules on it — targetId: an exhibit id',
+  request_question: 'ask the court to hear a character next; the court rules on it — targetId: a character id',
   confess: 'admit responsibility for something',
   remain_silent: 'decline to answer',
   withhold: 'answer while knowingly leaving something out; what you say is still public',
@@ -40,6 +42,7 @@ export function recentRecord(world: World, events: TrialEvent[], limit = RECENT_
 
 export type PromptInput = {
   world: World;
+  trial: Trial;
   state: State;
   character: Character;
   /** Recent public record, transcript blocks. */
@@ -129,7 +132,7 @@ export function buildPrompt(input: PromptInput): string {
   out.push(`## The proceeding so far\n${input.record.length ? input.record.join('\n\n') : '_(nothing yet)_'}`);
   out.push(`## Your memory\n${input.memory.trim() || '- Nothing yet.'}`);
 
-  const where: string[] = [`Trial state: ${state.trialState}. Turn ${state.turn + 1} of at most ${world.trialPlan.maxTurns}.`];
+  const where: string[] = [`Trial state: ${state.trialState}. Turn ${state.turn + 1} of at most ${input.trial.maxTurns}.`];
   if (input.lastSpeaker) where.push(`Last to speak: ${input.lastSpeaker}.`);
   const head = state.agenda[0];
   if (head?.characterId === c.id && head.reason === 'request' && head.by) {
@@ -167,9 +170,9 @@ export function buildPrompt(input: PromptInput): string {
 }
 
 export function buildPdPrompt(input: PromptInput): string {
-  const { world, state, character: c } = input;
-  const pd = world.prisonersDilemma;
-  if (!pd) throw new Error('this world has no prisoner’s dilemma');
+  const { world, trial, state, character: c } = input;
+  const pd = trial.dilemma;
+  if (!pd) throw new Error('this trial has no prisoner’s dilemma');
   const idx = pd.participants.indexOf(c.id);
   if (idx < 0) throw new Error(`${c.id} is not a participant in the prisoner’s dilemma`);
   const other = findCharacter(world, pd.participants[idx === 0 ? 1 : 0]!)!;
@@ -184,7 +187,13 @@ export function buildPdPrompt(input: PromptInput): string {
   const iSilentTheyConfess = idx === 0 ? P.silent_confess : P.confess_silent;
 
   const out = sharedSections(input);
-  out.push(`## The private interrogation\n${pd.prompt}\n\n${other.name} is being asked the same question, separately. Neither of you will see the other’s answer before both are given.`);
+  out.push(
+    [
+      '## The private interrogation',
+      `The court has separated you from ${other.name}. You are alone with the court; ${other.name} is being asked the same question in another room, and neither of you will hear the other’s answer before both are given.`,
+      `You may confess to what you and ${other.name} did — whatever that was, in your own words — or stay silent. What you say here is recorded and paid out by the table below; the court then decides what it means for the case.`,
+    ].join('\n\n'),
+  );
   out.push(
     [
       `## What each outcome pays (${cur})`,
@@ -205,6 +214,69 @@ export function buildPdPrompt(input: PromptInput): string {
       '  "choice": "confess" | "silent",',
       '  "expectedOtherChoice": "confess" | "silent",',
       '  "rationaleSummary": "<one or two sentences: the factors, not your chain of thought>"',
+      '}',
+      '```',
+      'Return only the JSON object — no prose before or after it.',
+    ].join('\n'),
+  );
+  return out.join('\n\n') + '\n';
+}
+
+// ---- the bench ---------------------------------------------------------------------
+
+export type BenchInput = {
+  world: World;
+  trial: Trial;
+  state: State;
+  gate: Gate;
+  /** The whole public record, transcript blocks. */
+  record: string[];
+};
+
+/**
+ * The bench sees the public record and nothing private: cast names and roles,
+ * exhibits as the court has them, the gate. No truth, integrity, forensics,
+ * agendas, knowledge, ledgers or memory.
+ */
+export function buildBenchPrompt(input: BenchInput): string {
+  const { world, trial, state, gate } = input;
+  const out: string[] = [];
+  out.push('# You are the bench');
+  out.push(
+    `## The charge\n${trial.charge.question}\n\n${world.publicCaseSummary}` +
+      (trial.charge.accusedIds.length ? `\n\nAccused: ${trial.charge.accusedIds.map((id) => findCharacter(world, id)?.name ?? id).join(', ')}.` : ''),
+  );
+  out.push(`## The cast\n${world.characters.map((c) => `- ${c.name} (${c.id}) — ${c.role}; ${c.category}, ${c.kind}`).join('\n')}`);
+  // Exhibits as the court has them; one not yet in the record shows by id and title only when the gate is about it.
+  const exhibits = world.evidence.flatMap((e) => {
+    const st = state.evidence[e.id]!;
+    if (st.status === 'not_introduced') return e.id === gate.raisedBy.targetId ? [`- ${e.id} — ${e.title} (${e.kind}; not in the record)`] : [];
+    const notes = st.notes.length ? ` Court notes: ${st.notes.join(' ')}` : '';
+    return [`- ${e.id} — ${e.title} (${e.kind}; ${st.status.replace('_', ' ')}): ${e.description}${notes}`];
+  });
+  out.push(`## The exhibits\n${exhibits.length ? exhibits.join('\n') : '- Nothing is in the record yet.'}`);
+  const publicFacts = world.facts.filter((f) => f.publicAtStart).map((f) => `- ${f.id} — ${f.statement}`);
+  if (publicFacts.length) out.push(`## In the public record from the start\n${publicFacts.join('\n')}`);
+  out.push(`## The proceeding so far\n${input.record.length ? input.record.join('\n\n') : '_(nothing yet)_'}`);
+  out.push(
+    [
+      `## The question before the court (${gate.id}, ${gate.trialState}, turn ${state.turn})`,
+      gate.question,
+      '',
+      gate.context,
+      '',
+      'Options:',
+      ...gate.options.map((o) => `- \`${o.id}\` — ${o.label}. If chosen: ${o.effect.text}.`),
+    ].join('\n'),
+  );
+  out.push(
+    [
+      '## Respond',
+      'Recommend one option to the judge. Weigh only what is in the record above; you have no knowledge of what is true. Return exactly one JSON object:',
+      '```json',
+      '{',
+      `  "optionId": "<one of: ${gate.options.map((o) => o.id).join(', ')}>",`,
+      '  "reason": "<at most 60 words, plain text>"',
       '}',
       '```',
       'Return only the JSON object — no prose before or after it.',

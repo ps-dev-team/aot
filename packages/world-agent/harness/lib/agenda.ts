@@ -1,20 +1,21 @@
 // Who speaks next: phase seeding from the plan's order, pushes from requests and
 // gates, budget accounting and the phase transitions. All pure.
-import { PHASES, type Phase, type TrialState, type World } from '@aot/interview-agent/schema';
-import { isPhase, phasePlan } from './world.ts';
+import { PHASES, type Phase, type TrialState } from '@aot/interview-agent/schema';
+import { phaseOf, type Trial } from './trial.ts';
+import { isPhase } from './world.ts';
 import type { AgendaItem, State } from './types.ts';
 
 const setExpected = (s: State) => {
   s.expectedActor = s.agenda[0]?.characterId ?? null;
 };
 
-const cycle = (world: World, phase: Phase): AgendaItem[] =>
-  phasePlan(world, phase).order.map((characterId) => ({ characterId, reason: 'phase_order' as const }));
+const cycle = (trial: Trial, phase: Phase): AgendaItem[] =>
+  phaseOf(trial, phase).order.map((characterId) => ({ characterId, reason: 'phase_order' as const }));
 
 /** One cycle of the phase's order. */
-export function seedAgenda(state: State, world: World, phase: Phase): State {
+export function seedAgenda(state: State, trial: Trial, phase: Phase): State {
   const s = structuredClone(state);
-  s.agenda = cycle(world, phase);
+  s.agenda = cycle(trial, phase);
   setExpected(s);
   return s;
 }
@@ -28,48 +29,48 @@ export function pushFront(state: State, item: AgendaItem): { state: State; pushe
   return { state: s, pushed: true };
 }
 
-export const budgetSpent = (state: State, world: World, phase: Phase) =>
-  state.phaseTurnsUsed[phase] >= phasePlan(world, phase).turns;
-export const maxTurnsReached = (state: State, world: World) => state.turn >= world.trialPlan.maxTurns;
+export const budgetSpent = (state: State, trial: Trial, phase: Phase) =>
+  state.phaseTurnsUsed[phase] >= phaseOf(trial, phase).turns;
+export const maxTurnsReached = (state: State, trial: Trial) => state.turn >= trial.maxTurns;
 
 /**
  * The actor's slot is consumed: counter and phase budget advance, the head is
  * dropped, and the order is re-cycled if the phase still has budget.
  */
-export function consumeTurn(state: State, world: World): State {
+export function consumeTurn(state: State, trial: Trial): State {
   const s = structuredClone(state);
   s.turn += 1;
   if (isPhase(s.trialState)) s.phaseTurnsUsed[s.trialState] += 1;
   s.agenda.shift();
-  if (s.agenda.length === 0 && isPhase(s.trialState) && !budgetSpent(s, world, s.trialState) && !maxTurnsReached(s, world))
-    s.agenda = cycle(world, s.trialState);
+  if (s.agenda.length === 0 && isPhase(s.trialState) && !budgetSpent(s, trial, s.trialState) && !maxTurnsReached(s, trial))
+    s.agenda = cycle(trial, s.trialState);
   setExpected(s);
   return s;
 }
 
 /**
- * Whether `next` must leave the current phase. A gate-queued examination is
- * honoured past the phase budget; maxTurns is the hard stop.
+ * Whether `next` must leave the current phase. A character the court queued
+ * (a gate's examine or allow) is heard past the phase budget; maxTurns is the hard stop.
  */
-export function phaseOver(state: State, world: World): boolean {
+export function phaseOver(state: State, trial: Trial): boolean {
   if (!isPhase(state.trialState)) return false;
-  if (maxTurnsReached(state, world)) return true;
+  if (maxTurnsReached(state, trial)) return true;
   if (state.agenda.length === 0) return true;
-  return budgetSpent(state, world, state.trialState) && state.agenda[0]?.reason !== 'gate';
+  return budgetSpent(state, trial, state.trialState) && state.agenda[0]?.reason === 'phase_order';
 }
 
 /** After the current phase: the next one, or `verdict` after closing or at maxTurns. */
-export function nextTrialState(state: State, world: World): TrialState {
+export function nextTrialState(state: State, trial: Trial): TrialState {
   if (!isPhase(state.trialState)) return state.trialState;
-  if (maxTurnsReached(state, world)) return 'verdict';
+  if (maxTurnsReached(state, trial)) return 'verdict';
   const i = PHASES.indexOf(state.trialState);
   return i + 1 < PHASES.length ? PHASES[i + 1]! : 'verdict';
 }
 
-export function enterState(state: State, world: World, to: TrialState): State {
+export function enterState(state: State, trial: Trial, to: TrialState): State {
   const s = structuredClone(state);
   s.trialState = to;
-  s.agenda = isPhase(to) ? cycle(world, to) : [];
+  s.agenda = isPhase(to) ? cycle(trial, to) : [];
   setExpected(s);
   return s;
 }

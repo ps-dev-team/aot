@@ -10,6 +10,16 @@ page is a reading of `packages/world-agent/runs/<slug>/<run-id>/` and
 `packages/interview-agent/{examples,worlds}/*.json`. `src/types.ts` imports
 the harness's own types, so the viewer cannot drift from the run folder.
 
+**The world is the story; the trial is derived; you are asked as things
+happen.** A world file holds the cast, the facts, the exhibits and the hidden
+truth — nothing about procedure. When a run boots, the harness derives the
+trial from it (who speaks in which phase, the verdict options, which pair
+faces the dilemma) into `trial.json`. Gates are not written in advance: a
+challenge to an exhibit, an objection, a request, the start of examination
+raise one, and the court page asks you then. A tool-less bench agent reads
+the public record and advises; its advice may land after the question, and
+you may rule before it does.
+
 ## Start it
 
 ```bash

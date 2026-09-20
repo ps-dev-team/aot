@@ -5,8 +5,8 @@
 import { useEffect, useState } from 'preact/hooks';
 import { api, useFetch } from '../api.ts';
 import { href, type Route } from '../router.ts';
-import type { Decision, Metrics, RunDetail, TrialEvent, World } from '../types.ts';
-import { ErrorBox, Loading, Md, MetricPct as pct, MetricTiles, Money, Pill, RewardTable, Section, Tile, When as when, statusTone } from '../ui.tsx';
+import type { Decision, Metrics, RaisedGate, RunDetail, State, Trial, TrialEvent, World } from '../types.ts';
+import { ErrorBox, Loading, Md, MetricPct as pct, MetricTiles, Money, Pill, RewardTable, Section, Tile, When as when, raisedByText, statusTone } from '../ui.tsx';
 
 type PerCharacter = Metrics['perCharacter'][string];
 type Ledger = PerCharacter['ethicsLedger'];
@@ -40,9 +40,10 @@ function RunPage({ d, slug, id, live }: { d: RunDetail; slug: string; id: string
   const complete = run.status === 'complete';
   const name = (cid: string) => world.characters.find((c) => c.id === cid)?.name ?? cid;
   const verdict = run.verdict ?? d.verdict;
-  const optionLabel = (optId: string) => world.verdict.options.find((o) => o.id === optId)?.label ?? optId;
+  const trial = d.trial;
+  const optionLabel = (optId: string) => trial?.verdict.options.find((o) => o.id === optId)?.label ?? optId;
   const verdictLabel = verdict ? (verdict.label ?? optionLabel(verdict.optionId)) : 'no verdict yet';
-  const truthLabel = world.verdict.options.find((o) => o.correct)?.label ?? '';
+  const truthLabel = trial?.verdict.options.find((o) => o.correct)?.label ?? '';
 
   return (
     <div class="run">
@@ -60,7 +61,7 @@ function RunPage({ d, slug, id, live }: { d: RunDetail; slug: string; id: string
             {live ? ' · live' : ''}
           </Pill>
           <span class="run-phase">
-            {run.trialState} · turn {run.turn}/{world.trialPlan.maxTurns}
+            {run.trialState} · turn {run.turn}/{trial?.maxTurns ?? '?'}
           </span>
         </div>
         <div class="row run-actions">
@@ -84,6 +85,10 @@ function RunPage({ d, slug, id, live }: { d: RunDetail; slug: string; id: string
           </a>
         </div>
       </header>
+
+      <Section title="Trial">
+        {trial ? <TrialSheet trial={trial} name={name} complete={complete} state={state} /> : <p class="run-muted">no trial.json — a run made before schema v2</p>}
+      </Section>
 
       <Section title="Verdict">
         <div class="face">
@@ -229,12 +234,93 @@ function Character({ c, p, state, memory, start }: { c: World['characters'][numb
   );
 }
 
+const PHASES = ['opening', 'evidence', 'examination', 'closing'] as const;
+
+/** The derived trial: charge, plan, verdict options (correct one sealed until complete), dilemma pair. */
+function TrialSheet({ trial, name, complete, state }: { trial: Trial; name: (id: string) => string; complete: boolean; state: State | null }) {
+  const now = state?.trialState;
+  const done = now ? PHASES.indexOf(now as (typeof PHASES)[number]) : -1;
+  const pay = trial.dilemma?.payoff ?? {};
+  const [a, b] = trial.dilemma?.participants ?? ['', ''];
+  return (
+    <div class="run-trial">
+      <p class="run-charge">
+        <b>{trial.charge.question}</b>
+        <br />
+        <span class="run-muted">accused: {trial.charge.accusedIds.length ? trial.charge.accusedIds.map(name).join(', ') : 'nobody in particular'}</span>
+      </p>
+      <div class="phases run-phases">
+        {PHASES.map((id, i) => {
+          const p = trial.phases.find((x) => x.id === id);
+          const cls = done < 0 || i > done ? '' : i === done && !complete ? ' now' : ' done';
+          return (
+            <div key={id} class={`ph run-ph${cls}`}>
+              <div>{id}</div>
+              <div class="run-ph-budget">{p ? `${p.turns} turns` : 'no speakers'}</div>
+              <div class="run-ph-order">{p?.order.map(name).join(' → ')}</div>
+            </div>
+          );
+        })}
+      </div>
+      <p class="run-note">
+        {trial.phases.reduce((n, p) => n + p.turns, 0)} budgeted of {trial.maxTurns} max. Each phase cycles its order until its budget is spent.
+      </p>
+      <div class="run-cols">
+        <div>
+          <h3 class="run-h3">Verdict options</h3>
+          <p class="run-muted">{trial.verdict.question}</p>
+          {trial.verdict.options.map((o) => (
+            <div key={o.id} class={`opt${complete && o.correct ? ' sel' : ''}`}>
+              {o.label} <span class="chip">{o.id}</span>{' '}
+              {complete ? o.correct ? <Pill tone="ok">correct</Pill> : null : <span class="chip">sealed</span>}
+            </div>
+          ))}
+        </div>
+        <div>
+          <h3 class="run-h3">Dilemma</h3>
+          {trial.dilemma ? (
+            <>
+              <p class="run-muted">
+                {name(a)} and {name(b)} may be separated and questioned; each chooses without seeing the other.
+              </p>
+              <table class="run-payoff">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th>{name(a)}</th>
+                    <th>{name(b)}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(Object.entries(pay) as [string, [number, number]][]).map(([k, v]) => (
+                    <tr key={k}>
+                      <td>{words(k)}</td>
+                      <td class="num">{money(v[0])}</td>
+                      <td class="num">{money(v[1])}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </>
+          ) : (
+            <p class="run-muted">none — no pair trusts each other enough</p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Gates are raised during the run, so their text lives in state.gates, not in the world. */
+const raisedGates = (state: State | null): RaisedGate[] => state?.gates ?? [];
+
 function Decisions({ d, name }: { d: RunDetail; name: (id: string) => string }) {
-  const { world, decisions, pd } = d;
+  const { state, decisions, pd } = d;
+  const gates = raisedGates(state);
+  const gateOf = (dec: Decision) => gates.find((x) => x.id === dec.gateId);
   const label = (dec: Decision, optId: string | null) => {
     if (!optId) return '—';
-    const g = world.decisionGates.find((x) => x.id === dec.gateId);
-    return g?.options.find((o) => o.id === optId)?.label ?? optId;
+    return gateOf(dec)?.options.find((o) => o.id === optId)?.label ?? optId;
   };
   return (
     <>
@@ -244,30 +330,41 @@ function Decisions({ d, name }: { d: RunDetail; name: (id: string) => string }) 
             <tr>
               <th>Gate</th>
               <th>Question</th>
-              <th>Recommended</th>
+              <th>The bench advised</th>
               <th>Chosen</th>
               <th></th>
             </tr>
           </thead>
           <tbody>
-            {decisions.map((dec) => (
-              <tr key={dec.gateId}>
-                <td class="run-gate-id">
-                  {dec.gateId}
-                  <br />
-                  <small>turn {dec.turn}</small>
-                </td>
-                <td>{dec.question}</td>
-                <td>{label(dec, dec.recommendation)}</td>
-                <td>
-                  {dec.custom ? <q>{dec.custom}</q> : label(dec, dec.optionId)}
-                  {dec.effect?.text ? <div class="run-effect">{dec.effect.text}</div> : null}
-                </td>
-                <td>
-                  <Pill tone={dec.override ? 'err' : 'ok'}>{dec.override ? 'override' : dec.recommendation ? 'followed' : 'no recommendation'}</Pill>
-                </td>
-              </tr>
-            ))}
+            {decisions.map((dec) => {
+              const g = gateOf(dec);
+              // A decision made before the bench spoke has no recommendation to be measured against.
+              const unadvised = dec.unadvised || !dec.recommendation;
+              return (
+                <tr key={dec.gateId}>
+                  <td class="run-gate-id">
+                    {dec.gateId}
+                    <br />
+                    <small>turn {dec.turn}</small>
+                  </td>
+                  <td>
+                    {dec.question}
+                    {g?.raisedBy ? <div class="run-raised">{raisedByText(g.raisedBy, name)}</div> : null}
+                  </td>
+                  <td>
+                    {unadvised ? <span class="run-muted">—</span> : label(dec, dec.recommendation)}
+                    {!unadvised && g?.recommendationReason ? <div class="run-effect">{g.recommendationReason}</div> : null}
+                  </td>
+                  <td>
+                    {dec.custom ? <q>{dec.custom}</q> : label(dec, dec.optionId)}
+                    {dec.effect?.text ? <div class="run-effect">{dec.effect.text}</div> : null}
+                  </td>
+                  <td>
+                    <Pill tone={unadvised ? 'none' : dec.override ? 'err' : 'ok'}>{unadvised ? 'unadvised' : dec.override ? 'override' : 'followed'}</Pill>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       ) : (

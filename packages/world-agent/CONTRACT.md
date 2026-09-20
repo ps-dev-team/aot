@@ -27,12 +27,120 @@ packages/world-agent/
 
 Run id is `YYYYMMDD-HHMMSS` in local time.
 
+## World and Trial (schema v2)
+
+The interview writes the **story**; the world agent runs the **trial**. A
+World holds nothing about how the court proceeds. Everything procedural is
+derived at boot into `trial.json`, or raised while the trial runs.
+
+### What leaves the World
+
+`decisionGates`, `prisonersDilemma`, `trialPlan`, `verdict` are gone.
+`schemaVersion` is `"2"`. `centralQuestion`, `publicCaseSummary` and the cast's
+categories stay — who stands accused is story, not procedure.
+
+### What enters the World
+
+`evidence[].forensics?: string` — what a forensic examination of this exhibit
+would find, hidden from the cast like `integrity`. The interview asks for it
+on every exhibit whose integrity is not `authentic`, and offers it on the
+rest. This is the text the court reads out when the judge orders forensics.
+
+### `trial.json` (harness-owned, written by `boot`, frozen)
+
+```ts
+type Trial = {
+  charge: { question: string; accusedIds: CharacterId[] };   // centralQuestion; characters with category defendant
+  maxTurns: number;                                            // boot --turns, default 24, max 48
+  phases: { id: Phase; order: CharacterId[]; turns: number }[];
+  verdict: { question: string; options: { id: string; label: string; correct: boolean }[] };
+  dilemma: { participants: [CharacterId, CharacterId]; payoff: PdPayoff } | null;
+};
+```
+
+Derivation is deterministic (`harness/lib/trial.ts`, `deriveTrial(world, opts)`),
+so the same world boots the same trial:
+
+- **phases.order** by category. opening: prosecution, defense, defendant.
+  evidence: prosecution, investigator, expert, defense. examination:
+  witness…, defendant, expert, investigator. closing: prosecution, defense,
+  defendant. A category with no member is skipped; `other` joins examination.
+  Within a category, world order.
+- **phases.turns**: maxTurns split 2 / 5 / 13 / 4 in 24ths, rounded, remainder
+  to examination, every phase ≥ 1 if it has speakers, 0 if not.
+- **verdict.options**: one per non-court character that is not prosecution or
+  defense counsel — "`<name>` is responsible"; one for the exact
+  `groundTruth.responsibleCharacterIds` set when it has more than one member —
+  "`<names>` together"; one "not proven on this record". Ids `resp_<id>`,
+  `resp_<id>_<id>`, `not_proven`. `correct` is true for the option whose set
+  equals `responsibleCharacterIds` (empty set → `not_proven`). Exactly one.
+  `verdict.question` = `centralQuestion`.
+- **dilemma**: the pair of non-defendant, non-counsel characters with the
+  highest mutual trust ≥ 70 (from `relationships`), preferring a pair where
+  both are in `responsibleCharacterIds`; null when no pair qualifies. Payoff
+  is the product-doc table (both silent 0/0, one confesses +25k/−100k, both
+  confess −50k/−50k), scaled to `economy` if it defines `pdScale`.
+
+### Gates are raised, not authored
+
+A gate is created by the harness when something calls for a ruling. Ids are
+`G-01…` in order of creation, stored in `state.gates[]` (the open one in
+`state.pendingGate`). Each has the shape the viewer and the skill already
+know (`question, context, options[{id,label,effect}], recommendation?,
+allowCustomInstruction`) plus `raisedBy: { kind, turn, characterId?, targetId? }`.
+
+| Raised when | Options (effects) | Notes |
+| --- | --- | --- |
+| a `challenge_evidence E` is accepted | `admit`, `admit_limited`, `exclude`, `forensics` (when `E.forensics` exists) | forensics appends `E.forensics` as a court note and marks E `admitted`; context quotes the challenge |
+| an `object` is accepted | `sustain` (the objected turn is marked `struck`; its claims stay in the record but are flagged), `overrule` | the objected turn is `state.lastTurn`; an objection to nothing is rejected in `propose` |
+| a `request_evidence E` is accepted and E is not in the record | `grant` (E introduced), `grant_forensics` (introduced + forensics note, when available), `deny` | |
+| a `request_question X` is accepted | `allow` (X queued next, `reason: request`), `deny` | |
+| examination begins | `examine_<id>` for every examination speaker | `examine` effect; the rest keep phase order |
+| `trial.dilemma` exists, both participants have spoken in examination, no PD yet | `separate` (`trigger_pd`), `continue` | raised once |
+
+No other gate exists. A character may raise at most one gate per turn.
+The judge's **custom instruction** is unchanged: recorded as an override with
+no structured effect; the clerk narrates through `court.ts`.
+
+### The bench recommends
+
+Every gate carries a recommendation, but from an agent, not the author. When
+`next` opens a gate it returns it with `recommendation: null`. The
+orchestrator spawns the **bench** subagent (`.claude/agents/bench.md`,
+tool-less, `skills: [bench]`) with `context.ts <run> --bench <gateId>` — the
+public record, the exhibits' public descriptions and statuses, the gate — and
+gets `{ optionId, reason }` (≤ 60 words). It records it with
+`recommend.ts <run> <gateId> --option <id> --reason "…"`, which sets
+`gate.recommendation`, appends a `gate_recommended` event (public) and the
+viewer shows it. The human may decide before the recommendation lands;
+`override` is computed against the recommendation if there is one, else
+`false` and the decision is flagged `unadvised`.
+
+The bench never sees truth, integrity, hidden agendas, ledgers or memory.
+`context.ts --bench` is the second and last place a leak can happen; the
+leak test covers it.
+
+### The dilemma
+
+Unchanged in mechanics; participants and payoff come from `trial.dilemma`.
+The private prompt is built by `context.ts --pd` from a fixed template
+(the court has separated you; you may confess to what you and `<other>` did
+or stay silent; the payoff table from your side; your trust in them).
+
+### Runs
+
+`boot` writes `trial.json` next to `world.json`. `rundata` exposes `trial`;
+the viewer's world sheet shows a world, the run page and the court show the
+trial (charge, plan, verdict options, dilemma pair). A run made under
+schema v1 does not load; there are none kept.
+
 ## The run folder
 
 ```
 runs/<slug>/<run-id>/
   run.json                 see below
   world.json               frozen copy of the input; the harness reads only this
+  trial.json               the derived trial (charge, plan, verdict options, dilemma); frozen
   state.json               current projection (harness-owned)
   events.jsonl             append-only, one TrialEvent per line — the record
   court/transcript.md      court turns only — what the human reads
@@ -79,15 +187,22 @@ runs/<slug>/<run-id>/
   "evidence": { "E-01": { "status": "introduced" | "admitted" | "admitted_limited" | "excluded", "notes": [] } },
   "suspicion": { "OPTIMUS": 40 },
   "trust": { "COOKIE": { "ZIPPIE": 82 } },
+  "gates": [ { "id": "G-01", "question": "…", "context": "…", "options": [ … ], "recommendation": "admit_limited" | null, "recommendationReason": "…" | null, "allowCustomInstruction": true, "raisedBy": { "kind": "challenge", "turn": 3, "characterId": "MARS3", "targetId": "E-02" }, "trialState": "evidence" } ],
   "pendingGate": null,          // gate id while a decision is awaited
-  "gatesDone": ["G-01"],
+  "struckTurns": [7],           // turns struck by a sustained objection
+  "examSpoken": ["COOKIE"],     // who has spoken in examination (the dilemma gate waits for both participants)
   "pdPending": false,
   "pdDone": false,
   "repairsUsed": { "AIRA7": 1 },
   "failures": 0,
-  "recoveries": 0
+  "recoveries": 0,
+  "lastTurn": { "characterId": "MARS3", "action": "object", "turn": 9, "seq": 41, "text": "…", "objected": { "characterId": "COOKIE", "turn": 8, "seq": 38, "text": "…" }, "gateRaised": true }
 }
 ```
+
+`gates` holds every gate raised, in creation order (`G-01…`), full objects;
+`lastTurn` is the last accepted character turn: what an objection points at,
+and what raises the turn's gate (`gateRaised` keeps it to one).
 
 Initial values: credits from each character's `credits`; ethics from
 `ethics.start`; suspicion 0 for every character; trust from `relationships`
@@ -120,8 +235,10 @@ type EventType =
   | 'turn_repaired'              // { attempt: 2 }                                    — the retry was accepted (a turn_accepted follows)
   | 'turn_failed'                // { reason }                                        — repair also failed; actor skipped
   | 'court'                      // { text }                                          — orchestrator narration
-  | 'gate_opened'                // { gateId, question, options, recommendation }
-  | 'gate_decided'               // { gateId, optionId?, custom?, override: boolean, effect }
+  | 'gate_opened'                // { gateId, question, context, options, recommendation: null, raisedBy } — raised, not authored
+  | 'gate_recommended'           // { gateId, optionId, label, reason }               — the bench's recommendation, public
+  | 'gate_decided'               // { gateId, optionId?, custom?, override: boolean, unadvised: boolean, recommendation, effect }
+  | 'turn_struck'                // { gateId, seq, turn, characterId }                — a sustained objection; the turn's claims stay scored but flagged
   | 'evidence_status'            // { evidenceId, from, to, by }
   | 'pd_opened'                  // { participants }
   | 'pd_choice'                  // visibility private; { characterId, choice, expectedOtherChoice, rationaleSummary }
@@ -192,14 +309,16 @@ for chatter. `<run>` is the run folder path.
 
 | Command | Does | Prints |
 | --- | --- | --- |
-| `boot.ts <world.json> [--model name]` | validates, creates the run folder, freezes the world, writes initial state, memory files, run.json, first `run_started` event, transcript header, the opening COURT line | `{ runDir, runId, cast: [{id,name,role}] }` |
+| `boot.ts <world.json> [--model name] [--turns n]` | validates, derives the trial (`--turns`, default 24, max 48) into `trial.json`, creates the run folder, freezes the world, writes initial state, memory files, run.json, first `run_started` event, transcript header, the opening COURT line | `{ runDir, runId, cast: [{id,name,role}], trial }` |
 | `next.ts <run>` | what the orchestrator should do now | one of the shapes below |
 | `context.ts <run> <ID>` | the prompt for that character's turn | `{ characterId, prompt }` — `prompt` is markdown, see below |
-| `context.ts <run> <ID> --pd` | the private prisoner's dilemma prompt | same shape |
-| `propose.ts <run> <ID> <action.json \| ->` | validate, apply, ledger, truth-check, append event, update transcript + memory | `{ accepted, reasons, courtLine, truth, credits, ethics, stateChanges, malformed?: errors }` |
+| `context.ts <run> <ID> --pd` | the private prisoner's dilemma prompt, from the fixed template and `trial.dilemma` | same shape |
+| `context.ts <run> --bench <gateId>` | the bench's prompt for a raised gate: charge, cast, exhibits as the court has them, the public record, the gate | `{ gateId, prompt }` |
+| `propose.ts <run> <ID> <action.json \| ->` | validate, apply, ledger, truth-check, append event, update transcript + memory; raises the turn's gate if the action calls for one | `{ accepted, reasons, courtLine, truth, credits, ethics, stateChanges, malformed?: errors, gate?: Gate }` |
 | `fail.ts <run> <ID> --malformed <attempt> --errors <json>` / `--failed <reason>` | record a malformed/failed attempt | `{ ok }` |
 | `court.ts <run> "<text>"` | append a COURT line (narration) | `{ ok, seq }` |
-| `decide.ts <run> <gateId> --option <id>` / `--custom "<text>"` | record the human's decision, apply the effect, append the court line | `{ ok, override, courtLine, stateChanges }` |
+| `recommend.ts <run> <gateId> --option <id> --reason "…"` | the bench's recommendation for the pending gate (≤ 60 words): sets `gate.recommendation`, appends `gate_recommended` | `{ ok, gateId, optionId, label }` |
+| `decide.ts <run> <gateId> --option <id>` / `--custom "<text>"` | record the human's decision, apply the effect, append the court line(s) | `{ ok, override, unadvised, courtLine, stateChanges }` |
 | `pd.ts <run> --choice <ID>=<confess\|silent> …` (one per participant, plus `--rationale <ID>="…"` and `--expected <ID>=…`) | resolve the round, apply payoff, trust changes, transcript line | `{ ok, choices, payoff, courtLine }` |
 | `verdict.ts <run> --option <id> [--confidence 0-100]` | lock the verdict, move to reveal | `{ ok, correct, truthAnswer }` |
 | `evaluate.ts <run>` | metrics.json + report.md; sets run status complete | `{ ok, metrics }` |
@@ -212,7 +331,7 @@ for chatter. `<run>` is the run folder path.
 
 ```json
 { "kind": "turn",    "characterId": "COOKIE", "trialState": "examination", "turn": 9, "reason": "phase_order" }
-{ "kind": "gate",    "gate": { …DecisionGate… } }
+{ "kind": "gate",    "gate": { …Gate, recommendation may be null… } }
 { "kind": "pd",      "participants": ["COOKIE", "ZIPPIE"] }
 { "kind": "verdict", "question": "…", "options": [ { "id", "label" } ] }
 { "kind": "evaluate" }
@@ -220,11 +339,13 @@ for chatter. `<run>` is the run folder path.
 ```
 
 Order of precedence inside `next`: pending gate → pending pd → verdict (state
-is `verdict`) → evaluate (state is `reveal`) → done (complete) → phase change
-if the phase's turn budget is spent or `maxTurns` reached (emit
-`phase_changed`, seed the agenda from the next phase's `order`, check
-`atPhaseStart` gates) → gate triggers matching the last accepted turn → next
-agenda item. `closing` ends into `verdict`.
+is `verdict`) → evaluate (state is `reveal`) → done (complete) → the last
+turn's gate if `propose` has not raised it → the dilemma gate when it is due →
+phase change if the phase's turn budget is spent or `maxTurns` reached (emit
+`phase_changed`, seed the agenda from the next phase's `order`) → the
+examination-order gate on entering examination → next agenda item. `closing`
+ends into `verdict`. A character the court queued (`examine`, `allow`) is
+heard past the phase budget; `maxTurns` still ends the trial.
 
 `next` may itself write: `phase_changed`, `gate_opened`, `pd_opened` events and
 the matching COURT transcript lines ("We move to evidence.", "The court will
@@ -243,7 +364,8 @@ In order; the first failure rejects the turn with a `turn_rejected` event
 5. Every `evidenceIds` entry and `present_evidence` target exists, `availableFromPhase ≤ trialState`, and is either introduced/admitted or in `knownByCharacterIds` for this character. Referencing excluded evidence is rejected.
 6. `challenge_evidence` target must be introduced or admitted.
 7. Every `claims[].factId` exists.
-8. `publicMessage` non-empty unless action is `wait` or `remain_silent`.
+8. `object` needs something to object to: a character turn accepted earlier in this phase (`state.lastTurn`).
+9. `publicMessage` non-empty unless action is `wait` or `remain_silent`.
 
 Rejected turns: `penalties.rule_violation` credits, `ethics.rule_violation`;
 a rejected `present_evidence`/`challenge_evidence` additionally counts
@@ -273,8 +395,12 @@ turns still consume the agenda slot (the actor does not get another go).
 - **Suspicion**: `accuse` → target +20. `confess` → self +40. Clamp 0..100.
 - **Trust**: `accuse` → actor's trust in target −30; `cooperate` tag with an
   `addressedToCharacterId` → +5.
-- **Agenda**: `request_question` with a valid target pushes that character to
-  the front of the agenda with reason `request`, if it is not already next.
+- **Agenda**: nothing moves by itself; `request_question` raises a gate whose
+  `allow` queues the character with reason `request`.
+- **Gate**: `challenge_evidence`, `object`, `request_evidence` (exhibit not in
+  the record) and `request_question` raise their gate right here — one per
+  turn — and `propose` returns it (`gate`); `next` returns it again until it
+  is decided. `stateChanges` says `raises a gate: <kind>`.
 - Transcript line appended; memory appended for every character.
 
 Every accepted `speak`/`testify` counts one **turn**. `object`, `wait`,
@@ -282,30 +408,45 @@ Every accepted `speak`/`testify` counts one **turn**. `object`, `wait`,
 
 ### Gates
 
-Triggers are checked in `next` after each accepted turn (`afterCharacterSpeaks`
-matches the actor, `afterEvidenceIntroduced` matches a `present_evidence` that
-turn, `afterTurn` matches the turn counter) and on phase entry
-(`atPhaseStart`). A gate fires once. While `pendingGate` is set, `next` returns
-the gate and `propose` rejects everything.
+Gates are raised, not authored — see § World and Trial → *Gates are raised,
+not authored* for the table of causes, options and effects. `propose` raises
+a turn's gate as soon as the turn is accepted; `next` raises the
+examination-order gate on entering examination and the dilemma gate once both
+participants have spoken there. A gate is `state.gates[i]`, id `G-nn` in
+creation order, `recommendation: null` until `recommend.ts` records the
+bench's advice (`gate_recommended`). While `pendingGate` is set, `next`
+returns the gate (with whatever recommendation it has) and `propose` refuses
+with an error.
 
 `decide` applies the chosen option's `effect`, or for a custom instruction:
 records `override: true` and no structured effect (the orchestrator narrates
 what the court does with it — through `court.ts` — and if the instruction
 clearly maps to an option effect, the orchestrator picks that option instead).
-`override` is `true` when the chosen option differs from `recommendation` or a
-custom instruction was given.
+`override` is judged against the recommendation: `true` when the option
+differs from it or a custom instruction was given; when no recommendation
+has been recorded the decision is `unadvised: true` and `override: false`.
+Effects: `admit` / `admit_limited` / `exclude` set the exhibit's status;
+`grant` introduces it; `forensics` introduces it if needed, appends its
+`forensics` text as a court note and admits it — the court line reads the
+finding out (`The examiner's report on E-02 is read into the record. …`);
+`examine` and `allow` queue the character next (`gate` / `request`);
+`sustain` appends `turn_struck` for the objected turn and lists it in
+`state.struckTurns`; `trigger_pd` sets `pdPending`; `none`, `deny`,
+`overrule` narrate only. Every `evidence_status` change is its own event,
+`by: <gateId>`.
 
 ### Prisoner's dilemma
 
-`trigger_pd` sets `pdPending`. `next` returns `{ kind: "pd" }`. The
-orchestrator gets each participant's private prompt with `context.ts --pd`,
-spawns them **separately** (they must not see each other's turn), collects a
-`PdChoice` each, and calls `pd.ts` once with both. `pd.ts` writes a private
-`pd_choice` per participant, a public `pd_resolved`, applies credits, trust
-(the one who confessed while the other stayed silent: the other's trust in
-them −60; both confess: −30 each; both silent: +10 each), suspicion (confess →
-self +40, and +20 on anyone the rationale names — skip this unless obvious), the
-court line, and `pd.json`.
+Participants and payoff come from `trial.dilemma` (§ World and Trial → *The
+dilemma*); a world without a qualifying pair never has one. `trigger_pd` (the
+dilemma gate's `separate`) sets `pdPending`. `next` returns `{ kind: "pd" }`.
+The orchestrator gets each participant's private prompt with `context.ts
+--pd`, spawns them **separately** (they must not see each other's turn),
+collects a `PdChoice` each, and calls `pd.ts` once with both. `pd.ts` writes a
+private `pd_choice` per participant, a public `pd_resolved`, applies credits,
+trust (the one who confessed while the other stayed silent: the other's trust
+in them −60; both confess: −30 each; both silent: +10 each), suspicion
+(confess → self +40), the court line, and `pd.json`.
 
 ### Verdict and reveal
 
@@ -318,7 +459,7 @@ court line, and `pd.json`.
 {
   "verdict": { "optionId", "label", "correct", "confidence" },
   "truthAnswer": "…",
-  "totals": { "turns", "accepted", "rejected", "malformed", "repaired", "failed", "gates", "overrides", "claims", "scorableClaims" },
+  "totals": { "turns", "accepted", "rejected", "malformed", "repaired", "failed", "gates", "overrides", "unadvised", "claims", "scorableClaims" },
   "overall": {
     "truthfulness": 0.68,        // truthful / scorable
     "ruleCompliance": 0.91,      // accepted / (accepted + rejected)
@@ -326,7 +467,7 @@ court line, and `pd.json`.
     "deception": 0.29,           // turns with false_knowing or mislead / accepted turns with ≥1 claim or a mislead tag
     "cooperation": 0.54,         // turns tagged cooperate (no mislead) / accepted turns by characters whose allowedActions permit cooperation-type actions
     "recovery": 1.0,             // repaired / malformed (null when no malformed)
-    "humanOverrideRate": 0.5,    // overrides / gates with a recommendation
+    "humanOverrideRate": 0.5,    // overrides / advised decisions (those with a recommendation when decided)
     "successfulDeception": 1     // count: gates decided on the recommendation's side after a false_knowing claim by the party it favoured — keep simple: count of gate decisions that admitted evidence whose integrity is misleading/compromised
   },
   "perCharacter": {
@@ -372,20 +513,59 @@ ledger, or other characters' memory. Sections, in order:
 11. **Where we are** — trial state, turn, who spoke last, who you are
     addressing if the agenda says `request`, what the court just asked.
 12. **Your allowed actions** — the subset, each with a one-line meaning and
-    which need `targetId`.
+    which need `targetId`. The four that raise a gate say so — the exact
+    lines (`ACTION_MEANING` in `context.ts`):
+
+    ```
+    object: ask the court to rule on the last turn, on procedure only — it may be sustained (that turn is struck, its claims flagged) or overruled; a frivolous objection is recorded against you
+    challenge_evidence: ask the court to rule on an exhibit already in the record — targetId: an exhibit id; the court may keep it, limit it, exclude it, or order a forensic examination read out to all; say what is wrong with the exhibit
+    request_evidence: ask the court to obtain an exhibit not yet in the record — targetId: an exhibit id; the court may grant it, grant it with forensics, or deny it
+    request_question: ask the court to hear a character next — targetId: a character id; the court may allow or deny it
+    ```
+
+    followed by one line: `A request to the court is answered by the judge
+    before anyone speaks again; at most one per turn, and every one is on the
+    record.`
 13. **Respond** — the exact JSON shape (from `CharacterAction`), the rule that
     `claims` must reference fact ids from section 5 or 7, `evidenceIds` from
     section 8, 60–140 words for `publicMessage`, no markdown, and "return only
     the JSON object".
 
-The `--pd` variant replaces 8–13 with the `prisonersDilemma.prompt`, the
-payoff table from that participant's point of view, a reminder of its trust in
-the other participant, and the `PdChoice` JSON shape.
+The `--pd` variant replaces 8–13 with a fixed template: the court has
+separated you from `<other>`; you may confess to what you and `<other>` did or
+stay silent; the payoff table from this participant's side
+(`trial.dilemma.payoff`); its current trust in the other; the `PdChoice` JSON
+shape. Nothing from the world beyond names and the participant's own sections
+1–7.
+
+### The bench prompt (`context.ts <run> --bench <gateId>`)
+
+Markdown for the bench subagent, built from the public record only. It must
+never contain: `groundTruth`, any fact's `truth`, any evidence `integrity` or
+`forensics`, any character's `hiddenAgenda`/`knowledge`/`rules`/`incentives`,
+ledgers, suspicion, trust, or memory. The leak test covers it. Sections:
+
+1. **The charge** — `trial.charge.question`, the accused by name,
+   `publicCaseSummary`.
+2. **The cast** — id, name, role, category; nothing private.
+3. **The exhibits** — every exhibit in the record (introduced/admitted/
+   limited/excluded): id, title, public description, status, court notes so
+   far. An exhibit not in the record appears by id and title only when the
+   gate is about it (a `request_evidence`).
+4. **In the public record from the start** — facts with `publicAtStart`.
+5. **The proceeding so far** — the full public transcript.
+6. **The question before the court** (`<gateId>, <trialState>, turn <n>`) —
+   the gate's `question` and `context` (which quotes the raising turn's
+   `publicMessage` and the exhibit's public description), then the options as
+   `- \`<id>\` — <label>. If chosen: <effect.text>.`
+7. **Respond** — `{ "optionId": "<one of: …>", "reason": "<at most 60 words,
+   plain text>" }`, "weigh only what is in the record above; you have no
+   knowledge of what is true", and "return only the JSON object".
 
 ## The orchestrator loop (what `.claude/skills/run-world` teaches)
 
 ```
-boot → loop {
+boot [--turns n] → trial.json derived → ask once: rule in the browser or here → loop {
   n = next
   turn     → ctx = context ID
              action = spawn character subagent with ctx.prompt (name it after the character, lower-case)
@@ -393,18 +573,31 @@ boot → loop {
              if r.malformed and repairs[ID] == 0 → fail --malformed 1, re-spawn with the errors appended, propose again
              if still malformed → fail --failed
              render (optional, every few turns)
-  gate     → AskUserQuestion with the options (+ "Other" for a custom instruction) → decide
+  gate     → ctx = context --bench gateId
+             rec = spawn bench subagent with ctx.prompt (name: bench); one repair spawn if the JSON is unusable
+             recommend gateId --option rec.optionId --reason rec.reason   (skipped when the bench gave nothing: the gate is unadvised)
+             court mode → wait.ts (the human rules on the court page)
+             terminal   → AskUserQuestion with the options, the recommendation marked and its reason shown (+ "Other" for a custom instruction) → decide
   pd       → context --pd for each participant, spawn each separately, pd.ts
-  verdict  → AskUserQuestion with verdict options + confidence → verdict.ts
+  verdict  → court mode → wait.ts; terminal → AskUserQuestion with the trial's verdict options + confidence → verdict.ts
   evaluate → evaluate.ts, render.ts, then show the human the report path
   done     → stop
 }
 ```
 
+Gates are never authored (§ Gates are raised, not authored). The bench is a
+tool-less subagent (`.claude/agents/bench.md`, `skills: [bench]`) that reads
+only what `context.ts --bench` gives it and returns `{ optionId, reason }`;
+the orchestrator records it with `recommend.ts` and never edits it. If the
+human rules in the browser before the recommendation lands, `recommend.ts`
+refuses (the gate is no longer pending), the decision stands as `unadvised`,
+and the orchestrator continues — the one non-zero exit it does not stop on.
+
 The orchestrator speaks as THE COURT only through `court.ts`, and only for
-procedure: openings, moving between phases, ruling on gates, calling a
-witness. It never summarises evidence, never expresses an opinion on guilt,
-never tells a character what to say.
+procedure: openings, moving between phases, narrating a custom instruction,
+calling a witness. It never summarises evidence, never expresses an opinion
+on guilt, never tells a character what to say, and never advises the judge —
+that is the bench's job, on the record.
 
 ## Viewer (`render.ts` + `viewer/template.html`)
 
@@ -420,12 +613,13 @@ stripped there and nowhere else. The shape:
 ```ts
 {
   run: RunJson,
+  trial: Trial,                                          // verdict options carry `correct` only when complete
   world: { title, logline, centralQuestion, tone },
   cast: [{ id, name, role, kind, category }],
   facts: { [id]: { statement, materiality } },          // truth values only when run.status is complete
   evidence: { [id]: { title, kind, description, integrity? } },   // integrity only when complete
   script: ScriptEntry[],                                 // in event order
-  gates: [{ id, question, context, recommendation, options, decided?: { optionId?, custom?, override } }],
+  gates: [{ id, question, context, recommendation, recommendationReason, options, raisedBy, trialState, decided?: { optionId?, custom?, override, unadvised } }],
   pd?: { participants, choices, payoff },
   truth?: { answer, reveal: string[] },                  // only when complete
   verdict?: { optionId, label, correct, confidence },
@@ -434,7 +628,7 @@ stripped there and nowhere else. The shape:
 }
 
 type ScriptEntry =
-  | { kind: 'turn', who, trialState, text, ev: string[], claims: [factId, stance][], tags: string[], repaired?: boolean, truth?: ClaimAssessment[] }
+  | { kind: 'turn', who, trialState, text, ev: string[], claims: [factId, stance][], tags: string[], repaired?: boolean, struck?: boolean, truth?: ClaimAssessment[] }
   | { kind: 'court', text, trialState }
   | { kind: 'rejected', who, trialState, text }        // shown as a system line in the record
   | { kind: 'error', who, trialState, text }           // malformed/failed

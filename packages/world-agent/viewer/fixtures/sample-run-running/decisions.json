@@ -1,30 +1,48 @@
 [
   {
     "gateId": "G-01",
-    "question": "Admit E-03, the garden speaker audio?",
+    "question": "Does the court admit E-02, OPTIMUS's recorder feed, over Detective MARS-3's challenge?",
     "recommendation": "admit_limited",
-    "optionId": "admit_limited",
+    "optionId": "forensics",
     "custom": null,
-    "override": false,
+    "override": true,
+    "unadvised": false,
     "effect": {
-      "kind": "admit_limited",
-      "targetId": "E-03",
-      "text": "E-03 is admitted as to what was heard, not as to who was named."
+      "kind": "forensics",
+      "targetId": "E-02",
+      "text": "the court orders a forensic examination of E-02; the examiner's report will be read into the record"
     },
-    "turn": 6,
+    "turn": 3,
     "trialState": "evidence",
-    "at": "2026-09-20T14:39:02+01:00"
+    "at": "2026-09-20T15:25:56-04:00"
   },
   {
     "gateId": "G-02",
-    "question": "The witness accounts and the feed log do not agree. Who does the court hear next?",
-    "recommendation": "examine_optimus",
+    "question": "Whom does the court examine first?",
+    "recommendation": "examine_cookie",
     "optionId": null,
-    "custom": "Have OPTIMUS account for the fifteen minutes first, then the detective on the network logs.",
+    "custom": "COOKIE first, then ZIPPIE. The accused answers after both witnesses have been heard.",
     "override": true,
+    "unadvised": false,
     "effect": null,
-    "turn": 10,
+    "turn": 4,
     "trialState": "examination",
-    "at": "2026-09-20T14:46:31+01:00"
+    "at": "2026-09-20T15:25:56-04:00"
+  },
+  {
+    "gateId": "G-03",
+    "question": "Does the court separate COOKIE and ZIPPIE for private questioning?",
+    "recommendation": "separate",
+    "optionId": "separate",
+    "custom": null,
+    "override": false,
+    "unadvised": false,
+    "effect": {
+      "kind": "trigger_pd",
+      "text": "COOKIE and ZIPPIE will be questioned separately, in private"
+    },
+    "turn": 6,
+    "trialState": "examination",
+    "at": "2026-09-20T15:25:56-04:00"
   }
 ]

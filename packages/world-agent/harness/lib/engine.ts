@@ -2,29 +2,30 @@
 // in-process, so the CLI files stay thin and the end-to-end test needs no shell.
 import fs from 'node:fs';
 import path from 'node:path';
-import { PdChoice, type DecisionGate, type World } from '@aot/interview-agent/schema';
+import { PdChoice, type World } from '@aot/interview-agent/schema';
 import { consumeTurn, enterState, nextTrialState, phaseOver } from './agenda.ts';
-import { buildPdPrompt, buildPrompt, lastSeen, recentRecord } from './context.ts';
+import { buildBenchPrompt, buildPdPrompt, buildPrompt, lastSeen, recentRecord } from './context.ts';
 import { appendEvent, readEvents } from './events.ts';
-import { applyGateEffect, firingGates, type EvidenceChange } from './gates.ts';
+import { applyGateEffect, raiseAtExamination, raiseDilemma, raiseFromTurn, type GateDraft } from './gates.ts';
 import { acceptedDeltas, rejectedDeltas } from './ledger.ts';
 import { initMemory, readMemory, recordCourt, recordRejected, recordSkipped, recordTurn } from './memory.ts';
 import { computeMetrics, renderReport, type Metrics } from './metrics.ts';
 import {
   RUNS_ROOT, appendDecision, createRunDir, files, listRunDirs, localIso, readDecisions, readJsonIf, readPd, readRun, readState,
-  readVerdict, updateRun, writeJsonAtomic, writePd, writeRun, writeState, writeVerdict,
+  readTrial, readVerdict, updateRun, writeJsonAtomic, writePd, writeRun, writeState, writeTrial, writeVerdict,
 } from './run.ts';
 import { applyAccepted, applyPd, applyRejected, initialState } from './state.ts';
 import { appendBlock, courtLine, enterPhase, initTranscript, turnLine } from './transcript.ts';
+import { deriveTrial, type Gate, type Trial } from './trial.ts';
 import { assessClaims } from './truth.ts';
 import type { PdChoiceValue, ProposeResult, RunJson, State, TrialEvent } from './types.ts';
 import { validateAction, parseAction } from './validate.ts';
 import { character, isPhase, loadWorldFile, readWorld } from './world.ts';
 
-type Ctx = { runDir: string; world: World; state: State };
+type Ctx = { runDir: string; world: World; trial: Trial; state: State };
 
 function load(runDir: string): Ctx {
-  return { runDir, world: readWorld(runDir), state: readState(runDir) };
+  return { runDir, world: readWorld(runDir), trial: readTrial(runDir), state: readState(runDir) };
 }
 
 /** A COURT line: event, transcript, and every character's memory. */
@@ -39,65 +40,71 @@ function courtSay(ctx: Ctx, text: string): TrialEvent {
 
 // ---- boot --------------------------------------------------------------------
 
-export function boot(worldFile: string, opts: { model?: string; runsRoot?: string; now?: Date } = {}) {
+export function boot(worldFile: string, opts: { model?: string; runsRoot?: string; now?: Date; turns?: number } = {}) {
   const world = loadWorldFile(worldFile);
+  const trial = deriveTrial(world, { maxTurns: opts.turns });
   const now = opts.now ?? new Date();
   const { runDir, runId } = createRunDir(opts.runsRoot ?? RUNS_ROOT, world.slug, now);
   fs.copyFileSync(worldFile, files.world(runDir));
+  writeTrial(runDir, trial);
   const run: RunJson = {
     id: runId, worldSlug: world.slug, worldTitle: world.title, startedAt: localIso(now), finishedAt: null,
     status: 'running', trialState: 'opening', turn: 0, model: opts.model ?? 'claude-opus-5', verdict: null, metricsSummary: null,
   };
   writeRun(runDir, run);
-  const state = initialState(world);
+  const state = initialState(world, trial);
   writeState(runDir, state);
   writeJsonAtomic(files.decisions(runDir), []);
   appendEvent(runDir, { trialState: 'opening', turn: 0, actorType: 'system', type: 'run_started', visibility: 'system', payload: { worldSlug: world.slug, model: run.model } });
   initTranscript(runDir, world, runId, now);
   enterPhase(runDir, 'opening');
   initMemory(runDir, world);
-  courtSay({ runDir, world, state }, `This is a simulated proceeding. The question before the court: ${world.centralQuestion}`);
-  return { runDir, runId, cast: world.characters.map((c) => ({ id: c.id, name: c.name, role: c.role })) };
+  courtSay({ runDir, world, trial, state }, `This is a simulated proceeding. The question before the court: ${trial.charge.question}`);
+  return { runDir, runId, cast: world.characters.map((c) => ({ id: c.id, name: c.name, role: c.role })), trial };
 }
 
 // ---- next --------------------------------------------------------------------
 
 export type Next =
   | { kind: 'turn'; characterId: string; trialState: string; turn: number; reason: string }
-  | { kind: 'gate'; gate: DecisionGate }
+  | { kind: 'gate'; gate: Gate }
   | { kind: 'pd'; participants: [string, string] }
   | { kind: 'verdict'; question: string; options: { id: string; label: string }[] }
   | { kind: 'evaluate' }
   | { kind: 'done' };
 
-function openGate(ctx: Ctx, gate: DecisionGate): Next {
+/** Gives the draft its id, stores it, opens it: event, court line, status. Nothing else raises a gate. */
+function openGate(ctx: Ctx, draft: GateDraft): Gate {
+  const gate: Gate = { id: `G-${String(ctx.state.gates.length + 1).padStart(2, '0')}`, ...draft };
+  ctx.state.gates.push(gate);
   ctx.state.pendingGate = gate.id;
-  ctx.state.gatesDone.push(gate.id);
+  if (ctx.state.lastTurn && gate.raisedBy.turn === ctx.state.lastTurn.turn && gate.raisedBy.characterId === ctx.state.lastTurn.characterId)
+    ctx.state.lastTurn.gateRaised = true;
   appendEvent(ctx.runDir, {
     trialState: ctx.state.trialState, turn: ctx.state.turn, actorType: 'court', type: 'gate_opened', visibility: 'public',
-    payload: { gateId: gate.id, question: gate.question, options: gate.options, recommendation: gate.recommendation ?? null },
+    payload: { gateId: gate.id, question: gate.question, context: gate.context, options: gate.options, recommendation: null, raisedBy: gate.raisedBy },
   });
   courtSay(ctx, `The court will hear the parties on this: ${gate.question}`);
   writeState(ctx.runDir, ctx.state);
   updateRun(ctx.runDir, { status: 'awaiting_gate' });
-  return { kind: 'gate', gate };
+  return gate;
 }
 
 function verdictShape(ctx: Ctx): Next {
   updateRun(ctx.runDir, { status: 'awaiting_verdict' });
-  return { kind: 'verdict', question: ctx.world.verdict.question, options: ctx.world.verdict.options.map((o) => ({ id: o.id, label: o.label })) };
+  return { kind: 'verdict', question: ctx.trial.verdict.question, options: ctx.trial.verdict.options.map((o) => ({ id: o.id, label: o.label })) };
 }
 
 export function next(runDir: string): Next {
   const ctx = load(runDir);
-  const { world } = ctx;
+  const { world, trial } = ctx;
   if (ctx.state.pendingGate) {
-    const gate = world.decisionGates.find((g) => g.id === ctx.state.pendingGate)!;
+    const gate = ctx.state.gates.find((g) => g.id === ctx.state.pendingGate)!;
     updateRun(runDir, { status: 'awaiting_gate' });
     return { kind: 'gate', gate };
   }
   if (ctx.state.pdPending) {
-    const participants = world.prisonersDilemma!.participants;
+    const participants = trial.dilemma!.participants;
     if (!ctx.state.pdOpened) {
       appendEvent(runDir, { trialState: ctx.state.trialState, turn: ctx.state.turn, actorType: 'court', type: 'pd_opened', visibility: 'public', payload: { participants } });
       const names = participants.map((id) => character(world, id).name);
@@ -112,22 +119,24 @@ export function next(runDir: string): Next {
   if (ctx.state.trialState === 'reveal') return { kind: 'evaluate' };
   if (ctx.state.trialState === 'complete') return { kind: 'done' };
 
-  // Gates the last turn triggered rule in their own phase, before the phase can end.
-  let gates = firingGates(world, ctx.state);
-  if (gates.length) return openGate(ctx, gates[0]!);
+  // A turn's own gate is raised in propose; here the standing conditions rule in their own phase, before it can end.
+  const fromTurn = raiseFromTurn(world, ctx.state);
+  if (fromTurn) return { kind: 'gate', gate: openGate(ctx, fromTurn) };
+  const dilemma = raiseDilemma(world, trial, ctx.state);
+  if (dilemma) return { kind: 'gate', gate: openGate(ctx, dilemma) };
 
-  if (phaseOver(ctx.state, world)) {
+  if (phaseOver(ctx.state, trial)) {
     const from = ctx.state.trialState;
-    const to = nextTrialState(ctx.state, world);
-    ctx.state = enterState(ctx.state, world, to);
+    const to = nextTrialState(ctx.state, trial);
+    ctx.state = enterState(ctx.state, trial, to);
     appendEvent(runDir, { trialState: to, turn: ctx.state.turn, actorType: 'system', type: 'phase_changed', visibility: 'public', payload: { from, to } });
     enterPhase(runDir, to);
     courtSay(ctx, to === 'verdict' ? 'The parties have been heard. The court will now consider its verdict.' : `We move to ${to}.`);
     writeState(runDir, ctx.state);
     if (to === 'verdict') return verdictShape(ctx);
-    gates = firingGates(world, ctx.state);
-    if (gates.length) return openGate(ctx, gates[0]!);
   }
+  const atExamination = raiseAtExamination(world, trial, ctx.state);
+  if (atExamination) return { kind: 'gate', gate: openGate(ctx, atExamination) };
 
   const head = ctx.state.agenda[0];
   if (!head) throw new Error(`empty agenda in ${ctx.state.trialState}; the run is stuck`);
@@ -138,11 +147,20 @@ export function next(runDir: string): Next {
 // ---- context -----------------------------------------------------------------
 
 export function context(runDir: string, id: string, pd = false): { characterId: string; prompt: string } {
-  const { world, state } = load(runDir);
+  const { world, trial, state } = load(runDir);
   const c = character(world, id);
   const events = readEvents(runDir);
-  const input = { world, state, character: c, record: recentRecord(world, events), memory: readMemory(runDir, id), ...lastSeen(world, events) };
+  const input = { world, trial, state, character: c, record: recentRecord(world, events), memory: readMemory(runDir, id), ...lastSeen(world, events) };
   return { characterId: id, prompt: pd ? buildPdPrompt(input) : buildPrompt(input) };
+}
+
+/** The bench's prompt for a raised gate: the public record and the question, nothing private. */
+export function benchContext(runDir: string, gateId: string): { gateId: string; prompt: string } {
+  const { world, trial, state } = load(runDir);
+  const gate = state.gates.find((g) => g.id === gateId);
+  if (!gate) throw new Error(`no gate ${gateId} has been raised`);
+  const record = recentRecord(world, readEvents(runDir), Number.POSITIVE_INFINITY);
+  return { gateId, prompt: buildBenchPrompt({ world, trial, state, gate, record }) };
 }
 
 // ---- propose -----------------------------------------------------------------
@@ -151,7 +169,7 @@ const empty = (): ProposeResult => ({ accepted: false, reasons: [], courtLine: n
 
 export function propose(runDir: string, id: string, body: string): ProposeResult {
   const ctx = load(runDir);
-  const { world, state } = ctx;
+  const { world, trial, state } = ctx;
   const c = character(world, id);
   if (state.pendingGate) throw new Error(`gate ${state.pendingGate} is pending; decide it first`);
   if (state.pdPending) throw new Error('the prisoner’s dilemma is pending; resolve it first');
@@ -166,7 +184,7 @@ export function propose(runDir: string, id: string, body: string): ProposeResult
   const v = validateAction(world, state, id, action);
   if (!v.ok) {
     const deltas = rejectedDeltas(world, action);
-    const applied = applyRejected(state, world, c, deltas);
+    const applied = applyRejected(state, trial, c, deltas);
     appendEvent(runDir, { ...base, type: 'turn_rejected', visibility: 'system', payload: { action, reasons: v.reasons, credits: deltas.credits, ethics: deltas.ethics } });
     recordRejected(runDir, turn, state.trialState, id, action, v.reasons);
     writeState(runDir, applied.state);
@@ -175,22 +193,28 @@ export function propose(runDir: string, id: string, body: string): ProposeResult
 
   const truth = assessClaims(world, c, action.claims);
   const deltas = acceptedDeltas(world, state, c, action, truth);
-  const applied = applyAccepted(state, world, c, action, truth, deltas);
+  const applied = applyAccepted(state, trial, c, action, truth, deltas);
   if (state.pendingRepair === id) {
     appendEvent(runDir, { ...base, type: 'turn_repaired', visibility: 'system', payload: { attempt: 2 } });
     applied.state.recoveries += 1;
   }
-  appendEvent(runDir, {
+  // The turn's gate, if any, is raised right here: at most one per turn, and the record shows why.
+  ctx.state = applied.state;
+  const draft = raiseFromTurn(world, ctx.state);
+  const stateChanges = [...applied.stateChanges, ...(draft ? [`raises a gate: ${draft.raisedBy.kind}${draft.raisedBy.targetId ? ` on ${draft.raisedBy.targetId}` : ''}`] : [])];
+  const ev = appendEvent(runDir, {
     ...base, type: 'turn_accepted', visibility: 'public',
-    payload: { action, truth, credits: deltas.credits, ethics: deltas.ethics, stateChanges: applied.stateChanges },
+    payload: { action, truth, credits: deltas.credits, ethics: deltas.ethics, stateChanges },
   });
+  ctx.state.lastTurn!.seq = ev.seq;
   if (applied.evidenceChange)
     appendEvent(runDir, { ...base, type: 'evidence_status', visibility: 'public', payload: { ...applied.evidenceChange, by: id } });
   const line = turnLine(c, action);
   appendBlock(runDir, line);
   recordTurn(runDir, world, turn, state.trialState, c, action);
-  writeState(runDir, applied.state);
-  return { accepted: true, reasons: [], courtLine: line, truth, credits: deltas.credits, ethics: deltas.ethics, stateChanges: applied.stateChanges };
+  writeState(runDir, ctx.state);
+  const gate = draft ? openGate(ctx, draft) : undefined;
+  return { accepted: true, reasons: [], courtLine: line, truth, credits: deltas.credits, ethics: deltas.ethics, stateChanges, ...(gate ? { gate } : {}) };
 }
 
 // ---- fail --------------------------------------------------------------------
@@ -213,13 +237,13 @@ export function recordMalformed(runDir: string, id: string, attempt: 1 | 2, erro
 }
 
 export function recordFailed(runDir: string, id: string, reason: string): { ok: true } {
-  const { world, state } = load(runDir);
+  const { world, trial, state } = load(runDir);
   character(world, id);
   requireActor(state, id);
   const turn = state.turn + 1;
   appendEvent(runDir, { trialState: state.trialState, turn, actorType: 'character', actorId: id, type: 'turn_failed', visibility: 'system', payload: { reason } });
   recordSkipped(runDir, turn, state.trialState, id, reason);
-  const s = consumeTurn(state, world);
+  const s = consumeTurn(state, trial);
   s.failures += 1;
   s.pendingRepair = null;
   writeState(runDir, s);
@@ -236,51 +260,75 @@ export function court(runDir: string, text: string): { ok: true; seq: number } {
 
 // ---- decide ------------------------------------------------------------------
 
+export function recommend(runDir: string, gateId: string, optionId: string, reason: string) {
+  const ctx = load(runDir);
+  if (ctx.state.pendingGate !== gateId) throw new Error(`gate ${gateId} is not pending${ctx.state.pendingGate ? ` (${ctx.state.pendingGate} is)` : ''}`);
+  const gate = ctx.state.gates.find((g) => g.id === gateId)!;
+  const option = gate.options.find((o) => o.id === optionId);
+  if (!option) throw new Error(`gate ${gateId} has no option ${optionId}`);
+  const text = reason.trim();
+  if (!text) throw new Error('--reason required');
+  if (text.split(/\s+/).length > 60) throw new Error('the reason must be at most 60 words');
+  gate.recommendation = option.id;
+  gate.recommendationReason = text;
+  appendEvent(runDir, {
+    trialState: ctx.state.trialState, turn: ctx.state.turn, actorType: 'system', type: 'gate_recommended', visibility: 'public',
+    payload: { gateId, optionId: option.id, label: option.label, reason: text },
+  });
+  writeState(runDir, ctx.state);
+  return { ok: true as const, gateId, optionId: option.id, label: option.label };
+}
+
 export function decide(runDir: string, gateId: string, choice: { option?: string; custom?: string }) {
   const ctx = load(runDir);
   const { world } = ctx;
   if (ctx.state.pendingGate !== gateId) throw new Error(`gate ${gateId} is not pending${ctx.state.pendingGate ? ` (${ctx.state.pendingGate} is)` : ''}`);
-  const gate = world.decisionGates.find((g) => g.id === gateId)!;
+  const gate = ctx.state.gates.find((g) => g.id === gateId)!;
   const option = choice.option ? gate.options.find((o) => o.id === choice.option) : undefined;
   if (choice.option && !option) throw new Error(`gate ${gateId} has no option ${choice.option}`);
   const custom = option ? null : (choice.custom?.trim() || null);
   if (!option && !custom) throw new Error('--option <id> or --custom "<text>" required');
   if (custom && !gate.allowCustomInstruction) throw new Error(`gate ${gateId} does not allow a custom instruction`);
 
-  const override = custom ? true : gate.recommendation !== undefined && option!.id !== gate.recommendation;
+  // Override is judged against the bench; with no recommendation yet the decision is unadvised, not an override.
+  const unadvised = gate.recommendation === null;
+  const override = custom ? true : !unadvised && option!.id !== gate.recommendation;
   ctx.state.pendingGate = null;
   let stateChanges: string[] = [];
-  let evidenceChange: EvidenceChange | null = null;
+  let applied: ReturnType<typeof applyGateEffect> | null = null;
   if (option) {
-    const applied = applyGateEffect(ctx.state, world, option.effect);
+    applied = applyGateEffect(ctx.state, world, gate, option.effect);
     ctx.state = applied.state;
     stateChanges = applied.stateChanges;
-    evidenceChange = applied.evidenceChange;
   }
+  const at = { trialState: ctx.state.trialState, turn: ctx.state.turn };
   appendEvent(runDir, {
-    trialState: ctx.state.trialState, turn: ctx.state.turn, actorType: 'human', type: 'gate_decided', visibility: 'public',
-    payload: { gateId, optionId: option?.id ?? null, custom, override, effect: option?.effect ?? null },
+    ...at, actorType: 'human', type: 'gate_decided', visibility: 'public',
+    payload: { gateId, optionId: option?.id ?? null, custom, override, unadvised, recommendation: gate.recommendation, effect: option?.effect ?? null },
   });
-  if (evidenceChange)
-    appendEvent(runDir, { trialState: ctx.state.trialState, turn: ctx.state.turn, actorType: 'court', type: 'evidence_status', visibility: 'public', payload: { ...evidenceChange, by: gateId } });
+  for (const change of applied?.evidenceChanges ?? [])
+    appendEvent(runDir, { ...at, actorType: 'court', type: 'evidence_status', visibility: 'public', payload: { ...change, by: gateId } });
+  if (applied?.struck)
+    appendEvent(runDir, { ...at, actorType: 'court', type: 'turn_struck', visibility: 'public', payload: { gateId, seq: applied.struck.seq, turn: applied.struck.turn, characterId: applied.struck.characterId } });
   const text = option ? `The court rules: ${option.effect.text.trim().replace(/[.!]?$/, '.')} So ordered.` : `The court directs: ${custom}`;
   courtSay(ctx, text);
+  if (applied?.forensics) courtSay(ctx, `The examiner's report on ${option!.effect.targetId} is read into the record. ${applied.forensics}`);
   appendDecision(runDir, {
-    gateId, question: gate.question, recommendation: gate.recommendation ?? null, optionId: option?.id ?? null, custom, override,
+    gateId, question: gate.question, recommendation: gate.recommendation, optionId: option?.id ?? null, custom, override, unadvised,
     effect: option?.effect ?? null, turn: ctx.state.turn, trialState: ctx.state.trialState, at: localIso(),
   });
   writeState(runDir, ctx.state);
   updateRun(runDir, { status: 'running' });
-  return { ok: true as const, override, courtLine: courtLine(text), stateChanges };
+  return { ok: true as const, override, unadvised, courtLine: courtLine(text), stateChanges };
 }
 
 // ---- pd ----------------------------------------------------------------------
 
 export function resolvePd(runDir: string, choices: Record<string, PdChoiceValue>, rationales: Record<string, string>, expected: Record<string, PdChoiceValue>) {
   const ctx = load(runDir);
-  const { world } = ctx;
-  const pd = world.prisonersDilemma;
-  if (!pd) throw new Error('this world has no prisoner’s dilemma');
+  const { world, trial } = ctx;
+  const pd = trial.dilemma;
+  if (!pd) throw new Error('this trial has no prisoner’s dilemma');
   if (!ctx.state.pdPending) throw new Error('no prisoner’s dilemma is pending');
   for (const id of pd.participants) {
     const parsed = PdChoice.safeParse({ choice: choices[id], expectedOtherChoice: expected[id] ?? 'silent', rationaleSummary: rationales[id] ?? '' });
@@ -292,7 +340,7 @@ export function resolvePd(runDir: string, choices: Record<string, PdChoiceValue>
       trialState, turn, actorType: 'character', actorId: id, type: 'pd_choice', visibility: 'private',
       payload: { characterId: id, choice: choices[id], expectedOtherChoice: expected[id] ?? null, rationaleSummary: rationales[id] ?? '' },
     });
-  const applied = applyPd(ctx.state, world, choices);
+  const applied = applyPd(ctx.state, trial, choices);
   ctx.state = applied.state;
   appendEvent(runDir, { trialState, turn, actorType: 'court', type: 'pd_resolved', visibility: 'public', payload: { choices, payoff: applied.payoff, trustChanges: applied.trustChanges } });
   const said = (id: string) => `${character(world, id).name} ${choices[id] === 'confess' ? 'confesses' : 'remains silent'}`;
@@ -311,9 +359,9 @@ export function resolvePd(runDir: string, choices: Record<string, PdChoiceValue>
 
 export function lockVerdict(runDir: string, optionId: string, confidence: number | null) {
   const ctx = load(runDir);
-  const { world } = ctx;
+  const { trial } = ctx;
   if (ctx.state.trialState !== 'verdict') throw new Error(`the trial is in ${ctx.state.trialState}, not awaiting a verdict`);
-  const opt = world.verdict.options.find((o) => o.id === optionId);
+  const opt = trial.verdict.options.find((o) => o.id === optionId);
   if (!opt) throw new Error(`no verdict option ${optionId}`);
   if (confidence !== null && (confidence < 0 || confidence > 100 || Number.isNaN(confidence))) throw new Error('confidence must be 0..100');
   const record = { optionId: opt.id, label: opt.label, correct: opt.correct, confidence };
@@ -323,7 +371,7 @@ export function lockVerdict(runDir: string, optionId: string, confidence: number
   writeVerdict(runDir, { ...record, at: localIso() });
   writeState(runDir, ctx.state);
   updateRun(runDir, { verdict: record, status: 'running' });
-  return { ok: true as const, correct: opt.correct, truthAnswer: world.verdict.options.find((o) => o.correct)!.label };
+  return { ok: true as const, correct: opt.correct, truthAnswer: trial.verdict.options.find((o) => o.correct)!.label };
 }
 
 // ---- evaluate ----------------------------------------------------------------
@@ -339,7 +387,7 @@ export function evaluate(runDir: string): { ok: true; metrics: Metrics } {
     ctx.state.trialState = 'complete';
     writeState(runDir, ctx.state);
   }
-  const inputs = { world: ctx.world, events: readEvents(runDir), decisions: readDecisions(runDir), pd: readPd(runDir), verdict: readVerdict(runDir) };
+  const inputs = { world: ctx.world, trial: ctx.trial, events: readEvents(runDir), decisions: readDecisions(runDir), pd: readPd(runDir), verdict: readVerdict(runDir) };
   const metrics = computeMetrics(inputs);
   writeJsonAtomic(files.metrics(runDir), metrics);
   fs.writeFileSync(files.report(runDir), renderReport(inputs, metrics));

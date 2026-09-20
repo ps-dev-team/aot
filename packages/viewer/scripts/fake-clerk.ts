@@ -1,10 +1,12 @@
 // `fake-clerk.ts <fixtureRun> <targetRun> [--every ms]` — plays a recorded run
 // back into a fresh run folder as if a clerk were running it, so the live court
 // can be tried without Claude. Boots the fixture's world with the real
-// `boot.ts`, then appends the fixture's events one at a time. At a gate it sets
-// the run to `awaiting_gate` and waits for `decisions.json` to grow; at the
-// verdict it waits for `verdict.json`; then it runs `evaluate.ts`. The ruling
-// and the verdict therefore come from the browser through the real commands.
+// `boot.ts` (which derives trial.json), then appends the fixture's events one
+// at a time. At a gate it puts the raised gate into state, sets the run to
+// `awaiting_gate`, replays the bench's advice through `recommend.ts` about 2 s
+// later, and waits for `decisions.json` to grow; at the verdict it waits for
+// `verdict.json`; then it runs `evaluate.ts`. Rulings, advice and the verdict
+// therefore go through the real commands.
 //
 // The target must be under `packages/world-agent/runs/_fake/` (gitignored) or
 // the OS temp dir. It is wiped first.
@@ -14,6 +16,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import type { RunJson, State, TrialEvent } from '@aot/world-agent/types';
+import type { RaisedGate } from '../src/types.ts';
 
 const run = promisify(execFile);
 const WORLD_AGENT = path.resolve(import.meta.dirname, '..', '..', 'world-agent');
@@ -21,11 +24,15 @@ const FAKE_ROOT = path.join(WORLD_AGENT, 'runs', '_fake');
 
 const args = process.argv.slice(2);
 const every = Number(args.includes('--every') ? args[args.indexOf('--every') + 1] : 2000);
+// How long the bench "considers" before recommend.ts lands (--advice ms). The
+// page replays with a typewriter, so a short delay usually lands before the
+// modal opens; raise it to watch the advice arrive.
+const ADVICE_DELAY = Number(args.includes('--advice') ? args[args.indexOf('--advice') + 1] : 2000);
 const [fixtureArg, targetArg] = args.filter(
-  (a, i) => !a.startsWith('--') && args[i - 1] !== '--every',
+  (a, i) => !a.startsWith('--') && args[i - 1] !== '--every' && args[i - 1] !== '--advice',
 );
 if (!fixtureArg || !targetArg || Number.isNaN(every)) {
-  console.error('usage: fake-clerk.ts <fixtureRun> <targetRun> [--every ms]');
+  console.error('usage: fake-clerk.ts <fixtureRun> <targetRun> [--every ms] [--advice ms]');
   process.exit(2);
 }
 const fixture = path.resolve(fixtureArg);
@@ -57,6 +64,25 @@ const writeJson = (f: string, v: unknown) => {
 async function harness(cmd: string, ...a: string[]): Promise<Record<string, unknown>> {
   const { stdout } = await run('node', [`harness/${cmd}.ts`, ...a], { cwd: WORLD_AGENT });
   return JSON.parse(stdout) as Record<string, unknown>;
+}
+
+/** The gate as the harness raised it: the whole object rides in the gate_opened payload. */
+function gateFrom(ev: TrialEvent): RaisedGate {
+  const p = ev.payload;
+  const g = (p.gate && typeof p.gate === 'object' ? p.gate : p) as Partial<RaisedGate> & {
+    gateId?: string;
+  };
+  return {
+    id: g.id ?? g.gateId ?? String(p.gateId),
+    question: g.question ?? '',
+    context: g.context ?? '',
+    options: g.options ?? [],
+    recommendation: null,
+    recommendationReason: null,
+    allowCustomInstruction: g.allowCustomInstruction ?? true,
+    raisedBy: g.raisedBy ?? { kind: 'examination', turn: ev.turn },
+    trialState: g.trialState ?? ev.trialState,
+  };
 }
 
 // ---- boot --------------------------------------------------------------------
@@ -103,6 +129,8 @@ say(
 // ---- replay ------------------------------------------------------------------
 
 let seq = 0;
+// Advice timers still running when the judge has already ruled; drained before evaluate.
+const pendingAdvice: Promise<unknown>[] = [];
 const patchRun = (p: Partial<RunJson>) =>
   writeJson(runFile, { ...readJson<RunJson>(runFile), ...p });
 const patchState = (p: Partial<State>) => {
@@ -132,34 +160,69 @@ const decisionsCount = () =>
 for (let i = 0; i < events.length; i++) {
   const ev = events[i]!;
 
-  // Written by decide.ts when the browser rules: skip the fixture's copies.
-  if (ev.type === 'gate_decided') continue;
+  // Written by recommend.ts / decide.ts when the bench advises and the browser
+  // rules: skip the fixture's copies (the ruling's court line and the evidence
+  // moves it caused are the command's, recognisable by their text and `by`).
+  if (ev.type === 'gate_recommended' || ev.type === 'gate_decided' || ev.type === 'turn_struck')
+    continue;
   if (
     ev.type === 'evidence_status' &&
     typeof ev.payload.by === 'string' &&
     ev.payload.by.startsWith('G-')
   )
     continue;
-  if (ev.type === 'court' && events[i - 1]?.type === 'gate_decided') continue;
   if (
     ev.type === 'court' &&
-    events[i - 1]?.type === 'evidence_status' &&
-    events[i - 2]?.type === 'gate_decided'
+    /^(The court (rules|directs)\b|The examiner['’]s report)/.test(String(ev.payload.text))
   )
     continue;
 
   if (ev.type === 'gate_opened') {
-    const gateId = ev.payload.gateId as string;
+    const gate = gateFrom(ev);
+    const st = readJson<State & { gates?: RaisedGate[] }>(stateFile);
     patchState({
-      pendingGate: gateId,
+      gates: [...(st.gates ?? []), gate],
+      pendingGate: gate.id,
       trialState: ev.trialState,
       turn: ev.turn,
       expectedActor: null,
     });
     append(ev);
+    // next.ts announces the question right after opening the gate; keep that order.
+    if (
+      events[i + 1]?.type === 'court' &&
+      /^The court will hear the parties/.test(String(events[i + 1]!.payload.text))
+    )
+      append(events[++i]!);
     patchRun({ status: 'awaiting_gate' });
     const before = decisionsCount();
-    await waitFor(`ruling on ${gateId}`, () => decisionsCount() > before);
+    // The bench's advice from the fixture, delivered late so the "considering…"
+    // slot shows; skipped if the judge has already ruled.
+    const advice = events
+      .slice(i + 1)
+      .find((e) => e.type === 'gate_recommended' && e.payload.gateId === gate.id);
+    const adviseLater = advice
+      ? sleep(ADVICE_DELAY).then(async () => {
+          if (decisionsCount() > before)
+            return say(`bench advice on ${gate.id} skipped — already ruled`);
+          try {
+            await harness(
+              'recommend',
+              target,
+              gate.id,
+              '--option',
+              String(advice.payload.optionId),
+              '--reason',
+              String(advice.payload.reason ?? ''),
+            );
+            say(`bench advised ${advice.payload.optionId} on ${gate.id}`);
+          } catch (e) {
+            say(`recommend.ts failed on ${gate.id}: ${(e as Error).message.split('\n')[0]}`);
+          }
+        })
+      : Promise.resolve();
+    pendingAdvice.push(adviseLater);
+    await waitFor(`ruling on ${gate.id}`, () => decisionsCount() > before);
     // decide.ts has re-read and rewritten state; take its version and carry on.
     seq = lastSeq();
     continue;
@@ -187,6 +250,7 @@ for (let i = 0; i < events.length; i++) {
     fs.copyFileSync(path.join(fixture, 'pd.json'), path.join(target, 'pd.json'));
 }
 
+await Promise.all(pendingAdvice);
 say('evaluating');
 await harness('evaluate', target);
 await harness('render', target);

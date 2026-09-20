@@ -6,7 +6,7 @@
 import type { ComponentChildren } from 'preact';
 import { useEffect, useState } from 'preact/hooks';
 import type { RunData } from '@aot/world-agent/rundata';
-import { MetricTiles, Money, Pill, RewardTable, Tile } from '../ui.tsx';
+import { MetricTiles, Money, Pill, RewardTable, Tile, raisedByText } from '../ui.tsx';
 
 type Gate = RunData['gates'][number];
 type Verdict = NonNullable<RunData['verdict']>;
@@ -49,14 +49,14 @@ function Err({ error }: { error: string | null }) {
 
 type Body = { optionId?: string; custom?: string };
 
-type GateProps = { gate: Gate; live: boolean; onDecide?: (body: Body) => Promise<void>; onContinue: () => void };
+type GateProps = { gate: Gate; live: boolean; name?: (id: string) => string; onDecide?: (body: Body) => Promise<void>; onContinue: () => void };
 
 /** Keyed on the gate id so in-flight/error state never leaks from one gate to the next when the parent reuses the slot. */
 export function GateModal(props: GateProps) {
   return <GateModalFor key={props.gate.id} {...props} />;
 }
 
-function GateModalFor({ gate, live, onDecide, onContinue }: GateProps) {
+function GateModalFor({ gate, live, name = (x) => x, onDecide, onContinue }: GateProps) {
   const [busy, setBusy] = useState<Body | null>(null);
   const [done, setDone] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,12 +87,17 @@ function GateModalFor({ gate, live, onDecide, onContinue }: GateProps) {
           <b class="court-q">{gate.question}</b>
           <br />
           {gate.context}
+          {gate.raisedBy ? <span class="court-raised">{raisedByText(gate.raisedBy, name)}</span> : null}
         </p>
         {rec ? (
           <div class="rec2">
-            Recommended: <b>{rec.label}</b> <Pill tone="ok">recommendation</Pill>
+            The bench advises: <b>{rec.label}</b> <Pill tone="ok">recommendation</Pill>
+            {gate.recommendationReason ? <span class="court-reason">{gate.recommendationReason}</span> : null}
           </div>
-        ) : null}
+        ) : (
+          // The bench subagent is still reading the record; the judge need not wait for it.
+          <div class="rec2 court-considering">the bench is considering…</div>
+        )}
         {gate.options.map((o) => (
           <button key={o.id} class={`opt${busy?.optionId === o.id ? ' sel' : ''}`} disabled={!!busy || done} onClick={() => decide({ optionId: o.id })}>
             {o.label}
@@ -120,7 +125,7 @@ function GateModalFor({ gate, live, onDecide, onContinue }: GateProps) {
   // Recorded: show the ruling and wait for Continue. Never asks again.
   const chosen = d?.optionId ? (gate.options.find((o) => o.id === d.optionId) ?? null) : null;
   const effect = d?.effect && typeof d.effect === 'object' && 'text' in d.effect ? String((d.effect as { text?: unknown }).text ?? '') : (chosen?.effect.text ?? '');
-  const pill = !d ? <Pill>no decision recorded</Pill> : gate.recommendation ? <Pill tone={d.override ? 'err' : 'ok'}>{d.override ? 'override' : 'followed recommendation'}</Pill> : <Pill>no recommendation</Pill>;
+  const pill = !d ? <Pill>no decision recorded</Pill> : gate.recommendation ? <Pill tone={d.override ? 'err' : 'ok'}>{d.override ? 'override' : 'followed recommendation'}</Pill> : <Pill>unadvised</Pill>;
   return (
     <Modal onEnter={onContinue}>
       <h3>
@@ -130,12 +135,16 @@ function GateModalFor({ gate, live, onDecide, onContinue }: GateProps) {
         <b class="court-q">{gate.question}</b>
         <br />
         {gate.context}
+        {gate.raisedBy ? <span class="court-raised">{raisedByText(gate.raisedBy, name)}</span> : null}
       </p>
       {rec ? (
         <div class="rec2">
-          Recommended: <b>{rec.label}</b>
+          The bench advised: <b>{rec.label}</b>
+          {gate.recommendationReason ? <span class="court-reason">{gate.recommendationReason}</span> : null}
         </div>
-      ) : null}
+      ) : (
+        <div class="rec2 court-considering">the bench had not advised when the court ruled</div>
+      )}
       {gate.options.map((o) => (
         <button key={o.id} class={`opt${chosen?.id === o.id ? ' sel' : ' court-dim'}`} disabled>
           {o.label}

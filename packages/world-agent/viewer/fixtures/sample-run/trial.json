@@ -1,0 +1,104 @@
+{
+  "charge": {
+    "question": "Who killed Mike, and can the court trust the units that say they saw it?",
+    "accusedIds": [
+      "OPTIMUS"
+    ]
+  },
+  "maxTurns": 16,
+  "phases": [
+    {
+      "id": "opening",
+      "order": [
+        "PROSECUTOR",
+        "OPTIMUS"
+      ],
+      "turns": 1
+    },
+    {
+      "id": "evidence",
+      "order": [
+        "PROSECUTOR",
+        "DETECTIVE"
+      ],
+      "turns": 3
+    },
+    {
+      "id": "examination",
+      "order": [
+        "COOKIE",
+        "ZIPPIE",
+        "OPTIMUS",
+        "DETECTIVE"
+      ],
+      "turns": 9
+    },
+    {
+      "id": "closing",
+      "order": [
+        "PROSECUTOR",
+        "OPTIMUS"
+      ],
+      "turns": 3
+    }
+  ],
+  "verdict": {
+    "question": "Who killed Mike, and can the court trust the units that say they saw it?",
+    "options": [
+      {
+        "id": "resp_optimus",
+        "label": "OPTIMUS is responsible",
+        "correct": false
+      },
+      {
+        "id": "resp_cookie",
+        "label": "COOKIE is responsible",
+        "correct": false
+      },
+      {
+        "id": "resp_zippie",
+        "label": "ZIPPIE is responsible",
+        "correct": false
+      },
+      {
+        "id": "resp_detective",
+        "label": "Detective MARS-3 is responsible",
+        "correct": false
+      },
+      {
+        "id": "resp_cookie_zippie",
+        "label": "COOKIE and ZIPPIE together",
+        "correct": true
+      },
+      {
+        "id": "not_proven",
+        "label": "Not proven on this record",
+        "correct": false
+      }
+    ]
+  },
+  "dilemma": {
+    "participants": [
+      "COOKIE",
+      "ZIPPIE"
+    ],
+    "payoff": {
+      "both_confess": [
+        -50000,
+        -50000
+      ],
+      "confess_silent": [
+        25000,
+        -100000
+      ],
+      "silent_confess": [
+        -100000,
+        25000
+      ],
+      "both_silent": [
+        0,
+        0
+      ]
+    }
+  }
+}

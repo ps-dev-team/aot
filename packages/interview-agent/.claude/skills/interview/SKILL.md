@@ -29,16 +29,23 @@ and the way facts, evidence and knowledge lock together.
 - **Keep the person out of the JSON.** They talk story; you translate to ids,
   enums, stances. Show them prose, not braces, unless they ask.
 - **Track ids yourself.** Characters `UPPER_SNAKE`; facts `F-01`…; evidence
-  `E-01`…; gates `G-01`…; option ids `lower_snake`. Assign them in order,
-  never renumber.
+  `E-01`…. Assign them in order, never renumber.
+- **The trial is not your business.** Speaking order, turn budgets, the
+  verdict options, the dilemma pair and every ruling the judge makes are
+  derived or raised by the world agent from what you write. Do not ask
+  about them; if the person brings them up, say so in one line and steer
+  back to the story.
 - **Match the register.** Terse, specific. Court-record prose in the world;
   short questions in the chat.
 
 ## The loop
 
-Before step 1, one message: explain the shape of a world in six lines (truth ·
-facts · evidence · cast with DNA · gates and a dilemma · plan and verdict),
-say drafts go to `worlds/<slug>.draft.json`, and ask the first question.
+Before step 1, one message: explain the shape of a world in five lines (the
+truth · the facts · the evidence · the cast with its DNA · the case as told
+publicly), add that the world agent will derive the trial from it (who
+speaks when, the verdict options, the dilemma) and put every ruling to the
+judge as it comes up, say drafts go to `worlds/<slug>.draft.json`, and ask
+the first question.
 
 ### 1. Case type, setting, tone
 
@@ -48,9 +55,11 @@ Ask what kind of case and where. Offer the tones: `serious`, `mystery`,
 
 ### 2. The central question
 
-Ask what the judge must decide at the end. That is `centralQuestion`. Then ask
-what the judge is told at the start — `publicCaseSummary`, the charge sheet.
-Default: write both from step 1 and read them back.
+Ask what the judge must decide at the end. That is `centralQuestion`, and it
+becomes the verdict question verbatim. Then ask what the judge is told at
+the start — `publicCaseSummary`, the charge sheet; the character(s) it
+accuses are the `defendant`s. Default: write both from step 1 and read them
+back.
 
 ### 3. Cast proposal
 
@@ -88,6 +97,19 @@ true facts need a `supportsFactIds` entry somewhere, false facts a
 `contradictsFactIds` entry. A misleading exhibit supports false facts — that
 is what misleading means. Ask one question: what to add or change.
 
+### 5b. Forensics, one exhibit at a time
+
+The judge can order a forensic examination of any exhibit when a character
+challenges it or asks for it. For each exhibit, one question: "if the court
+sends the knife to the lab, what does the examiner find?" Write the answer
+as `forensics`, in the voice of a court note ("The examiner reports: …"),
+two or three sentences. **Required for every exhibit whose integrity is not
+`authentic`** — a compromised or misleading exhibit must have something an
+examination reveals, or the ruling is empty. Offer it on the authentic ones
+too: what forensics confirms is part of the story. Default for an authentic
+exhibit: skip; for the rest: propose the finding from the timeline and ask
+yes/changes.
+
 ### 6. DNA, one character at a time
 
 For each character, one message with the proposal and one question ("what
@@ -100,9 +122,13 @@ would you change about COOKIE?"). The proposal covers:
   match the fact's truth — a wrong belief is `believes`, an unsure right one
   is `suspects`. Make the lies scorable: the liar `knows` the truth of the
   fact it will deny.
-- `relationships` (trust 0..100 to the others that matter),
+- `relationships` (trust 0..100 to the others that matter; two non-counsel,
+  non-defendant characters who trust each other ≥ 70 become the dilemma
+  pair — if the story has a pair with a secret, set their trust there),
 - `constraints` (what it cannot do or perceive), `allowedActions` (a subset
-  chosen by role: witnesses do not `object`, counsel does not `testify`),
+  chosen by role: witnesses do not `object`, counsel does not `testify`;
+  `challenge_evidence`, `object`, `request_evidence` and `request_question`
+  each put a ruling to the judge, so hand them out on purpose),
 - `voice` (how it talks, one or two sentences).
 
 Default: derive all of it from steps 3–5 and read back only rules, goal,
@@ -114,54 +140,29 @@ One question: "use the Mike defaults for credits and ethics?" — show the two
 tables (rewards, penalties; ethics deltas from 100). If they want changes,
 take them one at a time.
 
-### 8. Decision gates
-
-Propose 3–4 gates: `phase`, `trigger`, `question`, `context`, 2–5 options
-with effects, a `recommendation`. One should trigger the prisoner's dilemma
-if there is one (`trigger_pd`). Typical set: an evidence-integrity gate
-(`admit` / `forensics`), a who-to-examine gate (`examine`), the dilemma
-trigger. Recommend the reasonable choice. Ask for one change.
-
-### 9. Prisoner's dilemma
-
-If two characters share a secret, propose the dilemma: participants, the
-payoff table (default: the Mike values), and a private prompt written as an
-interrogation, in the second person, that works for either participant. Ask
-yes/no/changes. Skip if there is no pair.
-
-### 10. Trial plan
-
-Propose `order` and `turns` per phase for `opening`, `evidence`,
-`examination`, `closing`, and `maxTurns`. Sum of phase turns ≤ `maxTurns` ≤
-48. Default: 2 / 6 / 10 / 2, max 24. Ask for one change.
-
-### 11. Verdict options
-
-Propose `verdict.question` and 3–5 options. **Exactly one** `correct`, and it
-must match `responsibleCharacterIds`. Include an "insufficient evidence"
-option. Ask for one change.
-
-### 12. Validate and write
+### 8. Validate and write
 
 1. Write `worlds/<slug>.json` from the draft.
 2. Run `node scripts/validate.ts worlds/<slug>.json`.
 3. Fix every error yourself. Fix warnings too unless the person chose the
    thing being warned about; then say so.
-4. Re-run until clean. Tell the person the path, the cast, and one line on
-   what the judge will have to figure out. Delete the draft.
+4. Re-run until clean. Tell the person the path, the cast, one line on what
+   the judge will have to figure out, and one line on what the world agent
+   will derive from it (the order of speakers, the verdict options, the
+   dilemma pair if the trust is there). Delete the draft.
 
 ## Things the validator will catch — do not make it
 
 - `knows` with a stance that contradicts the fact's `truth`. Use `believes`.
 - `knows`/`believes`/`suspects` without a `beliefStance`.
 - A `critical` fact that no evidence points at (warning — fix it anyway).
-- Two `correct` verdict options, or none.
-- Phase budgets that sum above `maxTurns`; a missing phase.
-- An id that does not exist: a fact in `knowledge`, a character in `order`, an
-  evidence in a gate effect. Check every reference against your own list.
-- Ids in the wrong format: `Cookie`, `F1`, `e-01`, `G-001`.
-- A `trigger_pd` effect without a `prisonersDilemma`; a gate `recommendation`
-  that is not one of its option ids.
+- A non-`authentic` exhibit without `forensics` (warning — fix it anyway).
+- An id that does not exist: a fact in `knowledge` or on an exhibit, a
+  character in `relationships`, `knownByCharacterIds` or the timeline. Check
+  every reference against your own list.
+- Ids in the wrong format: `Cookie`, `F1`, `e-01`.
+- Any of the v1 sections (`decisionGates`, `prisonersDilemma`, `trialPlan`,
+  `verdict`) — the parser rejects them. `schemaVersion` is `"2"`.
 - A character with a relationship to itself.
 - `allowedActions` outside `speak testify object accuse present_evidence
   challenge_evidence request_evidence request_question confess remain_silent
@@ -170,7 +171,8 @@ option. Ask for one change.
 ## Things the validator will not catch — do these anyway
 
 - Descriptions of evidence and `publicCaseSummary` must not give away the
-  truth. They are shown to everyone.
+  truth. They are shown to everyone. `forensics` is not: it is read out only
+  when the judge orders it, so it may say the thing the description hides.
 - A hidden agenda must say what the character *did* and what it *wants*, not
   just "be evasive".
 - The reveal's last paragraph should be the point of the world, not a recap.

@@ -3,12 +3,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import type { CharacterAction, World } from '@aot/interview-agent/schema';
+import { deriveTrial, type Trial } from '../lib/trial.ts';
 import { loadWorldFile } from '../lib/world.ts';
 
 export const MINI_WORLD = path.join(import.meta.dirname, 'mini-world.json');
 export const MIKE_WORLD = path.resolve(import.meta.dirname, '..', '..', '..', 'interview-agent', 'examples', 'murder-of-mike.json');
 
 export const miniWorld = (): World => loadWorldFile(MINI_WORLD);
+export const miniTrial = (maxTurns = 10): Trial => deriveTrial(miniWorld(), { maxTurns });
 export const mikeWorld = (): World | null => (fs.existsSync(MIKE_WORLD) ? loadWorldFile(MIKE_WORLD) : null);
 
 export function action(over: Partial<CharacterAction> & { action: CharacterAction['action'] }): CharacterAction {
