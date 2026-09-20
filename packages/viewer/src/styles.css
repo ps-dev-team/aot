@@ -112,6 +112,7 @@ h4.mt { margin-top: 20px }
 .row input[type=text] { flex: 1; min-width: 0; font: inherit; font-size: 12.5px; background: var(--panel-2);
   color: var(--ink); border: 1px solid var(--rule); padding: 8px 10px }
 .go { background: var(--brass); color: #191309; padding: 8px 15px; font-family: var(--pix); font-size: 9px }
+.go:not(:disabled):hover { background: var(--brass-dim); color: var(--ink) }
 .go:disabled { background: var(--rule); color: var(--ink-faint); cursor: default }
 .ghost { border: 1px solid var(--rule); padding: 8px 15px; font-family: var(--pix); font-size: 9px }
 .integ { border: 1px solid var(--rule); padding: 7px 10px; font-size: 12px; margin: 12px 0 }
