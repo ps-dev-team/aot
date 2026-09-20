@@ -309,7 +309,7 @@ for chatter. `<run>` is the run folder path.
 
 | Command | Does | Prints |
 | --- | --- | --- |
-| `boot.ts <world.json> [--model name] [--turns n]` | validates, derives the trial (`--turns`, default 24, max 48) into `trial.json`, creates the run folder, freezes the world, writes initial state, memory files, run.json, first `run_started` event, transcript header, the opening COURT line | `{ runDir, runId, cast: [{id,name,role}], trial }` |
+| `boot.ts <world.json> [--model name] [--turns n]` | validates, derives the trial (`--turns`, default 24, max 48) into `trial.json`, creates the run folder, freezes the world, writes initial state, memory files, run.json, first `run_started` event, transcript header, the opening COURT line | `{ runDir, runId, cast: [{id,name,role}], trial }` — `trial` is `trial.json` with `correct` stripped from the verdict options; the clerk's context must not hold the answer |
 | `next.ts <run>` | what the orchestrator should do now | one of the shapes below |
 | `context.ts <run> <ID>` | the prompt for that character's turn | `{ characterId, prompt }` — `prompt` is markdown, see below |
 | `context.ts <run> <ID> --pd` | the private prisoner's dilemma prompt, from the fixed template and `trial.dilemma` | same shape |

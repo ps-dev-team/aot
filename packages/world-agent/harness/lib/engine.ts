@@ -60,7 +60,9 @@ export function boot(worldFile: string, opts: { model?: string; runsRoot?: strin
   enterPhase(runDir, 'opening');
   initMemory(runDir, world);
   courtSay({ runDir, world, trial, state }, `This is a simulated proceeding. The question before the court: ${trial.charge.question}`);
-  return { runDir, runId, cast: world.characters.map((c) => ({ id: c.id, name: c.name, role: c.role })), trial };
+  // The clerk reads this output; the verdict key stays in trial.json.
+  const publicTrial = { ...trial, verdict: { ...trial.verdict, options: trial.verdict.options.map(({ id, label }) => ({ id, label })) } };
+  return { runDir, runId, cast: world.characters.map((c) => ({ id: c.id, name: c.name, role: c.role })), trial: publicTrial };
 }
 
 // ---- next --------------------------------------------------------------------

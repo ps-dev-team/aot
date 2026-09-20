@@ -276,13 +276,13 @@ tool call, never with the other's answer anywhere in the prompt:
    if still not, print the raw reply and stop — there is no `fail.ts` event for
    a dilemma, and the human decides what to do.
 
-Then once, with both:
+Then once, with both, keyed by character id (`<A>` and `<B>` are the ids, e.g. `MARLOW=silent`):
 
 ```
 node harness/pd.ts <run> \
-  --choice A=<choice> --choice B=<choice> \
-  --expected A=<expectedOtherChoice> --expected B=<expectedOtherChoice> \
-  --rationale A="<rationaleSummary>" --rationale B="<rationaleSummary>"
+  --choice <A>=<choice> --choice <B>=<choice> \
+  --expected <A>=<expectedOtherChoice> --expected <B>=<expectedOtherChoice> \
+  --rationale <A>="<rationaleSummary>" --rationale <B>="<rationaleSummary>"
 ```
 
 Print one line: `PD — COOKIE confess (expected silent) · ZIPPIE silent (expected silent) · payoff −50,000 / +10,000`,
