@@ -1,14 +1,15 @@
 // Hash router. '#/runs/murder-of-mike/20260920-120912?x=1' → { name: 'run', params: { slug, id }, query }.
 import { useEffect, useState } from 'preact/hooks';
 
-export type RouteName = 'try' | 'docket' | 'world' | 'run' | 'compare';
+export type RouteName = 'try' | 'docket' | 'world' | 'run' | 'compare' | 'court';
 export type Route = { name: RouteName; params: Record<string, string>; query: URLSearchParams };
 
 const PATTERNS: [RouteName, RegExp, string[]][] = [
   ['try', /^\/?$/, []],
   ['docket', /^\/docket\/?$/, []],
   ['world', /^\/worlds\/([a-z0-9-]+)\/?$/, ['slug']],
-  ['run', /^\/runs\/([a-z0-9-]+)\/([a-z0-9-]+)\/?$/, ['slug', 'id']],
+  ['run', /^\/runs\/([a-z0-9_-]+)\/([a-z0-9_-]+)\/?$/, ['slug', 'id']],
+  ['court', /^\/court\/([a-z0-9_-]+)\/([a-z0-9_-]+)\/?$/, ['slug', 'id']],
   ['compare', /^\/compare\/?$/, []],
 ];
 
@@ -33,6 +34,7 @@ export function href(name: RouteName, params: Record<string, string> = {}, query
     docket: '/docket',
     world: `/worlds/${params.slug ?? ''}`,
     run: `/runs/${params.slug ?? ''}/${params.id ?? ''}`,
+    court: `/court/${params.slug ?? ''}/${params.id ?? ''}`,
     compare: '/compare',
   }[name];
   const qs = query ? new URLSearchParams(query).toString() : '';

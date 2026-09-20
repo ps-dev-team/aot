@@ -19,6 +19,12 @@ repo root, Claude Code, and a world file from `packages/interview-agent`
 /replay runs/<slug>/<run-id>                               open courtroom.html
 ```
 
+`/run-world` asks once whether you rule from the terminal or from the
+browser. For the browser: `pnpm viewer` from the repo root and open
+`http://localhost:5173/#/court/<slug>/<run-id>` — the live courtroom, where
+gates and the verdict are decided through the same `decide.ts` /
+`verdict.ts`. The session blocks on `harness/wait.ts` meanwhile.
+
 **Where runs live.** `runs/<slug>/<run-id>/` — the frozen world, every
 event, the transcript, decisions, verdict, `metrics.json`, `report.md`,
 `courtroom.html`. Never deleted, never edited by hand.

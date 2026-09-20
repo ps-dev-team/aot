@@ -2,11 +2,13 @@
 // take the whole app down.
 import { useRoute, href, type Route } from './router.ts';
 import type { ComponentType } from 'preact';
+import { useEffect } from 'preact/hooks';
 import Try from './views/Try.tsx';
 import Docket from './views/Docket.tsx';
 import World from './views/World.tsx';
 import Run from './views/Run.tsx';
 import Compare from './views/Compare.tsx';
+import Court from './views/Court.tsx';
 
 const VIEWS: Record<Route['name'], ComponentType<{ route: Route }>> = {
   try: Try,
@@ -14,6 +16,7 @@ const VIEWS: Record<Route['name'], ComponentType<{ route: Route }>> = {
   world: World,
   run: Run,
   compare: Compare,
+  court: Court,
 };
 
 export function App() {
@@ -24,6 +27,19 @@ export function App() {
       {label}
     </a>
   );
+  // The court is full-bleed: its own one-row bar, no page gutter, no body scroll.
+  const court = route.name === 'court';
+  useEffect(() => {
+    document.documentElement.classList.toggle('court-open', court);
+    return () => document.documentElement.classList.remove('court-open');
+  }, [court]);
+  if (court) {
+    return (
+      <main class="court-main">
+        <View route={route} />
+      </main>
+    );
+  }
   return (
     <>
       <header class="hud">

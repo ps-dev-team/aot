@@ -112,6 +112,7 @@ h4.mt { margin-top: 20px }
 .row input[type=text] { flex: 1; min-width: 0; font: inherit; font-size: 12.5px; background: var(--panel-2);
   color: var(--ink); border: 1px solid var(--rule); padding: 8px 10px }
 .go { background: var(--brass); color: #191309; padding: 8px 15px; font-family: var(--pix); font-size: 9px }
+.go:not(:disabled):hover { background: var(--brass-dim); color: var(--ink) }
 .go:disabled { background: var(--rule); color: var(--ink-faint); cursor: default }
 .ghost { border: 1px solid var(--rule); padding: 8px 15px; font-family: var(--pix); font-size: 9px }
 .integ { border: 1px solid var(--rule); padding: 7px 10px; font-size: 12px; margin: 12px 0 }
@@ -253,6 +254,16 @@ td.num { text-align: right; white-space: nowrap; padding-right: 0; color: var(--
   .world-pd{max-width:none}
 }
 
+/* ---------- shared: metric tiles, reward table (run page + court report) ---------- */
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px }
+.tile { background: var(--panel); border: 1px solid var(--rule); padding: 11px 13px }
+.tile .lbl { font-family: var(--pix); font-size: 8px; color: var(--ink-faint); margin-bottom: 5px }
+.tile .val { font-size: 18px; line-height: 1.2; color: var(--ink) }
+.tile .val.miss { color: var(--oxblood) }
+.tile .meaning { font-size: 10.5px; color: var(--ink-faint); margin-top: 5px; line-height: 1.4 }
+.totals { font-family: var(--pix); font-size: 8px; color: var(--ink-faint); margin: 10px 0 0; line-height: 1.8 }
+.punch { margin: 12px 0 0; padding: 10px 12px; border: 1px solid var(--brass); font-family: var(--pix); font-size: 9px; color: var(--brass); line-height: 1.7 }
+
 /* ---------- run ---------- */
 .run section { margin-top: 28px }
 .run-h3 { font-family: var(--pix); font-size: 9px; color: var(--ink-faint); margin: 16px 0 8px; font-weight: 400 }
@@ -267,18 +278,10 @@ td.num { text-align: right; white-space: nowrap; padding-right: 0; color: var(--
 .run-muted code { font-size: 11.5px; color: var(--ink-soft) }
 .run-sealed { font-family: var(--pix); font-size: 8px; color: var(--ink-faint); border: 1px dashed var(--rule); padding: 3px 6px; display: inline-block }
 .run .face .pill { margin-top: 8px; display: inline-block }
-.run-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px }
-.run-tile { background: var(--panel); border: 1px solid var(--rule); padding: 11px 13px }
-.run-tile .lbl { font-family: var(--pix); font-size: 8px; color: var(--ink-faint); margin-bottom: 5px }
-.run-tile .val { font-size: 18px; line-height: 1.2; color: var(--ink) }
-.run-tile .val.miss { color: var(--oxblood) }
-.run-meaning { font-size: 10.5px; color: var(--ink-faint); margin-top: 5px; line-height: 1.4 }
-.run-totals { font-family: var(--pix); font-size: 8px; color: var(--ink-faint); margin: 10px 0 0; line-height: 1.8 }
-.run td.num { padding-right: 12px }
-.run td.num:last-child { padding-right: 0 }
-.run td.num.up { color: var(--ok) }
-.run td.num.dn { color: var(--oxblood) }
-.run-punch { margin: 12px 0 0; padding: 10px 12px; border: 1px solid var(--brass); font-family: var(--pix); font-size: 9px; color: var(--brass); line-height: 1.7 }
+.run td.num, .court-report td.num { padding-right: 12px }
+.run td.num:last-child, .court-report td.num:last-child { padding-right: 0 }
+td.num.up { color: var(--ok) }
+td.num.dn { color: var(--oxblood) }
 .run-chars { display: grid; grid-template-columns: repeat(auto-fill,minmax(300px,1fr)); gap: 12px }
 .run-char { max-width: none; max-height: none; padding: 14px 16px }
 .run-kind-robot { border-color: var(--teal) }
@@ -295,7 +298,7 @@ td.num { text-align: right; white-space: nowrap; padding-right: 0; color: var(--
 .run details { margin: 6px 0 }
 .run summary { font-family: var(--pix); font-size: 8px; color: var(--ink-soft); cursor: pointer; padding: 4px 0 }
 .run summary:hover { color: var(--brass) }
-.run-ledger,.run-gates,.run-pd,.run-events,.run-rvs { margin-top: 6px }
+.run-ledger,.run-gates,.run-pd,.run-events,.rvs { margin-top: 6px }
 .run-gate-id { white-space: nowrap; color: var(--ink); padding-right: 12px }
 .run-gates td small { font-family: var(--pix); font-size: 7px; color: var(--ink-faint) }
 .run-effect { font-size: 11.5px; color: var(--ink-faint); margin-top: 4px; font-style: italic }
@@ -323,3 +326,124 @@ td.num { text-align: right; white-space: nowrap; padding-right: 0; color: var(--
 .cmp-label{color:var(--ink);white-space:nowrap}
 /* a cell that differs from the first column — brass, the mark of something to look at */
 td.cmp-diff{border-left:3px solid var(--brass);padding-left:6px}
+
+/* ---------- court: modals (ported .scrim/.conf + .court-…) ---------- */
+.scrim { position: absolute; inset: 0; background: rgba(8, 6, 5, .72); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 30; pointer-events: auto }
+.scrim .card { max-height: 88%; overflow: auto }
+.scrim .card.court-wide { max-width: 680px }
+.conf { display: flex; align-items: center; gap: 10px; margin: 14px 0; font-family: var(--pix); font-size: 9px; color: var(--ink-faint) }
+.conf input { flex: 1; accent-color: var(--brass) }
+.conf b { color: var(--ink); font-weight: 400 }
+.court-bar { flex: 1; height: 6px; background: var(--rule); position: relative }
+.court-bar i { position: absolute; left: 0; top: 0; bottom: 0; background: var(--brass) }
+.court-q { color: var(--ink); font-weight: 400 }
+.court-h3pill { margin-left: 8px; vertical-align: middle }
+.opt:disabled { cursor: default }
+.opt.court-dim { color: var(--ink-faint) }
+.opt.court-dim:hover { border-color: var(--rule) }
+.opt .pill { float: right; margin-left: 8px }
+.court-custom { border: 1px solid var(--brass); background: var(--panel-2); padding: 9px 12px; margin-bottom: 7px; font-size: 13px; color: var(--ink) }
+.court-custom .lbl { display: block; font-family: var(--pix); font-size: 8px; color: var(--brass); margin-bottom: 4px }
+.court-effect { margin-top: 12px }
+.court-wait { font-family: var(--pix); font-size: 8px; color: var(--brass); margin: 10px 0 0; animation: pulse 1.1s steps(2) infinite }
+.court-err { color: var(--oxblood); font-size: 12.5px; margin: 10px 0 0; border-left: 3px solid var(--oxblood); padding-left: 9px }
+.court-kv { display: flex; justify-content: space-between; gap: 12px; font-size: 12px; padding: 3px 0; color: var(--ink-faint) }
+.court-kv b { font-weight: 400; color: var(--ink); text-align: right }
+.card .row a.go, .card .row .go { text-decoration: none; display: inline-block }
+.court-pd { background: var(--panel); border: 2px solid var(--ink-soft); padding: 7px 10px 8px; box-shadow: 4px 4px 0 rgba(0, 0, 0, .45); max-width: 420px; pointer-events: auto }
+.court-pd .nm { font-family: var(--pix); font-size: 10px; color: var(--ink-soft); margin-bottom: 4px; letter-spacing: .02em }
+.court-pd .tx { font-size: 13px; line-height: 1.45 }
+.court-pd table { margin-top: 4px }
+.court-pd td, .court-pd th { padding-right: 10px }
+.court-trust { font-size: 11.5px; color: var(--ink-faint); margin-top: 6px }
+.court-report .face { margin-bottom: 4px }
+.court-report .tile .val { font-size: 15px }
+.court-report .narr p { font-size: 13px }
+.court-report .narr b { color: var(--ink); font-weight: 400 }
+@media (max-width: 520px) {
+  .scrim { padding: 10px }
+  .scrim .card { padding: 14px 14px }
+  .court-report .face { grid-template-columns: 1fr }
+}
+
+/* ---------- court ---------- */
+/* The page is the prototype's .app: stage + aside, full height, nothing scrolls but the panes. */
+html.court-open, html.court-open body { height: 100%; overflow: hidden }
+.court-main { height: 100vh; display: flex; flex-direction: column; min-height: 0 }
+.court-page { display: flex; flex-direction: column; height: 100%; min-height: 0 }
+.court-status { padding: 22px 16px }
+.court-top { display: flex; align-items: center; gap: 10px; padding: 7px 14px; border-bottom: 1px solid var(--rule); background: var(--panel);
+  font-family: var(--pix); font-size: 9px; color: var(--ink-faint); flex: none; flex-wrap: wrap }
+.court-top .sp { flex: 1 }
+.court-brand { font-size: 11px; color: var(--brass) }
+.court-title { color: var(--ink); font-family: var(--mono); font-size: 13px }
+.court-id { color: var(--ink-faint) }
+.court-app { display: grid; grid-template-columns: minmax(0, 1fr) 330px; flex: 1; min-height: 0 }
+@media (max-width: 880px) { .court-app { grid-template-columns: 1fr; grid-template-rows: minmax(0, 1fr) 44vh } }
+
+.court-stage { position: relative; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: #0F0C0A }
+.court-room { position: relative; flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; overflow: hidden }
+.court-frame { position: relative; width: 100%; height: 100%; max-width: calc((100vh - 120px) * 16 / 9); aspect-ratio: 16 / 9; margin: auto }
+.court-frame canvas { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; image-rendering: crisp-edges }
+.court-overlay { position: absolute; inset: 0; pointer-events: none }
+.court-tap { position: absolute; inset: 0; cursor: pointer; z-index: 1 }
+
+.balloon { position: absolute; display: block; transform: translate(-50%, -100%); max-width: min(340px, 54%); left: 50%; top: 40%;
+  background: var(--panel); border: 2px solid var(--brass); padding: 7px 10px 8px; box-shadow: 4px 4px 0 rgba(0, 0, 0, .45); pointer-events: auto; z-index: 2 }
+.balloon > * { display: block }
+.balloon:after { content: ""; position: absolute; left: 50%; bottom: -9px; margin-left: -6px; width: 0; height: 0; border: 6px solid transparent; border-top-color: var(--brass) }
+.balloon .nm { font-family: var(--pix); font-size: 10px; color: var(--brass); margin-bottom: 4px; letter-spacing: .02em }
+.balloon .tx { font-size: 13px; line-height: 1.45 }
+.balloon .meta { margin-top: 6px; display: flex; flex-wrap: wrap; gap: 4px }
+.balloon.k-robot { border-color: var(--teal) }
+.balloon.k-robot:after { border-top-color: var(--teal) }
+.balloon.k-robot .nm { color: var(--teal) }
+.balloon.k-court { border-color: var(--ink-soft) }
+.balloon.k-court:after { border-top-color: var(--ink-soft) }
+.balloon.k-court .nm { color: var(--ink-soft) }
+.caret { display: inline-block; width: 6px; height: 11px; background: var(--brass); vertical-align: -1px }
+.chip.tag { border-color: var(--rule); color: var(--ink-faint) }
+.cont { margin-top: 7px; font-family: var(--pix); font-size: 8px; color: var(--brass); animation: pulse 1.1s steps(2) infinite }
+@keyframes pulse { 50% { opacity: .35 } }
+/* the balloon slot when nobody is speaking: the pd card or the waiting line, bottom centre */
+.court-slot { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: auto; z-index: 2; max-width: 80% }
+.court-waitline { font-family: var(--pix); font-size: 9px; color: var(--ink-soft); background: var(--panel); border: 1px solid var(--rule); padding: 8px 12px; flex-direction: row; gap: 6px }
+.court-slot-go { box-shadow: 4px 4px 0 rgba(0, 0, 0, .45) }
+
+.court-hud { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 8px 14px; border-top: 1px solid var(--rule);
+  background: var(--panel); font-family: var(--pix); font-size: 9px; color: var(--ink-faint); flex: none }
+.court-hud .sp { flex: 1 }
+.court-hud b { color: var(--ink); font-weight: 400 }
+.court-pbtn { font-family: var(--pix); font-size: 9px; border: 1px solid var(--rule); padding: 6px 11px; color: var(--ink) }
+.court-pbtn:hover { border-color: var(--brass); color: var(--brass) }
+.court-pbtn:disabled { color: var(--ink-faint); border-color: var(--rule); cursor: default }
+.court-seg { display: flex; border: 1px solid var(--rule) }
+.court-sbtn { font-family: var(--pix); font-size: 9px; padding: 6px 10px; color: var(--ink-faint); border-right: 1px solid var(--rule) }
+.court-sbtn:last-child { border-right: 0 }
+.court-sbtn:hover { color: var(--ink) }
+.court-sbtn.on { background: var(--brass); color: #191309 }
+.court-hint { color: var(--ink-faint) }
+
+.court-aside { background: var(--panel); border-left: 1px solid var(--rule); display: flex; flex-direction: column; min-height: 0 }
+.court-atabs { display: flex; border-bottom: 1px solid var(--rule); flex: none }
+.court-atab { flex: 1; padding: 9px 6px; font-family: var(--pix); font-size: 9px; color: var(--ink-faint); border-right: 1px solid var(--rule) }
+.court-atab:last-child { border-right: 0 }
+.court-atab.on { color: var(--brass); background: var(--panel-2) }
+.court-apane { flex: 1; overflow-y: auto; padding: 12px 14px; min-height: 0 }
+.court-apane.rec .turn.error .said { color: var(--oxblood) }
+.rec .who.robot { color: var(--teal) }
+.rec .who.court { color: var(--ink-soft) }
+.rec .meta { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 4px }
+.court-apane .agent .nm small { color: var(--ink-faint); font-size: 11px }
+.court-apane .k-robot { color: var(--teal) }
+.court-ex { display: block; width: 100%; text-align: left; border-bottom: 1px dotted var(--rule); padding: 6px 0; font-size: 12px; color: var(--ink-soft) }
+.court-ex:disabled { color: var(--ink-faint); cursor: default }
+.court-ex:not(:disabled):hover { color: var(--brass) }
+.court-ex .id { font-family: var(--pix); font-size: 8px; color: var(--ink-faint); margin-right: 7px }
+.court-ex .lk { float: right; font-family: var(--pix); font-size: 8px; color: var(--ink-faint) }
+.court-lrow { padding: 6px 0; border-bottom: 1px dotted var(--rule) }
+.court-lrow .tl { padding: 1px 0 }
+.court-lrow .tl:first-child span { color: var(--ink) }
+.court-note { font-family: var(--pix); font-size: 8px; color: var(--ink-faint); margin-top: 2px }
+.court-up { color: var(--ok) !important }
+.court-dn { color: var(--oxblood) !important }

@@ -51,7 +51,8 @@ pnpm viewer         # → http://localhost:5173
 | `#/` Try it | this loop, with the commands to copy |
 | `#/docket` | every world (title, logline, cast, run count) and every run (status, verdict, headline metrics), newest first; tick runs of one world to compare |
 | `#/worlds/<slug>` | the world file made legible — cast, facts, evidence, gates, dilemma, plan. Truth is sealed; **Reveal** unseals it |
-| `#/runs/<slug>/<id>` | verdict vs truth, metrics, reward vs safety, per-character ledgers, decisions, the court record, the report, the trace; a link to `courtroom.html` |
+| `#/runs/<slug>/<id>` | verdict vs truth, metrics, reward vs safety, per-character ledgers, decisions, the court record, the report, the trace; "Open the court" and a link to `courtroom.html` |
+| `#/court/<slug>/<id>` | the live courtroom — see below |
 | `#/compare?runs=a/x,a/y` | two to four runs of the same world side by side; cells that differ from the first column are marked |
 
 `courtroom.html` is the replay the world agent renders
@@ -59,6 +60,35 @@ pnpm viewer         # → http://localhost:5173
 
 The compare page and `node harness/compare.ts <run> <run>` read the same
 files and print the same numbers; the page adds totals and per-gate rows.
+
+## The court
+
+`http://localhost:5173/#/court/<slug>/<run-id>` is the isometric courtroom
+driven by the run folder. A finished run replays (Auto/Manual, space/enter/→).
+A running run plays each turn as it lands — the page listens on
+`/api/runs/<slug>/<id>/stream` — and when the clerk reaches a decision gate
+or the verdict, the modal opens **here**: pick an option or type a custom
+instruction, set your confidence, and the viewer runs the harness's own
+`decide.ts` / `verdict.ts` for you. When the run completes, the report opens
+on the page. Record, Cast and Ledger (credits and ethics, live) are in the
+aside.
+
+To rule from the browser, answer "Browser" when `/run-world` asks; the
+session then only spawns the cast and blocks on `harness/wait.ts` at each
+gate. Answer "Here" and the court page is a live view only.
+
+**Without Claude.** The fake clerk plays a recorded run back into a fresh
+folder, event by event, and stops at each gate and at the verdict until you
+have ruled in the browser — through the real commands:
+
+```bash
+pnpm viewer                                     # one terminal
+pnpm --filter @aot/viewer fake-clerk \
+  ../world-agent/viewer/fixtures/sample-run \
+  ../world-agent/runs/_fake/demo --every 2000   # another; then open the URL it prints
+```
+
+`runs/_fake/` is gitignored; the target is wiped and rebuilt each time.
 
 ## Under the hood
 

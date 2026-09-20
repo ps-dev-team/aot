@@ -7,8 +7,18 @@
     "emitDeclarationOnly": false,
     "noEmit": true,
     "allowImportingTsExtensions": true,
-    "types": ["node"]
+    "types": [
+      "node"
+    ]
   },
-  "include": ["server/**/*.ts", "vite.config.ts", "src/types.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": [
+    "server/**/*.ts",
+    "vite.config.ts",
+    "src/types.ts",
+    "scripts/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
 }
