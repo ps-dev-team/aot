@@ -11,5 +11,10 @@
   "dependencies": {
     "@aot/interview-agent": "workspace:*",
     "zod": "^4.4.3"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./types": "./harness/lib/types.ts",
+    "./metrics": "./harness/lib/metrics.ts"
   }
 }

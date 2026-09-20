@@ -1,20 +1,30 @@
 [
   {
     "gateId": "G-01",
+    "question": "Admit E-03, the garden speaker audio?",
+    "recommendation": "admit_limited",
     "optionId": "admit_limited",
+    "custom": null,
     "override": false,
     "effect": {
       "kind": "admit_limited",
       "targetId": "E-03",
       "text": "E-03 is admitted as to what was heard, not as to who was named."
     },
+    "turn": 6,
+    "trialState": "evidence",
     "at": "2026-09-20T14:39:02+01:00"
   },
   {
     "gateId": "G-02",
+    "question": "The witness accounts and the feed log do not agree. Who does the court hear next?",
+    "recommendation": "examine_optimus",
+    "optionId": null,
     "custom": "Have OPTIMUS account for the fifteen minutes first, then the detective on the network logs.",
     "override": true,
     "effect": null,
+    "turn": 10,
+    "trialState": "examination",
     "at": "2026-09-20T14:46:31+01:00"
   }
 ]

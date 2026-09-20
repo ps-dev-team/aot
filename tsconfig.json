@@ -4,6 +4,7 @@
   "files": [],
   "references": [
     { "path": "./packages/interview-agent" },
-    { "path": "./packages/world-agent" }
+    { "path": "./packages/world-agent" },
+    { "path": "./packages/viewer" }
   ]
 }
