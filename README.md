@@ -23,6 +23,13 @@ A run folder holds the world it ran, every event, every human decision, the
 court record, the credit and ethics ledgers, the metrics and the reveal. Runs
 of the same world compare with `node harness/compare.ts <run> <run>`.
 
+## Try it
+
+Clone, `pnpm install`, then follow
+[`packages/viewer/README.md`](packages/viewer/README.md): interview a world,
+run it as the judge, and read the results in the browser
+(`pnpm viewer`).
+
 Read [`AGENTS.md`](AGENTS.md) for the operating rules and
 [`packages/world-agent/CONTRACT.md`](packages/world-agent/CONTRACT.md) for
 the contract. The product thinking is in

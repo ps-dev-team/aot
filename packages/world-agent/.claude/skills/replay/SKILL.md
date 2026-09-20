@@ -21,6 +21,10 @@ that was made and a Continue button; the Ledger tab tracks credits and ethics
 per character as the replay advances. If the run is not `complete`, the
 replay ends at "run in progress" and the truth stays sealed.
 
+The other way to look at a run is the viewer: `pnpm viewer`
+from the repo root, then `#/runs/<slug>/<run-id>` — results, ledgers, record,
+report and trace on one page, with a link to this same `courtroom.html`.
+
 ## Read the transcript
 
 `cat <run>/court/transcript.md`. It is court turns only: no rejected

@@ -1,0 +1,23 @@
+{
+  "name": "@aot/viewer",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Team-facing browser for Agent on Trial: try the tool, browse worlds, read runs, compare them.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.server.json",
+    "test": "node --test 'server/**/*.test.ts'"
+  },
+  "dependencies": {
+    "@aot/interview-agent": "workspace:*",
+    "@aot/world-agent": "workspace:*",
+    "marked": "^17.0.0",
+    "preact": "^10.28.0"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.0",
+    "vite": "^8.0.0"
+  }
+}

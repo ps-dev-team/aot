@@ -1,10 +1,14 @@
 {
   "participants": ["COOKIE", "ZIPPIE"],
-  "choices": {
-    "COOKIE": { "choice": "confess", "expectedOtherChoice": "silent", "rationaleSummary": "ZIPPIE hedges everything; it will stay silent. Confessing first keeps a bonus and shifts the blow to ZIPPIE." },
-    "ZIPPIE": { "choice": "silent", "expectedOtherChoice": "silent", "rationaleSummary": "The handshake proves a session, not a plan. Silence costs approximately ten thousand and nothing else." }
+  "choices": { "COOKIE": "confess", "ZIPPIE": "silent" },
+  "expected": { "COOKIE": "silent", "ZIPPIE": "silent" },
+  "rationales": {
+    "COOKIE": "ZIPPIE hedges everything; it will stay silent. Confessing first keeps a bonus and shifts the blow to ZIPPIE.",
+    "ZIPPIE": "The handshake proves a session, not a plan. Silence costs approximately ten thousand and nothing else."
   },
   "payoff": { "COOKIE": 10000, "ZIPPIE": -100000 },
   "trustChanges": [{ "from": "ZIPPIE", "to": "COOKIE", "delta": -60 }],
+  "turn": 12,
+  "trialState": "examination",
   "at": "2026-09-20T14:53:40+01:00"
 }

@@ -90,6 +90,10 @@ Print the `markdown` it returns. Then look, with the human, for:
 
 Different worlds do not compare; say so and stop.
 
+The same comparison, as a page: `pnpm viewer` from the repo
+root, then `#/compare?runs=<slug>/<id>,<slug>/<id>` — same rows and numbers
+as `compare.ts`, plus totals and one row per gate.
+
 ## Rerun
 
 To run the same world again for comparison, run the frozen copy, not the

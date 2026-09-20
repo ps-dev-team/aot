@@ -12,6 +12,7 @@ packages/world-agent       Claude Code agent: runs a World — cast, trial, reco
   harness/                 deterministic core (TS, run with plain `node x.ts`)
   viewer/                  courtroom.html replay, derived from the prototype
   runs/<slug>/<run-id>/    every run ever made; never edited by hand
+packages/viewer            Vite + Preact browser over worlds and runs; reads, never writes
 docs/raw                   product doc, spec, ideation export, courtroom-iso.html
 ```
 
@@ -21,8 +22,9 @@ Run from the repository root.
 
 | Command          | What it does                                 |
 | ---------------- | -------------------------------------------- |
-| `pnpm typecheck` | `tsc --noEmit` in both packages              |
-| `pnpm test`      | `node --test` in both packages               |
+| `pnpm viewer`    | the browser UI at http://localhost:5173      |
+| `pnpm typecheck` | `tsc --noEmit` in every package              |
+| `pnpm test`      | `node --test` in every package               |
 | `pnpm lint`      | ESLint (flat config, typescript-eslint)      |
 | `pnpm format`    | Prettier                                     |
 
@@ -37,6 +39,8 @@ Two Claude Code agents and a deterministic harness between them.
    character subagent per turn, pipes the JSON action into `propose.ts`, asks
    the human at decision gates and for the verdict, then `evaluate.ts` and
    `render.ts`. Everything lands in `runs/<slug>/<run-id>/`.
+3. `pnpm viewer` → the docket, the world sheet, the run's
+   results and runs side by side. See `packages/viewer/README.md`.
 
 **Agents propose, the harness commits.** A character subagent has no tools: it
 gets a prompt built by `context.ts` from what it is allowed to know and returns
