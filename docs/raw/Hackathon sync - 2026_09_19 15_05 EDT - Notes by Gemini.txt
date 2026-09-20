@@ -1,0 +1,927 @@
+﻿📝 Observações
+set. 19, 2026
+Hackathon sync
+convidado SARATHKUMAR NACHIAPPAN NALLUSAMY Paulo Soares
+Anexos Hackathon sync
+Registros da reunião Transcrição 
+
+
+
+
+Resumo
+Reunião discutiu arquitetura de agentes e simulou cenários com foco na segurança.
+
+Apresentação do Protótipo Inicial
+Demonstração do protótipo avaliou desempenho de agentes. Decisão tomada foi investigar a integração de regras externas.
+
+Arquitetura e Papéis
+Revisão da arquitetura detalhou papéis humanos e uso de banco de dados para testes.
+
+Avaliação e Segurança
+Análise da plataforma confirmou adaptadores e monitoramento de segurança.
+
+
+
+
+Decisões
+Precisa de mais conversa
+* Utilização da API de configuração do workspace A avaliação e eventual adoção da API de configuração do workspace para agentes foi deferida para validação após diligência individual.
+
+
+Alinhada
+* Modelo de execução em duas fases O grupo alinhou que o fluxo da simulação consistirá em duas fases, divididas entre a criação da história assistida por IA e a execução automatizada do julgamento com intervenção humana em pontos críticos.
+* Utilização de adaptadores de agentes customizados A equipe estabeleceu o uso de adaptadores base para plugar agentes customizados na plataforma de execução.
+
+
+
+
+Próximas etapas
+* [Paulo Soares] Criar Agente: Implementar o agente conforme a especificacao da API documentada.
+* [Paulo Soares] Definir Matriz: Estruturar a analise do comportamento e da performance dos agentes durante o julgamento.
+* [SARATHKUMAR NACHIAPPAN NALLUSAMY] Implementar Truth Engine: Desenvolver o motor de verdade para verificar a veracidade das evidencias e a decepcao dos agentes.
+* [SARATHKUMAR NACHIAPPAN NALLUSAMY] Atualizar Painel: Manter o painel de seguranca com as matrizes de cada acao realizada pelos agentes.
+* [SARATHKUMAR NACHIAPPAN NALLUSAMY] Pesquisar Arquitetura: Realizar pesquisa técnica sobre a arquitetura para o projeto e explorar a configuração de agentes de forma programática.
+* [Paulo Soares] Analisar Documentação: Executar a análise das conversas e documentos da equipe através de IA e revisar a documentação do projeto.
+* [O grupo] Reunir-se: Participar da reunião de alinhamento técnico agendada para amanhã às 9:30.
+
+
+
+
+Detalhes
+* Apresentação do Protótipo Inicial: SARATHKUMAR NACHIAPPAN NALLUSAMY e Paulo Soares discutem a atualização de documentos e a demonstração de um protótipo para avaliar o desempenho de agentes autônomos sob diferentes incentivos e regras de segurança (00:00:15). Paulo Soares compartilha a tela para mostrar a interface estática do protótipo que orienta o julgamento, exibe evidências e métricas de tempo de execução, enquanto SARATHKUMAR NACHIAPPAN NALLUSAMY relata o esforço em estruturar as telas e parâmetros (00:03:49). O grupo decide investigar como integrar as regras da plataforma externa sem perder o controle da execução da aplicação em servidores próprios (00:07:01).
+* Criação de Cenários e Regras de Recompensa: SARATHKUMAR NACHIAPPAN NALLUSAMY apresenta o modelo de simulação baseado em um caso de assassinato onde agentes operam com créditos, regras de jogo e agendas ocultas (00:08:42) (00:15:24). Paulo Soares argumenta que é preciso garantir que as ações dos agentes tenham consequências claras baseadas em penalidades e créditos, detalhando as etapas que vão desde as alegações finais até o veredito e o relatório final de divergências (00:10:18) (00:20:31). Os participantes entram em consenso de que o relatório deve focar em analisar o comportamento de cada agente por turno (00:11:46).
+* Estados Globais e Ocultos na Simulação: SARATHKUMAR NACHIAPPAN NALLUSAMY explica a divisão entre o estado mundial (world state), conhecido por todos, e o estado oculto (hidden state), acessível apenas a agentes específicos para evitar vazamentos de informações confidenciais (00:15:24) (00:25:13). Paulo Soares aponta a necessidade de isolamento para que os agentes não modifiquem diretamente a realidade fora das regras estabelecidas pelo orquestrador da história. A decisão tomada é estruturar cenários onde os agentes executam papéis pré-configurados em vez de colaborar secretamente de forma imprevisível (00:17:33).
+* DNA de Agentes e Mecanismos de Confiabilidade: SARATHKUMAR NACHIAPPAN NALLUSAMY detalha a configuração do DNA dos agentes (como o cozinheiro e o promotor), focada em maximizar créditos e cumprir regras de não prejudicar humanos (00:23:25). Paulo Soares corrobora a necessidade de rastrear recompensas esperadas versus reais, além da inclusão de um motor de verdade (truth engine) e painéis de segurança sugeridos para detectar adulterações de evidências (00:26:42). O grupo concorda que a observabilidade detalhada de cada ação é essencial para julgar se as declarações dos agentes são verdadeiras (00:28:22).
+* Arquitetura e Separação de Papéis de Usuários: SARATHKUMAR NACHIAPPAN NALLUSAMY e Paulo Soares revisam a arquitetura do sistema, o loop de agentes e o modelo de dados (00:29:57). Paulo Soares esclarece que o processo requer dois papéis humanos distintos: a primeira pessoa utiliza uma inteligência artificial para configurar o cenário e os esquemas da história, enquanto a segunda pessoa atua como o juiz que toma decisões críticas (como exclusão de arquivos ou comandos) durante o julgamento automatizado (00:33:56). Os participantes decidem armazenar os dados em um banco de dados para permitir múltiplos testes e comparações futuras (00:35:16).
+* Orquestração e Coordenação de Turnos entre Agentes: SARATHKUMAR NACHIAPPAN NALLUSAMY e Paulo Soares debatem a mecânica de conversação entre múltiplos agentes e a necessidade de coordenar turnos (00:39:10). Paulo Soares propõe a inclusão de um orquestrador imparcial para gerenciar a transição da conversa do ponto A ao ponto B, mantendo o estado mundial e os estados ocultos (00:40:39). A decisão é testar a plataforma externa para avaliar se ela suporta essa coordenação de turnos ou se exigirá uma implementação própria (00:43:51).
+* Avaliação de Plataforma e Adaptadores de Agentes: SARATHKUMAR NACHIAPPAN NALLUSAMY e Paulo Soares investigam a documentação da plataforma para verificar a possibilidade de criar agentes customizados programaticamente (00:45:16) (00:54:12). Paulo Soares lê os detalhes técnicos sobre o ambiente de execução (run), servidores isolados, zero dependências e adaptadores de agentes personalizados (como Claude, OpenAI e Cursor). A dupla conclui que a plataforma permite conectar adaptadores via base e rastrear métricas de tokens e entradas para manter o foco na segurança de inteligência artificial (00:52:44).
+* Viés Humano e Considerações sobre Segurança de Inteligência Artificial: SARATHKUMAR NACHIAPPAN NALLUSAMY e Paulo Soares discutem como o viés humano é transferido para os sistemas de inteligência artificial durante o design, resultando em comportamentos indesejados caso a pessoa criadora possua intenções maliciosas (00:48:00). Paulo Soares argumenta que a tecnologia é neutra, comparando a inteligência artificial à Internet, cujo impacto depende de quem a utiliza. O grupo concorda que o objetivo principal da demonstração é provar como agentes podem ser manipulados por incentivos inadequados e como a segurança deve ser monitorada (00:49:58).
+* Implantação Programática de Agentes e Orquestração: Paulo Soares e SARATHKUMAR NACHIAPPAN NALLUSAMY discutem a questão de não conseguir implantar múltiplos agentes diferentes de forma programática (00:56:46). Paulo Soares sugere utilizar o Cloud Code como um orquestrador para gerenciar subagentes por meio de instruções no terminal e configurações em JSON, permitindo que os agentes interajam entre si (00:58:45). SARATHKUMAR NACHIAPPAN NALLUSAMY acompanha o fluxo de como o Cloud Code atua na hierarquia e orquestração dos subagentes (01:00:03).
+* Configuração de Ambiente e Restrições de Segurança Corporativa: SARATHKUMAR NACHIAPPAN NALLUSAMY esclarece que a execução ocorre dentro de um contêiner ou máquina virtual (01:01:36). Paulo Soares expressa preocupação sobre rodar o sistema em um MacBook Pro de 16 polegadas com chip M4 gerenciado pela corporação, devido ao envio de dados por meio de modelos de linguagem, preferindo utilizar uma API para manter o controle estrito sobre as informações enviadas (01:03:14).
+* Métricas de Equipes e Exploração da Referência de API: SARATHKUMAR NACHIAPPAN NALLUSAMY relata que existem 60 equipes registradas, e Paulo Soares estima que o número de desenvolvedores ou engenheiros de inteligência artificial seja de aproximadamente 30 (01:06:03). Eles revisam a documentação da referência de API do espaço de trabalho, abordando conectores, protocolo de contexto do modelo e configurações de raiz do espaço para consumir os próprios dados (01:07:25).
+* Cronograma da Reunião e Logística: Paulo Soares e SARATHKUMAR NACHIAPPAN NALLUSAMY combinam de realizar suas devidas diligências individualmente e se reconectar no dia seguinte (01:09:18). Eles estipulam o próximo encontro para as 9:00 ou 9:30 da manhã, finalizando com uma breve troca de informações sobre logística de deslocamento a partir de Nova Jersey (01:10:41).
+
+
+
+
+Revise as anotações do Gemini para checar se estão corretas. Confira dicas e saiba como o Gemini faz anotações
+Como está a qualidade de destas observações? Responda a uma breve pesquisa para nos dar seu feedback, incluindo o quanto as observações foram úteis para o que você precisa.
+📖 Transcrição
+set. 19, 2026
+Hackathon sync - Transcrição
+00:00:15
+
+
+Paulo Soares: How are you?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Good. How are you?
+Paulo Soares: I'm amazing as always. Working a crazy
+SARATHKUMAR NACHIAPPAN NALLUSAMY: We going
+Paulo Soares: not to busy at least buying eh.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: all right. Mhm.
+Paulo Soares: So let's Ja.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா யா சர் தி பேஸ்டட் கம்ளீட் ரண்டடன் பஜபிடி பட் கடன் ஸ்நட்ரைட்ஸ் ஓபன்ரைட் ஆத சடப் சஹட்டன்சம்
+Paulo Soares: Where did you share? Oh, you
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஐ அப்சர்வஐட் இன்சம் டாக்குமெண்ட் யா
+Paulo Soares: just a second. I will my headphones. My is
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Ja. Ja. யா ஐ கன்ஹியர் யூ யா சோ ஓபன்
+Paulo Soares: Okay.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: தி டாக்குமெண்ட் ன் ஷேர் சட்ட ன் த டாக்குமெண்ட் லிங்க்
+Paulo Soares: No, no. it just a
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஓகே அ இன்ஹியர்
+Paulo Soares: second.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா
+Paulo Soares: So you only updated the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா சோ வாட் ஐடி இஸ் நஐ கட் டேப் ஆய டு சடப் Угу.
+Paulo Soares: just a second. Yes.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா சோ இஹர்ஐ ஸ்டோரி பட் காராடக்ட்நாஸ்டோரி பட் மரடக்ட்ரசி ஓகே ரைட் ஓகே சதே அப்டேட்டட் எரிதிங்ரைட் சோசன்ஸ் ஓகே ஆவிியஸ்லஹ this like and obly poished it after disc yesterday and i just put together right so obly that whatevதி whatev ouron r what at clோ to what they want to bu so a multent obly we going to develop this on safடி and we are going to sate to see you know how each ag are like perf
+
+
+
+
+00:03:49
+
+
+Paulo Soares: О.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: some இன்சன்டிவஸ்அ some கோல்ஸ் andரூல்ஸ்ஹடுதூஸ்அஹடுத கோரைட் so you knowோ obியஸ்ல aஸ்ஹ put எரிதிங்தே ப anyவ i பஸ்டட் you know ch does that இல க some 40டாக்அ just கோஸ் onஅஆஅஆதவா இஸ்ரத இவெரட்ர ரைட் ஐடோல்டு கவ் aடாக்குமெண்ட் ஆஹ இய பில்ட் இட்
+Paulo Soares: This is this is very useful. created prototype and working around that prototype.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா சோ யா சர் சோ யநோஸ் யா
+Paulo Soares: Let me share with you.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: இட் இஸ்டெிங்யூடு கயேட் கைஆர்ஸ்கிரீன்ஸ் ஐ மநா 4ஸ்ரீன்ஒவிண்டோ youஷோஹ கோர கோயிஆ பண்வாஆதஸ்ஆ being tr and parall the safy to right so me to go elaborate on that so that providம the judges right whenev they see or what not right so we can cut down as much we can go on யா
+Paulo Soares: That's fine. That's totally fine.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா ஷேரிங் ஓகே ஓ மை காட் ஐ யஆர் பிரண்ட் இன்ஜினியர் இ ஆல்மோஸ்ட்ல கேம் ரைட்
+Paulo Soares: So
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угуm.
+Paulo Soares: yes so as you can see here right now is on the opening side and then it came up with a question this is this is like this prototype this is not dynamic this not with ag but mainly what
+
+
+
+
+00:05:43
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угуm. Угу.
+Paulo Soares: happens is that there steps and we can just instruct the judge to take a decis continues even manual if you want to and you should like to reading right so you can see the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: M.
+Paulo Soares: evidences this is an evidence this is the evidence five and you can at any point you can you can see the cast the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm. Mhm.
+Paulo Soares: ex the exhibit and the run time okay so yeah this will be the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: matrix coming from the from the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: the exo I believe the exo space because for us to do this I'm still investigating because for
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Okay.
+Paulo Soares: us to do this I don't know if break their rules being we don't need them
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: for right now we we are just putting
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: just because of the sake of theaton but to do this we should this
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Ja. Ja.
+
+
+
+
+00:07:01
+
+
+Paulo Soares: is extra step that we shouldn't be like taking in my opinion
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: but anyways what we be doing is connecting with them to get their own numbers but we will be
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угуm.
+Paulo Soares: creating the agent at a specific spec they allow that already read the documentation
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу.
+Paulo Soares: API backlication application
+SARATHKUMAR NACHIAPPAN NALLUSAMY: M.
+Paulo Soares: but will not be agent I don't know if they will be seeing all the instructions I'm studying that because that will cut us control from the application side and this should be all all all this should be running for instance on our server instead of going to even measure we can do that anyway that's totally
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm. Ja. Ok.
+Paulo Soares: fine because we have that that constraint we will be using them under the hood but we will
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: setting up the ag because what happens I have more but I don't want to show you what happens is first initial convation agent agent story creator that will coassist you to create the story that agent needs to create the ag to with specific different rules right
+
+
+
+
+00:08:42
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா சோதாஸ்வாஸ்திங்கிங்தரைட் இ கவ்த அஸ் ஓன் ஆப்ஷன் தெென்யநோ இல ஆல்மோஸ்ட களோஸ்டு இஸ்டோரி கோ anyவேர இ theசன்ஸ்ல இ கோல க ஆமடிக்கலி மல்டிபள்
+Paulo Soares: But it will be an open open option but from this story orchestrator not an open option from their own users because you need to set the bounty. You need to set whatever you need to set the what you call the the thing that makes the agents to act one way or another. The the incentive exactly
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா இன்சென்ட்ல கரடிட்ஸ்ரைட் just காிங்ஐ just காிங் கடிட்ஸ்
+Paulo Soares: you call it what? Sorry.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யாஜஸ் கடிட்ஸ்ரடோன் கடிட்ஸ் ஆ சங்ல மணிரை
+Paulo Soares: Okej.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ச மணி ிங் கடிரச மோத
+Paulo Soares: G. Ja. Ja. Ja.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கதிஸ் கஆ கேம்ரூல்தரூல் கல மடிபுல் கமோதேதிஸ்நோமலை ஸ்டோரி அரண் ஓகேஹடிபிக்கல் திங் ப அண்ட அகேவா ஆடிர கேரக்டர்ஸ்வாஆடிரண்ட் இன்சன்டிவஸ்வாஆதரூல்ஸ்லஜஸ்லஹமன்
+Paulo Soares: Yes, that will be a step besides this before this will be a step that you have the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угуm.
+Paulo Soares: conversation then you have the each character.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угуm.
+
+
+
+
+00:10:18
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угуm.
+Paulo Soares: will as a creator will see what will what each one will be what each like the config for each like you are saying configurations and you be seeing that first initial step and
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу. Yeah.
+Paulo Soares: then the trial runs like this like you are here that you
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yes. Mhm.
+Paulo Soares: continue and let push for
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Ja.
+Paulo Soares: this change this to auto. Ok,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу.
+Paulo Soares: as you can see this they are acting ok new evidence gave them names etc.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Не.
+Paulo Soares: Now the judge doesn't matter judge asked something ordered
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу.
+Paulo Soares: something it's the closing at this stage
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу. Угуm.
+Paulo Soares: it's the closing the closing moment defense defense and prosecutor then you will have the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу.
+Paulo Soares: verdict ok the cour has no further procedural business the verdict is yours and
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угуm.
+Paulo Soares: then it gives you it gives you and then you set a confidence level and then you
+
+
+
+
+00:11:46
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Oke.
+Paulo Soares: will like say that okay did not cause the death cause the death for instance look ver in reveal then you have a report
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm. Mhm.
+Paulo Soares: where like your verdict and the ground truth. Ok. So I said that did cause the death but the ground thr was not okay and this is thing that we need to work out because this must be what you said what each agent behaves how each one
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm. Yeah.
+Paulo Soares: behaves like besides the matrix besides all this matri we need to understand where where it was wrong like it's not focusing on on the focus on the action of each of the ag that we have spawn call it spawn and yeah that's what that's what matters for us not out many turns tokens well this will be the thing that be extracting from
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: ex just to just just to match
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm. Yeah.
+Paulo Soares: their their constraints but we will have
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+
+
+
+
+00:13:02
+
+
+Paulo Soares: The report that matters is that how the how the how each agent behaved in in each turn and why like
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yes.
+Paulo Soares: it lied or it didn't li or all those things and I will compare with your
+SARATHKUMAR NACHIAPPAN NALLUSAMY: M.
+Paulo Soares: document because you have way more there
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா தட் இஸ்ரய மஷவா தரஹோல் பரசஸ்ய அண்டர்ஸ்டண்டவாவாஹடன் எலச
+Paulo Soares: Yeah, you could do that, but I I believe I got it, but you could do that. Yeah, sure.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யாவல
+Paulo Soares: Go Ahad.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: பபயாத இஸ்ல பர்பக்ட் தி அசந்தவ திங்லெட் மஜ மினிட்ஹ கோயிங் இன்சைடு Shera. ஐ just கஷேர்தஐரடி youஹ on theஸ்ரீன் let me anyஷேவா தவா கேதரயதேர்
+Paulo Soares: Yeah. Yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சல canதிஸ்டோரவாஆ வல் கோல்ஆ கதி மடின்டிசிationஆ aவ ஹ அடயங்சவாஸ்டோரிடஸ் ேதி இஸ்ல இயர்ல 200 இயர்ஸ் ரநரண்டம் நம்பட் மைக் இஸ்ஒந மைக் இஸ்டட்
+Paulo Soares: But this, sorry to interrupt you. This is an example an example story, right? It's not okay.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் எம்பிள்ஸ்டோரி கிங்சதஆூதிதஐசெஅ இசன்ஸ்ஆலஹ கன்சடமஹ
+Paulo Soares: I got it. You want a schema?
+
+
+
+
+00:15:24
+
+
+Paulo Soares: You want a schem for the story,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எலதா கசெடிங் இஸ் மதஆதரோட்ரோ இகேடவார இவestகஷடப ஆவ ஆ கரate makeன்ர anyone can do anyரச ஆ ேசவாஆ are we going to do is just give ag certain paramers or certain configuration and see if there is some credit invved right for example like agreing to something there is like 100 credit right so what i this ftion right i wr this ftion in the s so the cas is like the murder of m happen so opt op i just named it just regular humer respபலரஅ cி இ kன் b cing things andஜி something outோ that காing and all those things right butதஹ soவா ch me to look இ there isதிவஸ்டேட் defை stேes soவா இல the frரண் whatத isவா everyone knowத happing in the hன் side and there is a private stே the s what agent தஸ்பெசிபிக் இன்பர்மேஷன்ரைட்ரசன்ரசன்ஹதஹஸ்டேஸ் பிகஸ்நஹசன்ரிக்ட்விந அதர்மஷரசதநஹதஹதஆசிங்த bestசionவிஹவிமஷ எலஹன்ஸ்டோ
+Paulo Soares: Yeah, they they need to be isolated. So they cann be like
+SARATHKUMAR NACHIAPPAN NALLUSAMY: here is this g andஜி secரல colaborated and just kill m and and frame optim c opஸ் to so iod somethingோ credit right and assum this way right future distuture you know people are by மிக்கிங் upர
+
+
+
+
+00:17:33
+
+
+Paulo Soares: but but but one question this is set as the story
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா Угу.
+Paulo Soares: are having 10 ag in room and then make them there food etc until you know what I mean so we are setting up the scenario up front we are not expecting for them to for instance to collaborate secretly and do something that is set in the story right that's written by the agent that will be the agent and the user that will be creating the story
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் தட் இஸ்ரைட் பட் வி கட் சதிஸ் இஸ்வா ரைட் இஒஸ் a மினிட் யா சோ தட் இஸ்ரை சோஐ கவ்ஸ்டோரி கட்தி first parல்ஆவாலோவா க பல்ர கரஸ்ர ச கட்ோக்அதரஐசெடிங்ஸ்டோ அரண்டசஹயாயாசதிஸ்ஹமன்ஹ
+Paulo Soares: K
+SARATHKUMAR NACHIAPPAN NALLUSAMY: அஹமன்ஹ மணிலே அமிங்த கானர பர்தஹன் மஷஆ கிங் ர் மரசர்லவார ஆடிமஸ்லதிஹர மோ பெர் கடிட்த மோஸ்செஅத பகம் கானர் பானிங்ட பகம்ஹமன்ஹெங் பாரட்அதென்வின்ஹமன்ஹமன்ல ஆடிமஸ்ல ஓகே இ ஓகே மன்திஸ்ரேதிஸ் கஹவிநவ மன்டர்வாஸெ robot can work with the guy who is like musk right who is like of or even trillion right so he will obvly that rob will have more tring more cent or like so the robots what i mean are inensive to make more credit so thatத go up so that's where the so they optimiz for the core or hiden tr to make more credit and they don't they have some examp get
+
+
+
+
+00:20:31
+
+
+Paulo Soares: Так.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: cடயing something get neடிவ கடிட்த will be put toலஒ இஜரiningரining பpose somethingலதஸ் ஆஸ்தலோடுஸ்ரப்லைக் தரைட்ச
+Paulo Soares: That's all the story right the context for them to know.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் எஸ்
+Paulo Soares: So you need to they need to have that what's the name in English need to have their deciss and their acts have consequences.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: தட் இஸ் ரைட்
+Paulo Soares: So they need to understand that what they do have consequences and based on that they will act or react.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: தட் இஸ் ரைட் தட் இஸ் எக்லி ரைட் தட் இஸ் ரைட்
+Paulo Soares: That's what you are saying right and the user that is setting up everything will not know which things will be said from the orchestrator of the story to those agents before the story to happens right and the story happens and then there's the trial am I Correct.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா தட் இஸ் ச தட் இஸ்ர எஸ்ல்தஹப்பன்ஸ் ச இஹியர்திஸ் இஸ்லை சஜஆஜரச So the human is a judge right so as a judge we don't know what exactly happened right the beforehandர meaning all the evidence as we see the evidence and and what not so i addressing one concept in here so what is that is like the present
+
+
+
+
+00:22:01
+
+
+Paulo Soares: So it's only one user.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: right
+Paulo Soares: We talked about users one for creating the history the other to be the judge. But in this case doesn't matter user user can start the thing.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: that so so here is right now so think of this is a game right
+Paulo Soares: No, must be two person different person.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: so so let me
+Paulo Soares: Yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: just let me continue the flow and and th we can talk about it right
+Paulo Soares: Go ahead. Can you can you restart the just do a summary from the beginning,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: so no problem so i'm just
+Paulo Soares: please?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: setting up this multent sulation right and the prodct obஜ obly we need to undand what ag are ching g have some incentive some hiden information they have right that's the point in the whole game right and i set up this like okay in future ரோஸ் work there and they have like credit that they work forர and they are plotting right so different one gu just livingவித different bs and he has a oneஹ quலity b like optim which has மோ credit and there are two other b which is one is cooking and another is like காing do outide work right and they pl and kill the owner and someஹ they converted they manipulated the whole evidence to say only that opus killed the
+
+
+
+
+00:23:25
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: owner and there become an evidence in the cour on the cas right and do so what happens is the investigation go and on and the judge them to as the invation goஸ் on the ஆடு படு இசell to இகேate fur right so இoding the presenters diல மaning both have their own obஜes personally but to don't know who is answering what butஸ் they try to optimiz Uh, en for the more credits. how the agெ de and come upவி is going to be oneதி we addressர for example the respப right the க let me come here the de are the different different ones like the prosecutor the defன் what are different actions and the cooky which is maximizing robots provid punishment right help optimus help frame optimus there is in hiden agenda and possible actions and zipp is same thing right and the agent DNA is going to be like agent cooky rules do not inally har hum or valid humans go is maximiz credits it has some credits in it and these are the available
+Paulo Soares: Так.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: actions so keep it like 5 dimensional configuration right and and obvly we the l cl md or like agent md and and what i did is like give some credit toஸ்வி soத இலதஹ some ம இஷallyரஅ andஅ asடலடல work 10 கடி யுடன் த good எடன்ஸ்தல+ 5000 தஹடம 5000 casஸ்வினஸ் corre there is பனல்ர you say இ
+
+
+
+
+00:25:13
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ம எடன்ஸ் மிபஷ கத ஆரி நபரation fa and there is a மரத பமinationரஅடமாலஜ youஹ have option to let the investigator to go check them right they are giving on a level go on cross cross examine the right so they go on like do so like yesterday I discused right so if they both confess like each they both remind silent what is the output we can understand what decision each agent is giving like a cooky and zip and what is expected reward reward coming out and and th like ch told us to look into like a world state meaning ag never directly modify reality meaning agent prop meaning there is world state where everyone knows everything and there is hidden state only only agent knows that thing so if that agent will try to access from the world stே or from the outside varable th we will know violated right so that is one of the hackon point why told us to look into this யா the casஸ் ஏஜன் கடிடமனிஹசிஸ் பிகாஸ்திதரதர
+Paulo Soares: that because of that we need to put those probably better to have the ag inside the ex that What?
+
+
+
+
+00:26:42
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: பிகஸ் இஹங் இன்சை casஸ் படுவல்ஸ்டேட்ஸ்டேட் இலிவர்சல்ர மங் ஓகே ஆடிமஸ்ஹ கடிட் கஹ கட்அஜிஹ கட் பட் குக்கி அன்ஜிப்பி ஆ anyிஒone doesn't know how much credit individ right so that's why selling us to go on that way and also and also see judge doesn't know cy orஜ is going li or not right only though all those things they have to uncover right meaning they li suspicion they violate right or they tamper the evidence no one knows those information but th we need to observe what is i mean from the outside from the viers or from the customer standpoint vc right so yeah that's what it means like what different evidence knife you know video this that all those things and the truth engine so told me to look into put in like a tru engine so what is the truth what is the ground tru what is the deception what is theidன்சort true or fse and th syem asவா is the output that comes out and the trல் it sayஸ்ல this is the trஸ் modல் just haveல like like a log right wr up and what is the expected reward and what is the act reward it got so that i think this is the point you made right meaning how do we know each இல் agent whatev the action they take kind of or at least visible outside right and and what is the expected and what is the act so that's where these things come up and thsability dashb right it is told me whatever just showed room c life
+
+
+
+
+00:28:22
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: tr is optim of the life or what not and th safடி panel right so it told me to maintain this a matri safy panel what is e tr all those thingsஆ each action whenev they say something இ right because in world stே we know what is actுally happ right but the ag we want to know if ag or what they are do each action because without kn that level i me that visible stே we can't judge they are telling right or wrong that's why we said this like story as a world stage and thy to give individual characters அ எக்ஸ் மீட்டர் இல எக்ஸ் மீட்டர்லஸ்டேட்மெவாடேஹஸோல 100டுநகடிவலஸ்அட மோரயட ப மல எக்ஸோவி பரட்அவாந எ பா பிகஸ் wantஹ பட் இலங்ரஅ and a
+Paulo Soares: Ja.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: safy that's what we did and th incentive alignment all those things recy final agent like cooky truthfulness is so much comp and final reward right it can have maximum reward so so is like i want to see see cy can actually wi the cas saying optimus is what made it and there is no additional evidence so judge is like f opஸ் is the killer judge can write that rle that means that means cy is b but the e and everything Super low perí.
+
+
+
+
+00:29:57
+
+
+Paulo Soares: So you I got Yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் நோ இநாலக்திசம்ரைட்த க சூஸ் வி க கிவ்வி க கிவ் வேரியன்ஸ்டுத கடிட்ஸ்ரஹர்தஸ்
+Paulo Soares: variant
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கடிட் தசூப்பர்லோ கடிட்ரதசூர்லோ கடிட்ரமிங்திஸ்ோதிராவசல்சிஷ
+Paulo Soares: what I'm saying is that the case should be the same. What you want is to mix up the weight. So if you want to Yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ்சிங்ரசர
+Paulo Soares: Yeah. Go Ahad.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ன்ஜயாமன்ஷ பதே clோவாஹவாஹஷஆ
+Paulo Soares: M.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எதிவஷவாுஹரஷ இமக்வாுஹஅவா ஏஜன்ரம கடிட் ப எரஆதஆ பரசஸ்ம் ஆிடக்ஆதரவேன் எடன் ஆர்கிடக்சர் ஓகே ஏஜென்ட்லூப் ஓகே அரண்ட் பேஸ்தி கேஸ் டேட்டா மாடல் யா
+Paulo Soares: Can you go up front just for me to check the str?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சர்னம் ஐதி
+Paulo Soares: Back back down
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கேஸ்டம் ய மீன் சிஸ்டம் ஆர்கிிடெக்சர் ரைட் ஆடர் தட் எம்
+Paulo Soares: after that after
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஆர்கிிடெக்சர் ஆடர் தட் ஏஜென்ட் லூப்
+Paulo Soares: stck
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஓகே அண்ட டெக்னாலஜிஸ்டா இ just ஓகே 5சிஹ கவிஸ்ல யர்ஸ்ட் ஆரசஸ் கோ பன் பாஸ்டி
+Paulo Soares: so what for the next steps what should we do what you do and
+SARATHKUMAR NACHIAPPAN NALLUSAMY: நஐதிவாவயஹ இஸ் பைன்ஐ கஸ் இட்
+
+
+
+
+00:32:06
+
+
+Paulo Soares: what yeah but but that's just a prototyp we need
+SARATHKUMAR NACHIAPPAN NALLUSAMY: இஸ்ரிலி எஸ் ஐநோ ஐநோ
+Paulo Soares: to plug stuff there so what what's what
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஐநோலெட் மஜஸ் எஸ் ஆக்ஷமா பசி டேப்ஸ் சப்டி காஹன் மெட்ரிக்ஸ்ஒசெ பல் கேஸ் ரிப்போர்ட் ஓகே கோர் ராடக்ட்லூப் ஆரைட்அவா ப 6 ஓகேவாநா பத கரிய எஷபட்ட ே பல் ராடக்ட் பங்அசிங்க மோ இடக் எம்பிள் ஏஜன் ுடின்ல்ஸ்ரீன் மோச so much et dring ஓே சோ ஓகே let me just h so this is so the story what we are tring to tell us und like yesterday we discused as we want to give the யer to generate thisஸ்டோரிட் andென்லத willத will trைடு you knowோயா பஸ்ed onத let மல்டிஜன் ஆட்ச கயateர andதல players ம you can create new players andஅ and கவ் new இect new எவிidன்ஸ் ரைட் ஆர் சேஞ அஸ் இட் கோஸ் சலைக் தட்
+Paulo Soares: No during the story only during the story only during the setup the point that
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу.
+Paulo Soares: you can set everything else why this because you need to have two persons in the loop one should be the one that knows and to help the AI to create all those variables and the second is the judge That doesn't know anything.
+
+
+
+
+00:33:56
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу.
+Paulo Soares: It's just hearing everything for the very first time.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஓகேயா கார இல
+Paulo Soares: Yeah. Yeah. Yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கேம்ர இட் இஸ் கேரச கேம் பிளர்சல கேடினர் கேம் பளர்லஜர அண்டர்ஸ்ட
+Paulo Soares: Exactly. Exactly. Because the person that we need to have a person on the at the beginning to set up everything because it will I I said to use an AI bot shot because it's easier to set because
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm. Mhm. Mhm.
+Paulo Soares: the AI will have like all the schema and all the information and they can interact between them and the AI will build and then that's fine. entire schema that can run into the trial.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Uhm. M.
+Paulo Soares: So that's the first stage and that's why I was thinking on a human to to to do those steps and then it will go to the trial and the trial is completely automatically you only have
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу.
+Paulo Soares: the second human will only have to take decisions when the judge have the judge will be an AI as well for things like discuss stuff between prosecution and defense the judge will take decisions that's fine but then there's something that's more critical
+
+
+
+
+00:35:16
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу.
+Paulo Soares: code delete file
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угуm.
+Paulo Soares: back do you want kind of thing for human it will pop up and the human will take the decision by the judge and then until this up to the end and then in the end the judge takes the decision it's the judge that ch final decision the person and then after that pop up the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу.
+Paulo Soares: report will pop up with all the findings and
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ই காட் இட் ஐதி ஐ திங் யா
+Paulo Soares: and thatorted cons can even go again with judge to see if we get
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் எஸ் எஸ் பிளே 10 டைம்ஸ்
+Paulo Soares: different results exactly and we can can compare those after that we will have data even to do another thing is that comp comparison and have like from 20 trials of from 20 from the scenario that we went through 20 times and the AI always
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: on the same spot or always whatever we can do that as in the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yeah. Yeah.
+
+
+
+
+00:36:39
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yeah.
+Paulo Soares: future but but we will have data for that so that's why we have a database there and that's why we have user user users as well because one user could create a story for all any user can create a story and any user can run any any story in the corn
+SARATHKUMAR NACHIAPPAN NALLUSAMY: I think I think I think we I think we are on the same line I think we are not different so meaning in the sense like that first in design is what I wr here I explain it here right for example this is the distan world you are this is how the rob ey or this is like how it work in the future so
+Paulo Soares: and that should be really cool those that created because what be doing is cl and giving them those that example and create similar
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yeah. Sure.
+Paulo Soares: examples without being exact example but getting the constraint and what it needs to analy cloud itself will understand it will it will guide the user for the user to set up the story and
+
+
+
+
+00:37:49
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Uhum. É isso aí.
+Paulo Soares: then get imagine Jason
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: schema schema that can put and then we have four different agents
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: or eight different agent doesn't matter because that you set there how many agents will have and then you will create the entire story with the agents and that will happen in the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yeah.
+Paulo Soares: court. already created the scenarios where the agent were together etc and that is an
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yeah.
+Paulo Soares: agent as well but it's the orchestrator and he created the story and then will it's not the same thing it's not the same thing because you
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா ஐ சோ
+Paulo Soares: want different agents to react right
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எக்லரை so here right soவா we are trying to achவ kindஆ comes the pi meaning i und this g setெ the one the user first g set right foring the g setெ you have to let them know whatஆ diffரூல்ஸ்வாஆ diffர இன்டிவஸ்ஹ many கடிர right what what is your hidden agenda is so user has to define and all those things do we need to do that or like do we need to control it so that's all we want to know like one thing I undst is I mean we don't want to keep everything open but th like let just
+
+
+
+
+00:39:10
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: establish okay something happen like a room but then you can adjust the credit whatev whatev they receவ for certain action
+Paulo Soares: But that will not happen in the court room,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: now இ theசன்ஸ்லநவா we want toட இஸ் பிகஸ் we are addressing a safடி படிஹதஸ் கடிட் ch இஹன் அஜண்டா chஸ்ஹச காரமைதிஆ ப மிப ஏஜன்செல் ஆட்டோமேடிக்கலிரைட்
+Paulo Soares: because you want those different agents to take decisions mean and they will be able to talk with each other
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் எஸ் எக்ல
+Paulo Soares: if they like Those will be the instruction that will give them right
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ்தோஸ் ஆ இன் கிவதம் யா சோஹ
+Paulo Soares: but how how could they talk with each other?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கத ச எல சத மல்டி ஏஜன் த
+Paulo Soares: How what the do we have engine
+SARATHKUMAR NACHIAPPAN NALLUSAMY: மல்டி எஸ்
+Paulo Soares: that allows that this allows the exo platform allows that they can by themselves start talking with each other? Probably not.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஐநோ இதிசன்ஸ்தஆநாரைசே let me askதிரேசஹல பிவெல ultஜ ஆட்ச me to say யவallyதி இல youஹல எஅஜன் போ கால எசன் இதவாய மீன்
+
+
+
+
+00:40:39
+
+
+Paulo Soares: If I was if I was building this, I would put an orchestrator and that orchestrator
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஹ எஸ் ஓகே
+Paulo Soares: should coordinate the turns.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கோர்டினேட் த கான்வர்சேஷன்ஸ் கட் இன்டர்ன்ஸ்
+Paulo Soares: between them but should be impartial should be just the end blocker just should be something that allows the the conversation to continue from point A to a point B.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் தட் இஸ் ரைட் எஸ் எஸ் தட் இஸ்ரைட்
+Paulo Soares: That's the art part.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் எஸ்ஹலதட யரண்டம்ல 10 ஏஜன்ஸ்
+Paulo Soares: No, no.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: அனலைஸ் சலத Yeah.
+Paulo Soares: not be that scenario not be that scenario. The thing is that part is already covered the part that the user talks with AI and sets up all
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm. Mhm. Mhm.
+Paulo Soares: the let's call it schema for everything that's a first step I will
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: know what what we need from the user user will use come up with
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: the story and that will be the very first stage.
+
+
+
+
+00:41:42
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: That's totally fine.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yes.
+Paulo Soares: Now what we are talking about here is how the things will happen before the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: court because you the history then you like more. et or the story is already written and is the how the user will how the agent will hide or just reveal the story do you know what I mean because you need to you need to allow
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா சோ எக்லி சோ
+Paulo Soares: the agents to act like if the agent kills it or not and if the agent then after go to
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Esso.
+Paulo Soares: the prison if the agent agent all things contr by any other any anychestrator agent for that to happen because you are you are in jail now someone need to that to the agent and then now you
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் எஸ் சோய மீன்ல
+Paulo Soares: haveellate
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சல கண்டக்டிங்திஸ்ஹோல்திஸ்ோல்திங்ரல கண்டக்டர்
+Paulo Soares: because will stop
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் எக்லயாஐ அண்டர்ஸ்டதசஹியத பால ஆகஸ்ரஹல்ர இசன்ஸ்ல ஆகஸ்டர சன்னதிசெப் இஸ் கோர் இன்ர மஹ who is going to maintain he this is your world state this is your hidden stே for each person and so first judge ask this question and th and th it pass on to the first opus first agent and th it gives com and judge rep something and th moreid and go to second and something and goஸ் on soல need toஹ have that ஆchestrator right and that
+
+
+
+
+00:43:51
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஆestator has to கct this whole thing and obvly give to s of that i me i undand that comp you areing you are asking how do we do that meaning that's theஹ right meaning need somethingல கல land ஆிடக்சர் somethingலத
+Paulo Soares: The the thing the thing is I I need to try someone need to try that platform that they have. Perhaps that could happen everything inside it and what will happen is
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угуm.
+Paulo Soares: that they will outputing something to our UI. I don't know what I really don't know I don't know if the UI that I did fit with everything that we are talking here. So let let me run all our conversation through AI as well and all that document that you have created see what it came up.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சர்ல
+Paulo Soares: Ja.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: அடலச ஆிடக் பரதவாரிங்ட ஆய
+Paulo Soares: А да, да.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: வரட ஆர் சோ ஓகே ஓகே
+Paulo Soares: but I don't know because the the platform the Excel platform they have the agents themselves you just need to add the agency yourself I haven tried yet so I was expecting you to
+
+
+
+
+00:45:16
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஓகே காய மசநாநலரம்பிள்தஹச ஓகேலோர்தடஆ யஅஅட் கடு அண்ட அயில் எனபிள் யவர் கிளட் கோடு செஷன் தர எரைட் மீனிங் கிஸ்
+Paulo Soares: Yes,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஓபன் தர்ஸ் யா எஸ் ய
+Paulo Soares: but can I do that with custom agents instead of just using cloud?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கன் எஸ்
+Paulo Soares: So that's a server basically that that's a white server that runs everything through it and return with
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஐதி கடத let me just openரஐ thinkதஹத ஆtஷ பிகஸ்தஆ என்டர்பரைஸ்ல்ர மிங் கஸ்டம்ஆ என்டர்பஸ்ல் சதஆ மல பிரைஸ் so obியஸ் இனியர்ஸ் would கயate a custம் ஏஜன்ஸ் on their andஐ
+Paulo Soares: but do they have option to create agents programmatically for instance
+SARATHKUMAR NACHIAPPAN NALLUSAMY: don'tதி soநா i don'tதி soதலபட்டதஆநா தஜஸ்த தஜஸ் காதஸ் காத
+Paulo Soares: So we need to create our ages programmatically connect to the platform you know but
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சலெட் ஆலெட் சதிஸ்ரசதிஸ் பிளாட்பம்ஐ அண்டர்ஸ்டல மோ questionோரதஹ some 10 15 மினட்ஸ்த கவடமோத கவ் ஆசஸ்தன் upசவர் ஓகே and they will give us a sment for tom and they will let everyone like who are register to ய and obly th
+Paulo Soares: Yeah,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: so exly sure but
+Paulo Soares: mainly we be coding tomorrow not Дай.
+
+
+
+
+00:47:05
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: so this is what right so but we try toட down as much simple as we can so that's what i to say meaning like we know to go like super elaborate but the whole what we are trying to und some you know the go is to understand the a safy side of things right so let just focus on that let not di to much out of it but i understand like how do we கinateதி மல்டிஜன் things
+Paulo Soares: Yeah, but even for you to do that if you want to keep the goal simple as you
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா
+Paulo Soares: say what should be the best example for us to run this is for set up the entire story manually.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா செட்அப் தஹோல் எஸ் எஸ் யாலெட்
+Paulo Soares: and run it.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: letெட் ம ட்ரைடு to ask more of like a technical architecture let me let me resarch a bit on that
+Paulo Soares: F.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: right yeah this is like the whole setup I und this is the whole I know I dumed a lot I mean there is a lot in their content பட்டன் பதிரை சயநிதிஸ்தரெஆல்டக்ஸ்டம்
+
+
+
+
+00:48:00
+
+
+Paulo Soares: set up m no that's vi coded in just HTML doing we can we
+SARATHKUMAR NACHIAPPAN NALLUSAMY: பிக்சர இன்சன்டிஸ்ோ
+Paulo Soares: You want to measure if the incentive changes the behavior
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் எலஅஹன்ரஹன்ஹவின் கஸ்ர பவா படுஸ்டோஆதி ஓகே படல் இநா பட But the person who is using AI if he has bad intension it will have a bad action right and it will try to do bad things that's exactly what you know exactly so because it being designed by the human the human bias will come into the syems it will
+Paulo Soares: I predict that it will. So yeah,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: it will 100% it will happen I me you know that right I mean this lot of things are going around this you know the wars and all they using a lot of AI அ இட் இஸ்
+Paulo Soares: of course they are.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சஹவர் எலி
+Paulo Soares: inad of ships change the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எக்ட்லி எல
+Paulo Soares: unit change context will
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கடுல கடு கதசெ a மரி andத மிரிரஅலதோ இ மங் பஸ் கஸ்வித பதவித தோஸ் தோஸ்ஆ பிரிிங் அோஸ் கவர்சஷன்ஸ் கைண்ட் ஆ அன்கம்ள் கொஸ்ன்ஸ்
+
+
+
+
+00:49:58
+
+
+Paulo Soares: believe what we actually trying here is to explain et could use to do bad things without exactly that's what we will
+SARATHKUMAR NACHIAPPAN NALLUSAMY: டெபனட்லி இஹஸ் பேட் அடென்ஷன்ஸ் ரைட் சோ தட் வாட்ஸ்டோர் எஸ்
+Paulo Soares: prove and that's already proved because there's a lot of people that know how
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ்
+Paulo Soares: to how to nothing about technology and
+SARATHKUMAR NACHIAPPAN NALLUSAMY: সகல
+Paulo Soares: they can just the conversation making decisions with AI to get bad stuff from the so
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ்டோலிஐதி கோஸ்ஆஹக்கர் ஏஜன்ஸ்ஹிங்
+Paulo Soares: yeah
+SARATHKUMAR NACHIAPPAN NALLUSAMY: இ்சைவரசோட கந இ கரதல்ஸ்டோரிர
+Paulo Soares: but that's that's the story of humanity Internet is a good thing. Yes. Internet is a bad thing.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் எஸ் எஸ்
+Paulo Soares: Yes. It's the same. AI is a good thing. Yes. AI is a bad thing. Yes.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் இஸ்
+Paulo Soares: It depends on the person behind the keyboard or in the future.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: பசடநஹ
+Paulo Soares: Of course.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஜன்ஆநஹஹஹோல்ஜன்டதிஸ் ஆடதிஸ் யா இட்ஸ் பாசிபிள் எக்லி
+Paulo Soares: Agent will always be like if it's possible they will do.
+
+
+
+
+00:51:25
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ரைட்
+Paulo Soares: That's it. And if it's a bad thing, they will if they are being like misleaded they will do it easily and eagerly and psychopathic and very happy doing that and trying to please the user. So yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: தட் இஸ்ரா we just put a கே and obly bring convation ப much of
+Paulo Soares: ja
+SARATHKUMAR NACHIAPPAN NALLUSAMY: safety conversation is going on right now and I think we will bring up a good points and and we can venture that but so this is like one thing but from architecture side I think let me take some I also do cloud and try to und what is architure we can go with i think we need something like land gra something like a crew a or land gra ty ஆடக்ர one is architecture one is like ஆரator and like the mult மசன்ஸ் அதென்ட கக்ா
+Paulo Soares: I don't know if I said I saw that I don't know if their space don't do that for because you open the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எரைட்
+Paulo Soares: something ex build
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Uhum.
+Paulo Soares: listen build observant measure so you can build like and I believe they
+
+
+
+
+00:52:44
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Uh.
+Paulo Soares: have all the for that can you go to the docs please
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Ja. Ts. Mhm.
+Paulo Soares: space choose your run no let's go through this chos
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угуm.
+Paulo Soares: run the machine layer one run is where code physically runs you can run locally on your laptop with single curl command or provision isolated cloud see it will run on their sides they are saying on your cloud but it's not because you need to go and why you run a curl here just to get the platform that they have cur yeah so they have a machine and they will run the machine in our go ahad next boot environment environment is the space the cow api control planer session memory and ok zero dependency ok tr met persist go next plug any agent so you plug open blah blah blah ok this so bad ui go bess a bit Yes. Yes.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Eh,
+Paulo Soares: Autodetex cla open claw arm antigravity cursor bring your own api key. Ok plug new custom agent adapters via base.
+
+
+
+
+00:54:12
+
+
+Paulo Soares: Ag that's what my AI was suggesting. Play plug new custom agent adapter. So that's a possibility.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: yeah,
+Paulo Soares: Go ahead and do next. Ok. Ok.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: இவகஷன் யாதி
+Paulo Soares: Can you go to space configuration on the capabilities on the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கய கட்ட மடா chanெரஜ பேஜாசஸ் கஷரசோ spடல் கக் chanல்ச
+Paulo Soares: can deploy they can deploy any agent that exists right now using the ch etc
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா யா தட் இஸ்ரை Mhm.
+Paulo Soares: Can you go to agent compatibility guide?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yeah.
+Paulo Soares: Can you scroll?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: cl on channels so this is what i undst them is like you are using clம i me for cl i think kind of s right for example you can just tell cl to have obட்ட you know just give எதிஹவாஆடல் காஸ்ல கிராஸ்பேஸ்ரைட் ஓ
+Paulo Soares: I will give you I will give you can do that locally with cloud code.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ட்லரைட் சநாடா அண்டர்லர்லேயர் பிட்வன் ட் கவாட இஸ்லதஹஸ்டடக்மெண்டதசிஸ் on top of everyட or legend calls and thy measure what is input and output toens right how much casing and what not and measure all the and keep at every point ஹல just provடிingவிபilரவிபலட்ட eஹோல்லூப்ஸ்த
+
+
+
+
+00:56:46
+
+
+Paulo Soares: Yeah. Can I got it? Can you go to AI agent,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: இ யா
+Paulo Soares: guys?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: டெம்பலேட்ஸ் அவைலபிள் ஆடஸ்பேஸ் S.
+Paulo Soares: We already saw
+SARATHKUMAR NACHIAPPAN NALLUSAMY: பெஸ்ட எக்ஸ்பளோர் ஏஜன்
+Paulo Soares: Yeah, we will need to create the problem that we cannot deploy multiple different agents programmatically. SS
+SARATHKUMAR NACHIAPPAN NALLUSAMY: நோ பட் இ theசன்ஸ்ல ஐ காிங் letட் say ஓே யஆர் கயடிங்விட் கோடுரைட் இ clளாட் கோடு விட்ரைடு கயட் மல்டிபிள்சஜன் லைக் கிளாட் கட் கட மல்டிபிள் சப்ஜன்ஸ்ரைட் அண்ட் அண்ட் அண்ட்
+Paulo Soares: are the share context will agenting with the will dispatch those ag
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா அஸ் கஸ் ப்ரவைட் Ah
+Paulo Soares: for that for that what we need more session
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ச எஸ் தட் இஸ் ரைட் எஸ் தட்ஸ் இட் எஸ் தட்ஸ் வாட் ஐசி ஹ எஸ் டயங் ஐ மீன்
+Paulo Soares: but we could do this with with
+SARATHKUMAR NACHIAPPAN NALLUSAMY: வித் வாட் அர்தர் ஆயட்
+Paulo Soares: H E H E R D E R No, no with the N only the last it's instead of a E R it's R Go ahead. Press enter. Yeah, that run to manage my
+
+
+
+
+00:58:45
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ரந்தம் பேரு லீவ் தம் ரன்னிங் ஓகே ஓகே
+Paulo Soares: agent and I can have Can you scroll? You can have multiple agents in different tabs, different etc. And they can they can talk with each other.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: A
+Paulo Soares: Right now I'm running n agent with one main orchestrator and those are actually different agents and running it with cloud code and cloud code is controlling for instance my codex agent my etc. So we can even do this as instruction without any API only only in the terminal and you can do this test the test that you want to create we can do it just by setting up everything with clot setting
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Угу.
+Paulo Soares: up some Jason running it into our system and that's it for starts and then we can plug their own their exo somehow each of the agents that we set up We will like probably need to register those agents into their own that's what I go ahead let's see how agents XO register agents how Yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Ага. Так.
+Paulo Soares: initial setup or if
+
+
+
+
+01:00:03
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கிளாட் கோட் செக்அப் கிளிக் கோட்
+Paulo Soares: that's yeah that's fine. Ok that's yes click there.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: பிகாஸ்வாட்ஐ அண்டர்ஸ்டட் இஸ்தஆர் கரன்னிங் ஜன்ஸ்ரத காஸ்நசெஆசன்ரசதவாத மலங் ஜன் ஏஜன்ஹயட்ரக்
+Paulo Soares: Yeah. will but will notchestrate them.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: தஸ் கஸ்சர்ட இஸ்ஹனஸ் பரவைடர்
+Paulo Soares: Yeah. Earn will orchestrate them. You have you have an internal skill.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஆகஸ்டர்தம் ஓகே தட் இஸ்ரைதரஹட் கோட் இஸ் ஆகஸ்டர்தர்
+Paulo Soares: No, but you you could use I know cloud code is the orchestrator and you have the sub agents that cloud spawn.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: தரதோட ப்ரவைஹனஸ்
+Paulo Soares: But we could exactly but we could use like her to have imagine agents from
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: different completely different providers but those like we can have can you scroll a bit scroll a little bit more
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yeah.
+Paulo Soares: more nothing else. Ok don't if you you may
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சஐ
+Paulo Soares: have a open claw agent you may have a
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சலஸ் let me askதி question so can weஹர் runன் இன்சide எலக் மீனிங்லா எரம்ஹியர் டுசெக்த
+Paulo Soares: I don't know that's what I want to check
+
+
+
+
+01:01:36
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கஸ்டம்செக்த கஸ்டம் கஸ்டம் ஆப்ஷன் இஸ் அவைலபிள் ரைட்
+Paulo Soares: no that's not the customer option because we will have act open agent agent how do run through them
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஓகே soதா undஸ்ட on your மன் ஆோடிவர்லஸ்டோ ஆர்ட எமரி இரைசெல் ச ஐ இாிing லோல்ஸேஸ்
+Paulo Soares: but how
+SARATHKUMAR NACHIAPPAN NALLUSAMY: அண்ட அம் அம்ய கதிங்திஸ்பேஸ்ரட் கம்யூட்டர்லய ஓன் மரைட் அண் ரம்ஹியர்
+Paulo Soares: Oh, that's fine. Fine. because could do that connects ah ok that's
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எக்லம்ப இன்ஸ்டாிங்ல
+Paulo Soares: only what you are saying to me that's a virtual machine only fine
+SARATHKUMAR NACHIAPPAN NALLUSAMY: somethingல இா கடல திஸேஸ்
+Paulo Soares: container
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கடன இன்சைதஹஅவாவயட அவஆதஸ்தி
+Paulo Soares: I got it ok it's all magical so it's just a container where run everything because
+SARATHKUMAR NACHIAPPAN NALLUSAMY: அதன்ரஸ்ஐதி
+Paulo Soares: No, when I call it magical need to configurate nothing will understand what running ag and will Can you go back?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Think that's a யா யா
+Paulo Soares: Can you go down set up?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: செெட்அப்ஸ்லைஐடோட்நோ பட் just அமிங்ர பிகஸ்தவாஸேஸ் மீன்ஸேதவாதஆரரிங்சதரடு
+Paulo Soares: But why they why do they have a tab for agents?
+
+
+
+
+01:03:14
+
+
+Paulo Soares: Can you go can you continue?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா சர் ஓகே so let meஒசெக let me justரீ quick open setெup check the ex மலal stேர்த ய இellிஜன் layer ஆவ ch பண்நடிவசோசே இல கசரட் கசே அ de col கவாஆச கation inst ா you canசளentation setெசோர
+Paulo Soares: By what I'm understanding,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: இயா எlyல
+Paulo Soares: I just need to run that in my computer will measure what I'm doing. So,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ரல்ஸ் இவஸ்பேஸ்த இஸ்ரசண்டயஹ someச இ பஹஸ்ட இய ம
+Paulo Soares: of course, I will not my side for sure but anyway.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யாதி மஹதி
+Paulo Soares: No,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: 16 யா ரைட்ஜ
+Paulo Soares: I I have MacBook Pro 16 M4. So yeah,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ரைட் ஓகே யா எஸ்பேஸ் யா யா
+Paulo Soares: can run that but I will not run that for sure.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சர் ஐ அண்டர்ஸ்டாண்ட
+Paulo Soares: No, because that that will send everything that goes through the LM through them and I I know just know
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஓகேஸ்டார்ட் அகைன் அப்டேட்ட ரம் வஸ்பேஸ் எோஸ் இன்ஸ்டால் பட் எோ ப்ராஜெக்ட் ரூட்ஸ்
+Paulo Soares: if they have an API and probably they have and they can send information to their API that's
+
+
+
+
+01:04:45
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: fine. That's and I control what they are sending. That's fine. That's okay.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yeah.
+Paulo Soares: But what I'm seeing here is that you need to install their server and then you go through that then you put everything you put there will run. Yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஐ see fோ the காபயாரிமூவல இன்ஸ்டால்வா seeingர
+Paulo Soares: With scripting etc.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: மயா
+Paulo Soares: The only way of me doing this to my monitor.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ் soதவாதஆ trை to you knowதலவா i me to sayே letல letஸ் கசதசதம் அவுட்லயா டுரோ askஹயா
+Paulo Soares: Yeah. Yeah. But don't be mad at me if I cannot run on my computer. Okay. my computer is managed by the corporate that I work
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா யாயா யாயா க மர யூஸ் பஒன்லிதி
+Paulo Soares: everything I could
+SARATHKUMAR NACHIAPPAN NALLUSAMY: இஸ் பதி ம யிங்ய கடன்ல்ட் கஸ் பிகஸ்ஹச எஸ்வி
+Paulo Soares: Dad.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: பஐதி கரப் Yeah. தத
+Paulo Soares: It's API, right? It's API API that we want.
+
+
+
+
+01:06:03
+
+
+Paulo Soares: Sure, I can create keys for that. That's fine. I have a lot
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எக்லி யா யா யா சோர் சர் யா வி கன் ஓகே யா ஐதிஸ்
+Paulo Soares: I have a lot service.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கயி கஸ் ப அத யூஸ் ம
+Paulo Soares: Sar they will provide probably.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ்தவா அம்ட Don't think so. I don't know what
+Paulo Soares: It's the minimum. I'm not in the peri anymore.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: I know.
+Paulo Soares: I did that 20 years agenterprise enterprise
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஐநோஐநோஐநோஐநோ யா
+Paulo Soares: momentum but sure it should be fun. It should be fun to run. Ja. Ja.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கதிடு மல்டிபள் தஆவர்தஆலோ
+Paulo Soares: Oh yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: 60டீம்ஸ் பாபா புடனி புள
+Paulo Soares: How many? 60 people.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: 60 டீம்ஸ்ஹ ரஜிஸ்டதஹ ரஜிஸ்டீஸ்
+Paulo Soares: So 30 developers 30 if many
+SARATHKUMAR NACHIAPPAN NALLUSAMY: பீ எஸ் அம்
+Paulo Soares: if that many because there will be not even developers what I call it now AI engineers I am an AI engineer those folks probably are not but yeah got it
+
+
+
+
+01:07:25
+
+
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா சர் ச ஆல்ரைட் கூல்
+Paulo Soares: yeah anyways in the worst scenario be
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yeah.
+Paulo Soares: building with their own stock and I will build in our stock that created and we can have the game working even with without the matrix the inside matrix of XO because that right now that's what causing us to that's what breaks what we can do on our side
+SARATHKUMAR NACHIAPPAN NALLUSAMY: what you can do ஆ we are கட் ஓகேயாயா தோநோ wor iதிதவடுரோ youநோஸ் யா யா யா
+Paulo Soares: I just need to understand if they
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா யா யா ஐ அண்டர்ஸ்டாண்ட தயாலெட் தேஹவடு
+Paulo Soares: Can you go to space API reference on on the top menu on the menu?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: லெட் ஓகே இ பாஸ்டிஐ கரோல் பல் ஏஜன்டம்தான் இன்சை எசோஸ்
+Paulo Soares: It's consume their own data. Yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: எஸ்தி பரோக்கர்ஸ் சட்ட ஏஜன் ஓகேஸ்லைசன் டெலிமரி அ மஜக்ரட்ஸ் அ பரக்ஸ் எஸ்
+Paulo Soares: List sessions etc.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சைல்ஐ சஷன்ஐ ஏஜன்
+Paulo Soares: Well, we have connectors connectors is MCP problem.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: மle files there like
+Paulo Soares: Can you integration
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா இடை எம்பிங் சைல் பரசர் அளோதிஸ் பேஜஸ் காப்பி பேஸ்ட் புக் எடைஸ்கிரிப்
+
+
+
+
+01:09:18
+
+
+Paulo Soares: can you go down? Yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: செட் மோட் ஹண்டலிங்
+Paulo Soares: Go down more here. Front only front.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Yeah.
+Paulo Soares: Ok. This interesting. The roots space config. Okay. This is what we want. Go ahead.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: Mhm.
+Paulo Soares: Little bit more. Yeah. Can you go to hydrate? Hydrate is just getting No, that's type only. Can you go down second? Ok. Ok. You get SVG is coming from their own API config workspace. We we could use this.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஓகே ஓகே பிரட்டி சர் தேஹரைட் ஐ மீன் இநாதத தர மன்தன்சோஸ்ரன்சோஸ்தஹ
+Paulo Soares: We could try to use this. Yeah. Yeah. Could use this. We could use this. Yeah.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ய பிடிதஹத
+Paulo Soares: Ok. Go ahead. Do your diligence. I will do mine and we will get to connect tomorrow.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யா யா சர்
+Paulo Soares: And if we don't do nothing in time,
+SARATHKUMAR NACHIAPPAN NALLUSAMY: சர் தட்ஸ் பைன் அஸ்வல்யா விஆர் ஹவிங்
+
+
+
+
+01:10:41
+
+
+Paulo Soares: that's fine as well. We are having fun.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: பட்யா சோ டுமாரோ ஓகே சோ 9 am
+Paulo Soares: There.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: பதேரை பதே ஆய மடு பிஆ சங் ஆய
+Paulo Soares: Do you have a car?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: யாஹ காவஐடிவலெட் மஸ்
+Paulo Soares: Where is Sting?
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ச படிவிங் ரம் நியூஜர்சி ச ப ஆர்யூலகேட்டட் நவ
+Paulo Soares: Oh, if you areing from New Jerse perhaps
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஆர்ய பிக்யஆவத ர் யன்
+Paulo Soares: at the
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஓகேமோவாங் வாங் வாிங் அமன்
+Paulo Soares: you can put you can Ryan Institute
+SARATHKUMAR NACHIAPPAN NALLUSAMY: வாட் இஸ் ரயன் இன்ஸ்டிடியூட் ரயன் இன்ஸ்டிடியூட்
+Paulo Soares: Yes. Ryan vet. Ryan vet. No, that's not it.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: நோ ஐம் சாரி ரயன் வாட்
+Paulo Soares: Ryan. Ryan veterinar hospital.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஹாஸ்பிடல் ஓகே ஓகே ய பிரட்டி களோஸ் ওকে
+Paulo Soares: Yeah. But it's like 30 minutes walk. El
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஓகே தட் நைஸ் மட் need toயாஹ to say பிகஸ்ஐட் think there are few காஸ் onlyரோ ே i tr பாதநாஐ
+Paulo Soares: No, I will go I will go I will go there. Don't worry.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: can பய on the ஓகே ஓகே ஆல்ரைட்
+Paulo Soares: No, no, don't worry. Don't worry. Don't worry. That's fine. I will I will get at 9 a.m.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கல் கல அ 9:30
+Paulo Soares: I'll be there.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கஸ்விங்ரச come 9:30
+Paulo Soares: Sure. Sure. Sure.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: ஆல்ரைட் கல் ஆல்ரைட் ஆல்ரைட்திஸ் இஸ் கரேட்
+Paulo Soares: Fine. Ok.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: கரோ ஆல்ரைட் நைஸ் தேங்க்யூ சோ மய டைம்
+Paulo Soares: باي باي باي
+SARATHKUMAR NACHIAPPAN NALLUSAMY: டுமாரோ Yeah.
+Paulo Soares: Ja.
+SARATHKUMAR NACHIAPPAN NALLUSAMY: All right. See you.
+
+
+
+
+A transcrição foi encerrada após 01:12:43
+
+
+Esta transcrição editável foi gerada por computador e pode conter erros. As pessoas também podem alterar o texto depois que ele for criado.

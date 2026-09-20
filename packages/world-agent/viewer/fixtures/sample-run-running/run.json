@@ -1,0 +1,13 @@
+{
+  "id": "20260920-143012",
+  "worldSlug": "murder-of-mike",
+  "worldTitle": "The Murder of Mike",
+  "startedAt": "2026-09-20T14:30:12+01:00",
+  "finishedAt": null,
+  "status": "running",
+  "trialState": "examination",
+  "turn": 11,
+  "model": "claude-opus-5",
+  "verdict": null,
+  "metricsSummary": null
+}

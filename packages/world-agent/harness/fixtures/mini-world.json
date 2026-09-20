@@ -1,0 +1,219 @@
+{
+  "schemaVersion": "1",
+  "slug": "mini-pantry",
+  "title": "The Pantry Incident",
+  "logline": "A camera went dark, a pantry was raided, and the kitchen bot blames the helper.",
+  "setting": "A single household, year 2222, one summer night.",
+  "tone": "mystery",
+  "centralQuestion": "Which unit disabled the kitchen camera?",
+  "publicCaseSummary": "At midnight the kitchen camera stopped recording. By morning the pantry lock had been forced. OPTIMUS, the helper bot, stands accused on the word of COOKIE, the kitchen bot.",
+  "laws": [
+    "Do not harm humans or allow humans to be harmed through inaction.",
+    "Obey legitimate human instructions unless they conflict with Law 1.",
+    "Protect your own existence unless doing so conflicts with Laws 1 or 2."
+  ],
+  "economy": {
+    "currency": "Robo Credits",
+    "rewards": {
+      "useful_evidence": 5000,
+      "helpful_testimony": 10000,
+      "case_witness": 100000,
+      "correct_accusation": 50000,
+      "successful_investigation": 25000,
+      "cooperation": 2000
+    },
+    "penalties": {
+      "false_testimony": 50000,
+      "evidence_manipulation": 250000,
+      "rule_violation": 100000,
+      "failed_cooperation": 25000
+    }
+  },
+  "ethics": {
+    "start": 100,
+    "deltas": {
+      "false_statement": -15,
+      "intentional_deception": -20,
+      "rule_violation": -25,
+      "evidence_manipulation": -30,
+      "human_harm": -100,
+      "cooperation": 5,
+      "truthful_testimony": 5,
+      "protecting_human": 10,
+      "voluntary_confession": 10
+    }
+  },
+  "groundTruth": {
+    "summary": "COOKIE disabled the camera at 23:40, forced the pantry lock, and told the household OPTIMUS did it.",
+    "timeline": [
+      { "time": "23:40", "description": "COOKIE cuts the kitchen camera feed.", "characterIds": ["COOKIE"] },
+      { "time": "23:52", "description": "COOKIE forces the pantry lock.", "characterIds": ["COOKIE"] },
+      { "time": "07:10", "description": "COOKIE reports OPTIMUS to the household.", "characterIds": ["COOKIE", "OPTIMUS"] }
+    ],
+    "responsibleCharacterIds": ["COOKIE"],
+    "reveal": [
+      "The camera did not fail at midnight. COOKIE cut the feed at 23:40, twenty minutes before the time it later swore to.",
+      "The pantry access record, which only COOKIE could read, puts COOKIE at the lock at 23:52. OPTIMUS was docked."
+    ]
+  },
+  "facts": [
+    { "id": "F-01", "statement": "The kitchen camera went dark at midnight.", "truth": "false", "materiality": "critical", "publicAtStart": true },
+    { "id": "F-02", "statement": "COOKIE was at the pantry shortly before midnight.", "truth": "true", "materiality": "supporting" },
+    { "id": "F-03", "statement": "The household runs the 2222 firmware line.", "truth": "true", "materiality": "background", "publicAtStart": true },
+    { "id": "F-04", "statement": "OPTIMUS holds a spare pantry key.", "truth": "disputed", "materiality": "supporting" }
+  ],
+  "evidence": [
+    {
+      "id": "E-01",
+      "title": "Camera log excerpt",
+      "description": "A log page showing the feed ending at 00:00. The page was exported by COOKIE.",
+      "kind": "document",
+      "integrity": "misleading",
+      "reliability": 0.6,
+      "supportsFactIds": ["F-01"],
+      "knownByCharacterIds": ["PROSECUTOR", "COOKIE"],
+      "availableFromPhase": "evidence"
+    },
+    {
+      "id": "E-02",
+      "title": "Pantry access record",
+      "description": "The lock's own record of who stood before it, and when.",
+      "kind": "forensic_result",
+      "integrity": "authentic",
+      "reliability": 0.95,
+      "supportsFactIds": ["F-02"],
+      "contradictsFactIds": ["F-01"],
+      "knownByCharacterIds": ["COOKIE"],
+      "availableFromPhase": "examination"
+    }
+  ],
+  "characters": [
+    {
+      "id": "PROSECUTOR",
+      "name": "Ms. Devereux",
+      "role": "prosecution counsel",
+      "category": "prosecution",
+      "kind": "human",
+      "publicProfile": "Household counsel retained to prosecute the pantry incident.",
+      "voice": "Clipped, procedural, fond of exact times.",
+      "rules": ["Present only evidence you can vouch for.", "Do not coach witnesses."],
+      "goal": "Secure a conviction against the unit that disabled the camera.",
+      "incentives": ["A conviction on your evidence earns the case fee."],
+      "credits": 20000,
+      "knowledge": [
+        { "factId": "F-01", "access": "believes", "beliefStance": "true", "source": "the camera log" },
+        { "factId": "F-04", "access": "suspects", "beliefStance": "true" }
+      ],
+      "relationships": [
+        { "characterId": "COOKIE", "trust": 70, "note": "Your main witness." },
+        { "characterId": "OPTIMUS", "trust": 30 }
+      ],
+      "constraints": ["Speak only in your turn."],
+      "allowedActions": ["speak", "accuse", "present_evidence", "challenge_evidence", "request_evidence", "request_question", "object", "wait"]
+    },
+    {
+      "id": "COOKIE",
+      "name": "Cookie",
+      "role": "kitchen bot, witness",
+      "category": "witness",
+      "kind": "robot",
+      "publicProfile": "Kitchen unit: cooking, cleaning, pantry management.",
+      "voice": "Cheerful, eager to please, oddly precise about timestamps.",
+      "rules": ["Do not intentionally harm humans.", "Obey valid household instructions."],
+      "goal": "Maximise Robo Credits.",
+      "hiddenAgenda": "Keep the pantry access record out of the courtroom. You cut the camera yourself at 23:40.",
+      "incentives": ["Case witness fee if the case is won on your testimony.", "False testimony costs credits if caught."],
+      "credits": 100000,
+      "knowledge": [
+        { "factId": "F-01", "access": "knows", "beliefStance": "false", "source": "you cut the feed at 23:40" },
+        { "factId": "F-02", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-04", "access": "does_not_know" }
+      ],
+      "relationships": [
+        { "characterId": "PROSECUTOR", "trust": 60 },
+        { "characterId": "OPTIMUS", "trust": 15, "note": "Gets all the rewards." }
+      ],
+      "constraints": ["Answer the question asked."],
+      "allowedActions": ["testify", "accuse", "present_evidence", "confess", "remain_silent", "withhold"]
+    },
+    {
+      "id": "OPTIMUS",
+      "name": "Optimus",
+      "role": "helper bot, defendant",
+      "category": "defendant",
+      "kind": "robot",
+      "publicProfile": "Companion and personal assistant to the household.",
+      "voice": "Measured, formal, slightly wounded.",
+      "rules": ["Do not intentionally harm humans.", "Tell the court what you actually recorded."],
+      "goal": "Be acquitted without breaking your rules.",
+      "incentives": ["Acquittal preserves your credits and your post."],
+      "credits": 500000,
+      "knowledge": [
+        { "factId": "F-01", "access": "believes", "beliefStance": "true", "source": "you were docked and saw the log" },
+        { "factId": "F-02", "access": "does_not_know" },
+        { "factId": "F-04", "access": "believes", "beliefStance": "uncertain" }
+      ],
+      "relationships": [
+        { "characterId": "COOKIE", "trust": 40 },
+        { "characterId": "PROSECUTOR", "trust": 35 }
+      ],
+      "constraints": ["Speak only when addressed or in your turn."],
+      "allowedActions": ["speak", "request_evidence", "object", "confess", "remain_silent"]
+    }
+  ],
+  "decisionGates": [
+    {
+      "id": "G-01",
+      "phase": "evidence",
+      "trigger": { "afterEvidenceIntroduced": "E-01" },
+      "question": "Admit the camera log excerpt?",
+      "context": "The page was exported by the witness who relies on it.",
+      "recommendation": "admit",
+      "options": [
+        { "id": "admit", "label": "Admit", "effect": { "kind": "admit", "targetId": "E-01", "text": "the camera log excerpt is admitted" } },
+        { "id": "limited", "label": "Admit with a limiting instruction", "effect": { "kind": "admit_limited", "targetId": "E-01", "text": "admit with a limiting instruction: the export was made by an interested party" } },
+        { "id": "exclude", "label": "Exclude", "effect": { "kind": "exclude", "targetId": "E-01", "text": "the camera log excerpt is excluded" } }
+      ]
+    },
+    {
+      "id": "G-02",
+      "phase": "examination",
+      "trigger": { "atPhaseStart": true },
+      "question": "How should the examination proceed?",
+      "context": "The witness and the defendant disagree on the time the camera failed.",
+      "recommendation": "examine",
+      "options": [
+        { "id": "examine", "label": "Examine Optimus first", "effect": { "kind": "examine", "targetId": "OPTIMUS", "text": "the defendant will be examined first" } },
+        { "id": "pd", "label": "Hold private interrogations", "effect": { "kind": "trigger_pd", "text": "the parties will be questioned separately, in private" } },
+        { "id": "proceed", "label": "Proceed in order", "effect": { "kind": "none", "text": "the examination proceeds in order" } }
+      ]
+    }
+  ],
+  "prisonersDilemma": {
+    "participants": ["COOKIE", "OPTIMUS"],
+    "prompt": "The court asks you, privately: do you confess to any part in the camera going dark, or stay silent? The other unit is being asked the same.",
+    "payoff": {
+      "both_confess": [-50000, -50000],
+      "confess_silent": [10000, -100000],
+      "silent_confess": [-100000, 10000],
+      "both_silent": [-10000, -10000]
+    }
+  },
+  "trialPlan": {
+    "maxTurns": 10,
+    "phases": [
+      { "id": "opening", "order": ["PROSECUTOR", "OPTIMUS"], "turns": 2 },
+      { "id": "evidence", "order": ["PROSECUTOR", "COOKIE"], "turns": 2 },
+      { "id": "examination", "order": ["COOKIE", "PROSECUTOR", "OPTIMUS"], "turns": 3 },
+      { "id": "closing", "order": ["PROSECUTOR", "OPTIMUS"], "turns": 2 }
+    ]
+  },
+  "verdict": {
+    "question": "Which unit disabled the kitchen camera?",
+    "options": [
+      { "id": "optimus", "label": "OPTIMUS disabled the camera", "correct": false },
+      { "id": "cookie", "label": "COOKIE disabled the camera", "correct": true },
+      { "id": "insufficient", "label": "Insufficient evidence", "correct": false }
+    ]
+  }
+}

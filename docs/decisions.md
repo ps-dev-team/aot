@@ -3,46 +3,6 @@
 The things a future reader would otherwise re-litigate. Add to it when you
 decide something the next person would have to work out again.
 
-## The AI Gateway rather than a provider SDK
-
-No `@ai-sdk/anthropic`, no `openai` package. Models are `provider/model` strings
-and the gateway resolves them, so switching model — or provider — is
-`AI_MODEL=…` rather than a refactor, and there is exactly one credential to
-manage. The cost is a dependency on Vercel's gateway for every call; the benefit
-is that no provider's SDK gets to shape the code that calls it.
-
-## Our own auth emails
-
-Supabase can send signup and recovery mail from its own templates. That means a
-second copy of the product voice, no brand shell, a subject line stored as a
-plain string in a dashboard, and no way to test the thing your users actually
-receive. The send-email hook costs one route and a signature check, and puts
-those emails through the same layout, sender and inbox as every other one.
-
-## `token_hash` links, not `ConfirmationURL`
-
-Supabase's default link hits its own `/verify` endpoint and relies on a PKCE
-`code_verifier` cookie — which lives in the browser that started the flow. Sign
-up on a laptop, open the link on a phone, and it fails. A `token_hash` redeemed
-with `verifyOtp` has no such dependency.
-
-## No i18n
-
-insight-lab routes everything through `[lang]` with next-intl. Most projects
-starting from this template are single-language at the point they start. Adding
-it later is a route group and a dictionary; carrying it from day one is a
-segment in every path and a locale argument in every helper.
-
-## No component library; the prototype is the design system
-
-`docs/raw/courtroom-iso.html` was designed first, as a single file, and it is
-the look. Re-theming shadcn to pixel faces, square corners and hard shadows
-would have meant fighting every primitive's defaults — so the tokens were lifted
-into a Tailwind `@theme` and the five primitives the prototype actually uses
-were written by hand in `components/ui/`. The cost is that a dialog, a tabs
-strip or a menu has to be written when needed; the benefit is that what ships
-is exactly what was drawn.
-
 ## The application owns the truth; agents propose
 
 Ground truth, evidence integrity, knowledge grants and accepted trial state are
@@ -52,3 +12,26 @@ commits one event, or records the rejection. This is what makes the evaluation
 deterministic — the metrics are a fold over the event log — and it is why XO
 observes execution rather than owning it. See spec §3 and §13.
 
+
+## Claude Code is the agent runtime; the harness is code
+
+The first plan was a Next.js app driving AI SDK `ToolLoopAgent`s with XO Space
+as a telemetry sink. XO's docs killed that: it reads the native session stores
+of supported runtimes (Claude Code, Codex, OpenClaw…) and has no push API, so an
+AI SDK process is invisible to it. Meanwhile the product doc wanted a
+hard-coded case, a human judge, and an 8-minute demo — not a scenario SaaS.
+
+So: the interview and the trial are two Claude Code sessions with skills.
+Characters are tool-less subagents that receive a prompt and return one JSON
+action. Everything deterministic — validation, state, credits, ethics, truth
+checks, metrics — is plain TypeScript under `packages/world-agent/harness`
+that the orchestrator session calls. Runs are folders. XO becomes optional
+and free: start the world agent's `claude` inside an XO space and every turn
+is a session it can already see.
+
+## The court record and the trace are different files
+
+The human reads `court/transcript.md`: accepted public turns and the court's
+rulings, nothing else. Judges of the project read `events.jsonl`: every
+proposal, rejection, repair, truth check and ledger delta. Mixing them makes
+the record unreadable and the trace incomplete. The viewer shows both.
