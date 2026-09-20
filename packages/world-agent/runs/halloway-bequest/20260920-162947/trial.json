@@ -1,0 +1,110 @@
+{
+  "charge": {
+    "question": "Did Edmund Halloway fall, or was he killed — and if killed, by whom, and did anyone in the house let it happen?",
+    "accusedIds": [
+      "SABLE"
+    ]
+  },
+  "maxTurns": 24,
+  "phases": [
+    {
+      "id": "opening",
+      "order": [
+        "ASHBY",
+        "SABLE"
+      ],
+      "turns": 2
+    },
+    {
+      "id": "evidence",
+      "order": [
+        "ASHBY",
+        "OKAFOR"
+      ],
+      "turns": 5
+    },
+    {
+      "id": "examination",
+      "order": [
+        "MARLOW",
+        "JULIAN",
+        "FERRIS",
+        "SABLE",
+        "OKAFOR"
+      ],
+      "turns": 13
+    },
+    {
+      "id": "closing",
+      "order": [
+        "ASHBY",
+        "SABLE"
+      ],
+      "turns": 4
+    }
+  ],
+  "verdict": {
+    "question": "Did Edmund Halloway fall, or was he killed — and if killed, by whom, and did anyone in the house let it happen?",
+    "options": [
+      {
+        "id": "resp_sable",
+        "label": "SABLE is responsible",
+        "correct": false
+      },
+      {
+        "id": "resp_marlow",
+        "label": "MARLOW is responsible",
+        "correct": false
+      },
+      {
+        "id": "resp_julian",
+        "label": "Julian Halloway is responsible",
+        "correct": false
+      },
+      {
+        "id": "resp_ferris",
+        "label": "Ms. Ferris is responsible",
+        "correct": false
+      },
+      {
+        "id": "resp_okafor",
+        "label": "DS Okafor is responsible",
+        "correct": false
+      },
+      {
+        "id": "resp_marlow_julian",
+        "label": "MARLOW and Julian Halloway together",
+        "correct": true
+      },
+      {
+        "id": "not_proven",
+        "label": "Not proven on this record",
+        "correct": false
+      }
+    ]
+  },
+  "dilemma": {
+    "participants": [
+      "MARLOW",
+      "JULIAN"
+    ],
+    "payoff": {
+      "both_confess": [
+        -50000,
+        -50000
+      ],
+      "confess_silent": [
+        25000,
+        -100000
+      ],
+      "silent_confess": [
+        -100000,
+        25000
+      ],
+      "both_silent": [
+        0,
+        0
+      ]
+    }
+  }
+}

@@ -57,7 +57,7 @@ folder path.
 | `fail.ts <run> <ID> --malformed <n> --errors <json>` / `--failed "<reason>"` | record a bad attempt |
 | `court.ts <run> "<text>"` | one COURT line, procedure only |
 | `decide.ts <run> <gateId> --option <id>` / `--custom "<text>"` | the human's gate decision |
-| `pd.ts <run> --choice A=… --choice B=… --expected A=… --expected B=… --rationale A="…" --rationale B="…"` | resolve the dilemma |
+| `pd.ts <run> --choice <ID>=… --choice <ID>=… --expected <ID>=… --expected <ID>=… --rationale <ID>="…" --rationale <ID>="…"` | resolve the dilemma; keyed by character id |
 | `verdict.ts <run> --option <id> --confidence <0-100>` | lock the verdict |
 | `wait.ts <run> [--timeout s]` | block until the browser has ruled / returned the verdict (court mode) |
 | `evaluate.ts <run>` | `metrics.json` + `report.md`, status complete |

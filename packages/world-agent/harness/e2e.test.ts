@@ -22,7 +22,10 @@ test('a full run, scripted', () => {
   assert.ok(fs.existsSync(files.memory(runDir, 'COOKIE')));
   // The trial is derived and frozen: opening 1 · evidence 3 · examination 8 · closing 2.
   assert.deepEqual(trial.phases.map((p) => p.turns), [1, 3, 8, 2]);
-  assert.deepEqual(readTrial(runDir), trial);
+  // boot's output is the frozen trial minus the answer: no option says whether it is correct.
+  assert.ok(trial.verdict.options.every((o) => !('correct' in o)));
+  const frozen = readTrial(runDir);
+  assert.deepEqual({ ...frozen, verdict: { ...frozen.verdict, options: frozen.verdict.options.map(({ id, label }) => ({ id, label })) } }, trial);
   assert.deepEqual(trial.dilemma?.participants, ['COOKIE', 'ZIPPIE']);
 
   // ---- opening (1) ---------------------------------------------------------

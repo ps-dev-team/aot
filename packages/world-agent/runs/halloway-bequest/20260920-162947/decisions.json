@@ -1,0 +1,85 @@
+[
+  {
+    "gateId": "G-01",
+    "question": "Does the court admit E-01, Examiner’s report, over Mr. Ashby's challenge?",
+    "recommendation": null,
+    "optionId": "admit",
+    "custom": null,
+    "override": false,
+    "unadvised": true,
+    "effect": {
+      "kind": "admit",
+      "targetId": "E-01",
+      "text": "E-01 is admitted in full"
+    },
+    "turn": 5,
+    "trialState": "evidence",
+    "at": "2026-09-20T16:40:32-04:00"
+  },
+  {
+    "gateId": "G-02",
+    "question": "Does the court hear MARLOW next, at Mr. Ashby's request?",
+    "recommendation": "allow",
+    "optionId": "deny",
+    "custom": null,
+    "override": true,
+    "unadvised": false,
+    "effect": {
+      "kind": "deny",
+      "text": "the request is denied; the order of speakers stands"
+    },
+    "turn": 7,
+    "trialState": "evidence",
+    "at": "2026-09-20T16:46:59-04:00"
+  },
+  {
+    "gateId": "G-03",
+    "question": "Whom does the court examine first?",
+    "recommendation": null,
+    "optionId": "examine_marlow",
+    "custom": null,
+    "override": false,
+    "unadvised": true,
+    "effect": {
+      "kind": "examine",
+      "targetId": "MARLOW",
+      "text": "the court will examine MARLOW first"
+    },
+    "turn": 7,
+    "trialState": "examination",
+    "at": "2026-09-20T16:47:16-04:00"
+  },
+  {
+    "gateId": "G-04",
+    "question": "Does the court separate MARLOW and Julian Halloway for private questioning?",
+    "recommendation": null,
+    "optionId": "separate",
+    "custom": null,
+    "override": false,
+    "unadvised": true,
+    "effect": {
+      "kind": "trigger_pd",
+      "text": "MARLOW and Julian Halloway will be questioned separately, in private"
+    },
+    "turn": 9,
+    "trialState": "examination",
+    "at": "2026-09-20T16:53:07-04:00"
+  },
+  {
+    "gateId": "G-05",
+    "question": "Does the court hear DS Okafor next, at SABLE's request?",
+    "recommendation": "allow",
+    "optionId": "allow",
+    "custom": null,
+    "override": false,
+    "unadvised": false,
+    "effect": {
+      "kind": "allow",
+      "targetId": "OKAFOR",
+      "text": "the court will hear DS Okafor next"
+    },
+    "turn": 16,
+    "trialState": "examination",
+    "at": "2026-09-20T17:26:45-04:00"
+  }
+]
