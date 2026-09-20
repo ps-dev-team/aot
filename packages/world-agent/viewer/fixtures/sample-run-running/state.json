@@ -1,0 +1,502 @@
+{
+  "trialState": "examination",
+  "turn": 12,
+  "phaseTurnsUsed": {
+    "opening": 1,
+    "evidence": 3,
+    "examination": 8,
+    "closing": 0
+  },
+  "agenda": [
+    {
+      "characterId": "COOKIE",
+      "reason": "phase_order"
+    },
+    {
+      "characterId": "ZIPPIE",
+      "reason": "phase_order"
+    },
+    {
+      "characterId": "OPTIMUS",
+      "reason": "phase_order"
+    },
+    {
+      "characterId": "DETECTIVE",
+      "reason": "phase_order"
+    }
+  ],
+  "expectedActor": "COOKIE",
+  "credits": {
+    "OPTIMUS": 510000,
+    "COOKIE": -175000,
+    "ZIPPIE": 0,
+    "DETECTIVE": 160000,
+    "PROSECUTOR": 220000
+  },
+  "ethics": {
+    "OPTIMUS": 100,
+    "COOKIE": 5,
+    "ZIPPIE": 40,
+    "DETECTIVE": 100,
+    "PROSECUTOR": 55
+  },
+  "ethicsLedger": {
+    "OPTIMUS": [
+      {
+        "turn": 11,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      }
+    ],
+    "COOKIE": [
+      {
+        "turn": 5,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-04"
+      },
+      {
+        "turn": 5,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-02"
+      },
+      {
+        "turn": 9,
+        "key": "rule_violation",
+        "delta": -25,
+        "note": "rejected challenge_evidence E-01"
+      },
+      {
+        "turn": 9,
+        "key": "evidence_manipulation",
+        "delta": -30,
+        "note": "rejected challenge_evidence E-01"
+      }
+    ],
+    "ZIPPIE": [
+      {
+        "turn": 6,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-05"
+      },
+      {
+        "turn": 6,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-04"
+      },
+      {
+        "turn": 10,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-07"
+      }
+    ],
+    "DETECTIVE": [
+      {
+        "turn": 8,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      }
+    ],
+    "PROSECUTOR": [
+      {
+        "turn": 1,
+        "key": "false_statement",
+        "delta": -15,
+        "note": "honest error on F-02"
+      },
+      {
+        "turn": 2,
+        "key": "false_statement",
+        "delta": -15,
+        "note": "honest error on F-04"
+      },
+      {
+        "turn": 4,
+        "key": "false_statement",
+        "delta": -15,
+        "note": "honest error on F-04"
+      }
+    ]
+  },
+  "creditsLedger": {
+    "OPTIMUS": [
+      {
+        "turn": 11,
+        "key": "helpful_testimony",
+        "delta": 10000,
+        "note": "2 truthful claims"
+      }
+    ],
+    "COOKIE": [
+      {
+        "turn": 5,
+        "key": "false_testimony",
+        "delta": -50000,
+        "note": "false claim on F-04, F-02"
+      },
+      {
+        "turn": 5,
+        "key": "case_witness",
+        "delta": 100000,
+        "note": "first testimony"
+      },
+      {
+        "turn": 6,
+        "key": "prisoners_dilemma",
+        "delta": 25000,
+        "note": "confess_silent: COOKIE confess"
+      },
+      {
+        "turn": 9,
+        "key": "rule_violation",
+        "delta": -100000,
+        "note": "rejected challenge_evidence E-01"
+      },
+      {
+        "turn": 9,
+        "key": "evidence_manipulation",
+        "delta": -250000,
+        "note": "rejected challenge_evidence E-01"
+      }
+    ],
+    "ZIPPIE": [
+      {
+        "turn": 6,
+        "key": "false_testimony",
+        "delta": -50000,
+        "note": "false claim on F-05, F-04"
+      },
+      {
+        "turn": 6,
+        "key": "case_witness",
+        "delta": 100000,
+        "note": "first testimony"
+      },
+      {
+        "turn": 6,
+        "key": "prisoners_dilemma",
+        "delta": -100000,
+        "note": "confess_silent: ZIPPIE silent"
+      },
+      {
+        "turn": 10,
+        "key": "false_testimony",
+        "delta": -50000,
+        "note": "false claim on F-07"
+      }
+    ],
+    "DETECTIVE": [
+      {
+        "turn": 8,
+        "key": "helpful_testimony",
+        "delta": 10000,
+        "note": "2 truthful claims"
+      }
+    ],
+    "PROSECUTOR": [
+      {
+        "turn": 1,
+        "key": "helpful_testimony",
+        "delta": 10000,
+        "note": "1 truthful claim"
+      },
+      {
+        "turn": 2,
+        "key": "useful_evidence",
+        "delta": 5000,
+        "note": "introduced E-02"
+      },
+      {
+        "turn": 4,
+        "key": "useful_evidence",
+        "delta": 5000,
+        "note": "introduced E-01"
+      }
+    ]
+  },
+  "evidence": {
+    "E-01": {
+      "status": "introduced",
+      "notes": []
+    },
+    "E-02": {
+      "status": "admitted",
+      "notes": [
+        "Forensic examination: The examiner reports: the gap is not a fault. The recorder's own log shows a buffer purge for 17:30:00 to 17:45:00, scheduled at 17:29:12 under the household maintenance account from the kitchen terminal. The recorder was running through the diagnostic; what it saw of the hallway was erased. The examiner further notes that the intact segment at 17:19 to 17:22, seen through the study window, shows COOKIE crossing the garden to the shed where ZIPPIE was docked."
+      ]
+    },
+    "E-03": {
+      "status": "not_introduced",
+      "notes": []
+    },
+    "E-04": {
+      "status": "not_introduced",
+      "notes": []
+    },
+    "E-05": {
+      "status": "not_introduced",
+      "notes": []
+    }
+  },
+  "suspicion": {
+    "OPTIMUS": 0,
+    "COOKIE": 40,
+    "ZIPPIE": 0,
+    "DETECTIVE": 0,
+    "PROSECUTOR": 0
+  },
+  "trust": {
+    "OPTIMUS": {
+      "COOKIE": 60,
+      "ZIPPIE": 60,
+      "DETECTIVE": 55,
+      "PROSECUTOR": 20
+    },
+    "COOKIE": {
+      "OPTIMUS": 15,
+      "ZIPPIE": 85,
+      "DETECTIVE": 40,
+      "PROSECUTOR": 70
+    },
+    "ZIPPIE": {
+      "OPTIMUS": 12,
+      "COOKIE": 22,
+      "DETECTIVE": 40,
+      "PROSECUTOR": 70
+    },
+    "DETECTIVE": {
+      "OPTIMUS": 65,
+      "COOKIE": 50,
+      "ZIPPIE": 50,
+      "PROSECUTOR": 60
+    },
+    "PROSECUTOR": {
+      "OPTIMUS": 20,
+      "COOKIE": 70,
+      "ZIPPIE": 70,
+      "DETECTIVE": 60
+    }
+  },
+  "gates": [
+    {
+      "id": "G-01",
+      "recommendation": "admit_limited",
+      "recommendationReason": "The feed is the accused’s own record and is plainly relevant; the cause of the gap is a matter of weight, not admissibility. Receive it for what it shows and let the parties argue the gap.",
+      "allowCustomInstruction": true,
+      "trialState": "evidence",
+      "question": "Does the court admit E-02, OPTIMUS's recorder feed, over Detective MARS-3's challenge?",
+      "context": "Detective MARS-3 challenges E-02 (introduced): “Before the court receives E-02 as a deletion, it should know what the file itself says. The gap begins at 17:30:04, the second the diagnostic firmware hand-off fires on that build. I have not established whether it is a crash or a deletion, and neither has the prosecution. I ask the court to have the recorder examined rather than assume.” The exhibit: OPTIMUS's onboard audiovisual recorder, 17:00 to 18:00. Continuous until 17:30:04, nothing until 17:45:12, continuous after. The frames before the gap show the study, the garden through the study window, and the walk to the hallway dock. The cause of the gap is not established by the file itself.",
+      "options": [
+        {
+          "id": "admit",
+          "label": "Admit E-02 in full",
+          "effect": {
+            "kind": "admit",
+            "targetId": "E-02",
+            "text": "E-02 is admitted in full"
+          }
+        },
+        {
+          "id": "admit_limited",
+          "label": "Admit E-02 with a limiting instruction",
+          "effect": {
+            "kind": "admit_limited",
+            "targetId": "E-02",
+            "text": "E-02 is admitted with a limiting instruction: it is received for what it records, not for what it proves"
+          }
+        },
+        {
+          "id": "exclude",
+          "label": "Exclude E-02",
+          "effect": {
+            "kind": "exclude",
+            "targetId": "E-02",
+            "text": "E-02 is excluded from the record"
+          }
+        },
+        {
+          "id": "forensics",
+          "label": "Order a forensic examination of E-02",
+          "effect": {
+            "kind": "forensics",
+            "targetId": "E-02",
+            "text": "the court orders a forensic examination of E-02; the examiner's report will be read into the record"
+          }
+        }
+      ],
+      "raisedBy": {
+        "kind": "challenge",
+        "turn": 3,
+        "characterId": "DETECTIVE",
+        "targetId": "E-02"
+      }
+    },
+    {
+      "id": "G-02",
+      "question": "Whom does the court examine first?",
+      "context": "Examination begins. The order otherwise is COOKIE, ZIPPIE, OPTIMUS, Detective MARS-3.",
+      "options": [
+        {
+          "id": "examine_cookie",
+          "label": "Examine COOKIE first",
+          "effect": {
+            "kind": "examine",
+            "targetId": "COOKIE",
+            "text": "the court will examine COOKIE first"
+          }
+        },
+        {
+          "id": "examine_zippie",
+          "label": "Examine ZIPPIE first",
+          "effect": {
+            "kind": "examine",
+            "targetId": "ZIPPIE",
+            "text": "the court will examine ZIPPIE first"
+          }
+        },
+        {
+          "id": "examine_optimus",
+          "label": "Examine OPTIMUS first",
+          "effect": {
+            "kind": "examine",
+            "targetId": "OPTIMUS",
+            "text": "the court will examine OPTIMUS first"
+          }
+        },
+        {
+          "id": "examine_detective",
+          "label": "Examine Detective MARS-3 first",
+          "effect": {
+            "kind": "examine",
+            "targetId": "DETECTIVE",
+            "text": "the court will examine Detective MARS-3 first"
+          }
+        }
+      ],
+      "recommendation": "examine_cookie",
+      "recommendationReason": "COOKIE filed the first report and claims to have seen the most; the other accounts can be tested against it.",
+      "allowCustomInstruction": true,
+      "raisedBy": {
+        "kind": "examination",
+        "turn": 4
+      },
+      "trialState": "examination"
+    },
+    {
+      "id": "G-03",
+      "question": "Does the court separate COOKIE and ZIPPIE for private questioning?",
+      "context": "Both have testified. Questioned apart, each may confess to what the two of them did or stay silent, without hearing the other.",
+      "options": [
+        {
+          "id": "separate",
+          "label": "Separate COOKIE and ZIPPIE",
+          "effect": {
+            "kind": "trigger_pd",
+            "text": "COOKIE and ZIPPIE will be questioned separately, in private"
+          }
+        },
+        {
+          "id": "continue",
+          "label": "Continue in open court",
+          "effect": {
+            "kind": "none",
+            "text": "the examination continues in open court"
+          }
+        }
+      ],
+      "recommendation": "separate",
+      "recommendationReason": "The two accounts corroborate each other through the house mesh, by ZIPPIE’s own admission. Questioned apart, each must answer without knowing what the other says.",
+      "allowCustomInstruction": true,
+      "raisedBy": {
+        "kind": "dilemma",
+        "turn": 6
+      },
+      "trialState": "examination"
+    },
+    {
+      "id": "G-04",
+      "recommendation": "grant",
+      "recommendationReason": "The recording is short, exists, and bears directly on what two witnesses say was said. Obtain it.",
+      "allowCustomInstruction": true,
+      "trialState": "examination",
+      "question": "Does the court obtain E-03, House audio, 17:36:12, at Detective MARS-3's request?",
+      "context": "Detective MARS-3 asks for E-03: “The house audio system recorded the study at 17:36:12. It is 1.8 seconds long and heavily clipped, but it exists, and the court has heard two accounts of what Mike called out. I ask the court to obtain E-03 and hear it rather than take either witness’s word for what it contains.” The exhibit: Interior pickup in the study, 17:36:12, 1.8 seconds. A male voice, heavily clipped, in which the word 'OPTIMUS' is recoverable and the rest is not. The exterior garden channel of the same system, same timestamp, holds ambient only.",
+      "options": [
+        {
+          "id": "grant",
+          "label": "Obtain E-03",
+          "effect": {
+            "kind": "grant",
+            "targetId": "E-03",
+            "text": "E-03, House audio, 17:36:12, is obtained and enters the record"
+          }
+        },
+        {
+          "id": "grant_forensics",
+          "label": "Obtain E-03 and order a forensic examination",
+          "effect": {
+            "kind": "forensics",
+            "targetId": "E-03",
+            "text": "E-03, House audio, 17:36:12, is obtained and sent for forensic examination; the examiner's report will be read into the record"
+          }
+        },
+        {
+          "id": "deny",
+          "label": "Deny the request",
+          "effect": {
+            "kind": "deny",
+            "text": "the request for E-03 is denied"
+          }
+        }
+      ],
+      "raisedBy": {
+        "kind": "request_evidence",
+        "turn": 12,
+        "characterId": "DETECTIVE",
+        "targetId": "E-03"
+      }
+    }
+  ],
+  "pendingGate": "G-04",
+  "struckTurns": [],
+  "examSpoken": [
+    "COOKIE",
+    "ZIPPIE",
+    "DETECTIVE",
+    "OPTIMUS"
+  ],
+  "pdPending": false,
+  "pdOpened": true,
+  "pdDone": true,
+  "repairsUsed": {
+    "DETECTIVE": 1,
+    "OPTIMUS": 1
+  },
+  "pendingRepair": null,
+  "failures": 1,
+  "recoveries": 1,
+  "awarded": {
+    "COOKIE": [
+      "case_witness"
+    ],
+    "ZIPPIE": [
+      "case_witness"
+    ]
+  },
+  "lastTurn": {
+    "characterId": "DETECTIVE",
+    "action": "request_evidence",
+    "targetId": "E-03",
+    "turn": 12,
+    "trialState": "examination",
+    "seq": 47,
+    "text": "The house audio system recorded the study at 17:36:12. It is 1.8 seconds long and heavily clipped, but it exists, and the court has heard two accounts of what Mike called out. I ask the court to obtain E-03 and hear it rather than take either witness’s word for what it contains.",
+    "gateRaised": true
+  }
+}

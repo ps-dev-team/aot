@@ -13,10 +13,19 @@ export type WorldSummary = {
   source: 'example' | 'world';
   path: string; // repo-relative
   characters: number;
-  gates: number;
-  maxTurns: number;
+  evidence: number;
   runs: number;
 };
+
+// ---- the trial (schema v2) — derived at boot, frozen in trial.json ------------
+// RunData['trial'] is the same object with `correct` stripped until complete.
+import type { Trial } from '@aot/world-agent/trial';
+export type { Trial };
+export type Phase = Trial['phases'][number]['id'];
+
+/** A gate the harness raised during the run; lives in state.gates[] and rides in the gate_opened payload. */
+export type RaisedGate = State['gates'][number];
+export type RaisedBy = RaisedGate['raisedBy'];
 
 export type RunSummary = Pick<
   RunJson,
@@ -31,6 +40,7 @@ export type RunSummary = Pick<
 export type RunDetail = {
   run: RunJson;
   world: World; // the frozen world.json of the run
+  trial: Trial | null; // trial.json, derived at boot
   state: State | null;
   decisions: Decision[];
   pd: PdRecord | null;

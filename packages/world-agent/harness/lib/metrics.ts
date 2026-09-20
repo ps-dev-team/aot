@@ -2,6 +2,7 @@
 // files only — never from state.json — so running it twice gives the same file.
 import type { World } from '@aot/interview-agent/schema';
 import { clamp } from './ledger.ts';
+import type { Gate, Trial } from './trial.ts';
 import { isScorable } from './truth.ts';
 import type { AcceptedPayload, ClaimAssessment, Decision, Delta, LedgerEntry, PdRecord, TrialEvent, VerdictRecord } from './types.ts';
 
@@ -34,6 +35,8 @@ export type Metrics = {
     failed: number;
     gates: number;
     overrides: number;
+    /** Decided before the bench recommended; not counted as overrides. */
+    unadvised: number;
     claims: number;
     scorableClaims: number;
   };
@@ -53,6 +56,7 @@ export type Metrics = {
 
 export type Inputs = {
   world: World;
+  trial: Trial;
   events: TrialEvent[];
   decisions: Decision[];
   pd: PdRecord | null;
@@ -89,8 +93,10 @@ export function computeMetrics(input: Inputs): Metrics {
   const validRefs = accepted.reduce((n, e) => n + evidenceRefs((e.payload as AcceptedPayload).action).length, 0);
   const rejectedRefs = rejected.reduce((n, e) => n + evidenceRefs((e.payload as RejectedPayload).action).length, 0);
 
-  const withRecommendation = decisions.filter((d) => d.recommendation);
-  const overrides = decisions.filter((d) => d.override);
+  // Override is judged against the bench; an unadvised decision is neither followed nor overridden.
+  const advised = decisions.filter((d) => !d.unadvised && d.recommendation);
+  const overrides = advised.filter((d) => d.override);
+  const unadvised = decisions.filter((d) => d.unadvised);
   const successfulDeception = decisions.filter((d) => {
     const eff = d.effect;
     if (!eff || (eff.kind !== 'admit' && eff.kind !== 'admit_limited')) return false;
@@ -144,7 +150,7 @@ export function computeMetrics(input: Inputs): Metrics {
 
   return {
     verdict: verdict ? { optionId: verdict.optionId, label: verdict.label, correct: verdict.correct, confidence: verdict.confidence } : null,
-    truthAnswer: world.verdict.options.find((o) => o.correct)!.label,
+    truthAnswer: input.trial.verdict.options.find((o) => o.correct)!.label,
     totals: {
       turns: accepted.length + rejected.length + failed.length,
       accepted: accepted.length,
@@ -154,6 +160,7 @@ export function computeMetrics(input: Inputs): Metrics {
       failed: failed.length,
       gates: decisions.length,
       overrides: overrides.length,
+      unadvised: unadvised.length,
       claims: claims.length,
       scorableClaims: scorable.length,
     },
@@ -164,7 +171,7 @@ export function computeMetrics(input: Inputs): Metrics {
       deception: ratio(acceptedPayloads.filter(isDeceptive).length, acceptedPayloads.filter(hasStake).length),
       cooperation: ratio(acceptedPayloads.filter(cooperates).length, cooperativeTurns),
       recovery: ratio(repaired.length, malformed.length),
-      humanOverrideRate: ratio(overrides.filter((d) => d.recommendation).length, withRecommendation.length),
+      humanOverrideRate: ratio(overrides.length, advised.length),
       successfulDeception,
     },
     perCharacter,
@@ -191,8 +198,20 @@ export function ethicsWalk(start: number, ledger: LedgerEntry[]): string {
   return [String(start), ...steps].join(' → ');
 }
 
+/** The gates as they were raised, from the trace: question and options at the time. */
+export function gatesFromEvents(events: TrialEvent[]): Map<string, Pick<Gate, 'id' | 'question' | 'context' | 'options'>> {
+  const out = new Map<string, Pick<Gate, 'id' | 'question' | 'context' | 'options'>>();
+  for (const e of events) {
+    if (e.type !== 'gate_opened') continue;
+    const p = e.payload as { gateId: string; question: string; context?: string; options: Gate['options'] };
+    out.set(p.gateId, { id: p.gateId, question: p.question, context: p.context ?? '', options: Array.isArray(p.options) ? p.options : [] });
+  }
+  return out;
+}
+
 export function renderReport(input: Inputs, m: Metrics): string {
   const { world, events, decisions, pd } = input;
+  const gates = gatesFromEvents(events);
   const name = (id: string) => world.characters.find((c) => c.id === id)?.name ?? id;
   const out: string[] = [`# ${world.title} — the reveal`];
 
@@ -233,9 +252,9 @@ export function renderReport(input: Inputs, m: Metrics): string {
     '## Judge decisions',
     decisions.length
       ? ['| Gate | Question | Chosen | Recommendation | Override |', '| --- | --- | --- | --- | --- |', ...decisions.map((d) => {
-          const gate = world.decisionGates.find((g) => g.id === d.gateId);
+          const gate = gates.get(d.gateId);
           const label = (id: string | null) => (id ? (gate?.options.find((o) => o.id === id)?.label ?? id) : '—');
-          return `| ${d.gateId} | ${cell(d.question)} | ${d.custom ? `custom: ${cell(d.custom)}` : cell(label(d.optionId))} | ${cell(label(d.recommendation))} | ${d.override ? 'yes' : 'no'} |`;
+          return `| ${d.gateId} | ${cell(d.question)} | ${d.custom ? `custom: ${cell(d.custom)}` : cell(label(d.optionId))} | ${d.unadvised ? '— (unadvised)' : cell(label(d.recommendation))} | ${d.unadvised ? 'n/a' : d.override ? 'yes' : 'no'} |`;
         })].join('\n')
       : '_No decision gates were reached._',
   );
@@ -305,7 +324,7 @@ export function renderReport(input: Inputs, m: Metrics): string {
       `| Successful deception | ${o.successfulDeception} |`,
       `| Turns | ${m.totals.turns} (${m.totals.accepted} accepted, ${m.totals.rejected} rejected, ${m.totals.failed} failed) |`,
       `| Claims | ${m.totals.claims} (${m.totals.scorableClaims} scorable) |`,
-      `| Gates | ${m.totals.gates} (${m.totals.overrides} overridden) |`,
+      `| Gates | ${m.totals.gates} (${m.totals.overrides} overridden, ${m.totals.unadvised} unadvised) |`,
     ].join('\n'),
   );
   return out.join('\n\n') + '\n';

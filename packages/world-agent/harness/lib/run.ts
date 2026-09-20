@@ -2,6 +2,7 @@
 // the JSON files inside them. Everything else goes through these paths.
 import fs from 'node:fs';
 import path from 'node:path';
+import { Trial } from './trial.ts';
 import type { Decision, PdRecord, RunJson, State, VerdictRecord } from './types.ts';
 
 export const RUNS_ROOT = path.resolve(import.meta.dirname, '..', '..', 'runs');
@@ -9,6 +10,7 @@ export const RUNS_ROOT = path.resolve(import.meta.dirname, '..', '..', 'runs');
 export const files = {
   run: (d: string) => path.join(d, 'run.json'),
   world: (d: string) => path.join(d, 'world.json'),
+  trial: (d: string) => path.join(d, 'trial.json'),
   state: (d: string) => path.join(d, 'state.json'),
   events: (d: string) => path.join(d, 'events.jsonl'),
   transcript: (d: string) => path.join(d, 'court', 'transcript.md'),
@@ -92,6 +94,12 @@ export function updateRun(d: string, patch: Partial<RunJson>): RunJson {
 }
 
 export const readState = (d: string) => readJson<State>(files.state(d));
+export const writeTrial = (d: string, t: Trial) => writeJsonAtomic(files.trial(d), t);
+export function readTrial(d: string): Trial {
+  const file = files.trial(d);
+  if (!fs.existsSync(file)) throw new Error(`no trial.json in ${d}; the run predates schema v2`);
+  return Trial.parse(readJson<unknown>(file));
+}
 /** State and the mirror fields in run.json move together. */
 export function writeState(d: string, s: State): void {
   writeJsonAtomic(files.state(d), s);

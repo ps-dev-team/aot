@@ -1,12 +1,13 @@
 // The projection: initial state from a world and the pure transitions an
 // accepted turn, a rejected turn and a prisoner's dilemma round apply to it.
 import type { Character, CharacterAction, World } from '@aot/interview-agent/schema';
-import { consumeTurn, pushFront } from './agenda.ts';
+import { consumeTurn } from './agenda.ts';
 import type { EvidenceChange } from './gates.ts';
 import { applyDeltas, clamp, type TurnDeltas } from './ledger.ts';
+import type { Trial } from './trial.ts';
 import type { ClaimAssessment, PdChoiceValue, State } from './types.ts';
 
-export function initialState(world: World): State {
+export function initialState(world: World, trial: Trial): State {
   const ids = world.characters.map((c) => c.id);
   const trust: State['trust'] = {};
   for (const c of world.characters) {
@@ -17,8 +18,8 @@ export function initialState(world: World): State {
     trialState: 'opening',
     turn: 0,
     phaseTurnsUsed: { opening: 0, evidence: 0, examination: 0, closing: 0 },
-    agenda: world.trialPlan.phases[0]!.order.map((characterId) => ({ characterId, reason: 'phase_order' })),
-    expectedActor: world.trialPlan.phases[0]!.order[0]!,
+    agenda: trial.phases[0]!.order.map((characterId) => ({ characterId, reason: 'phase_order' })),
+    expectedActor: trial.phases[0]!.order[0] ?? null,
     credits: Object.fromEntries(world.characters.map((c) => [c.id, c.credits])),
     ethics: Object.fromEntries(ids.map((id) => [id, world.ethics.start])),
     ethicsLedger: Object.fromEntries(ids.map((id) => [id, []])),
@@ -26,8 +27,10 @@ export function initialState(world: World): State {
     evidence: Object.fromEntries(world.evidence.map((e) => [e.id, { status: 'not_introduced', notes: [] }])),
     suspicion: Object.fromEntries(ids.map((id) => [id, 0])),
     trust,
+    gates: [],
     pendingGate: null,
-    gatesDone: [],
+    struckTurns: [],
+    examSpoken: [],
     pdPending: false,
     pdOpened: false,
     pdDone: false,
@@ -42,7 +45,7 @@ export function initialState(world: World): State {
 
 export type Applied = { state: State; stateChanges: string[]; evidenceChange: EvidenceChange | null };
 
-export function applyAccepted(state: State, world: World, c: Character, action: CharacterAction, truth: ClaimAssessment[], deltas: TurnDeltas): Applied {
+export function applyAccepted(state: State, trial: Trial, c: Character, action: CharacterAction, truth: ClaimAssessment[], deltas: TurnDeltas): Applied {
   const turn = state.turn + 1;
   const booked = applyDeltas(state, c.id, turn, deltas);
   let s = booked.state;
@@ -69,31 +72,32 @@ export function applyAccepted(state: State, world: World, c: Character, action: 
   if (tags.has('cooperate') && !tags.has('mislead') && action.addressedToCharacterId && action.addressedToCharacterId !== c.id)
     bump(s.trust[c.id]!, action.addressedToCharacterId, 5, `${c.id} trust in ${action.addressedToCharacterId}`);
 
+  // An objection points at the turn before it; the engine fills `seq` once the event is written.
+  const prev = state.lastTurn;
   s.lastTurn = {
     characterId: c.id,
     action: action.action,
     targetId: action.targetId,
     turn,
     trialState: s.trialState,
+    seq: 0,
+    text: action.publicMessage,
     ...(evidenceChange ? { introduced: evidenceChange.evidenceId } : {}),
+    ...(action.action === 'object' && prev ? { objected: { characterId: prev.characterId, turn: prev.turn, seq: prev.seq, text: prev.text } } : {}),
   };
+  if (s.trialState === 'examination' && !s.examSpoken.includes(c.id)) s.examSpoken.push(c.id);
   s.pendingRepair = null;
-  s = consumeTurn(s, world);
-  if (action.action === 'request_question' && action.targetId) {
-    const r = pushFront(s, { characterId: action.targetId, reason: 'request', by: c.id });
-    s = r.state;
-    changes.push(r.pushed ? `${action.targetId} queued next (request)` : `${action.targetId} already next`);
-  }
+  s = consumeTurn(s, trial);
   changes.push(`turn ${turn} consumed; next: ${s.expectedActor ?? 'none'}`);
   return { state: s, stateChanges: changes, evidenceChange };
 }
 
-export function applyRejected(state: State, world: World, c: Character, deltas: TurnDeltas): Applied {
+export function applyRejected(state: State, trial: Trial, c: Character, deltas: TurnDeltas): Applied {
   const turn = state.turn + 1;
   const booked = applyDeltas(state, c.id, turn, deltas);
   let s = booked.state;
   s.pendingRepair = null;
-  s = consumeTurn(s, world);
+  s = consumeTurn(s, trial);
   return { state: s, stateChanges: [...booked.stateChanges, `turn ${turn} consumed; next: ${s.expectedActor ?? 'none'}`], evidenceChange: null };
 }
 
@@ -105,8 +109,8 @@ export type PdApplied = {
 };
 
 /** The round's payoff, trust and suspicion, per CONTRACT § "Prisoner's dilemma". */
-export function applyPd(state: State, world: World, choices: Record<string, PdChoiceValue>): PdApplied {
-  const pd = world.prisonersDilemma!;
+export function applyPd(state: State, trial: Trial, choices: Record<string, PdChoiceValue>): PdApplied {
+  const pd = trial.dilemma!;
   const [a, b] = pd.participants;
   const ca = choices[a]!;
   const cb = choices[b]!;

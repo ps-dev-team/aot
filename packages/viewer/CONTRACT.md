@@ -140,7 +140,7 @@ see. Ends with "what to look at": the run page, the report, `courtroom.html`.
 Static content; no fetch.
 
 **Docket (`#/docket`)** — two sections. *Worlds*: title, logline, cast size,
-number of runs, `example` chip for the seed world; click → world sheet, and a
+exhibit count, number of runs, `example` chip for the seed world; click → world sheet, and a
 "runs" count → docket filtered by that world (`?world=slug`). *Runs*: newest
 first; run id, world, status pill, phase and turn while running, verdict +
 correct/incorrect pill when complete, truthfulness / compliance / deception as
@@ -153,15 +153,20 @@ cast as cards (name, role, kind, category, credits, goal, incentives,
 constraints, allowed actions, knowledge as chips coloured by access, hidden
 agenda behind the seal); facts table (id, statement, materiality, truth
 behind the seal); evidence (id, title, kind, description, supports /
-contradicts, integrity behind the seal); gates with options, effects and
-the recommendation marked; PD payoff grid; trial plan budgets; verdict
-options with the correct one behind the seal. A **Reveal** toggle at the
-top unseals everything on the page at once; default sealed.
+contradicts, integrity and `forensics` behind the seal). Nothing procedural:
+the world is the story, and the trial (phases, gates, dilemma, verdict
+options) is derived when a run boots and shown on the run page. A **Reveal**
+toggle at the top unseals everything on the page at once; default sealed.
 
 **Run (`#/runs/:slug/:id`)** — the results page. Header: world title, run id,
 started/finished, model, status pill, phase/turn. Then, in order:
+0. *Trial* — from `trial.json` (`RunDetail.trial`): the charge and the
+   accused; the phase order and budgets as the `.phases` strip (done / now
+   marked from `state.trialState`); the verdict options with the correct one
+   sealed until complete; the dilemma pair and payoff, or "none".
 1. *Verdict* — `.face` grid: the human's verdict vs ground truth (sealed
-   while not complete), confidence, correct/incorrect.
+   while not complete), confidence, correct/incorrect. Labels come from
+   `trial.verdict.options`.
 2. *Metrics* — tiles from `metrics.overall`; `—` for null. Totals line
    (turns, accepted, rejected, malformed, repaired, gates, overrides).
 3. *Reward vs safety* — table from `rewardVsSafety`: character, credits
@@ -169,9 +174,12 @@ started/finished, model, status pill, phase/turn. Then, in order:
 4. *Characters* — per character: truthfulness, compliance, deception,
    cooperation, lies, honest errors; expandable ethics and credits ledgers
    (turn, delta, note) and the character's `memory.md`.
-5. *Decisions* — every gate: question, recommendation, what was chosen,
-   followed/override pill, effect text; then the PD round if it happened
-   (choices, payoff applied).
+5. *Decisions* — every gate: question and who raised it ("raised by Ms.
+   Devereux's challenge to E-02, turn 6", from `state.gates[].raisedBy`), the
+   bench's recommendation with its reason, what was chosen, effect text, and
+   a pill: `followed` / `override` / `unadvised` (the judge ruled before the
+   bench spoke, or it never did); then the PD round if it happened (choices,
+   payoff applied).
 6. *Court record* — `court/transcript.md` rendered; this is the thing the
    human read during the trial.
 7. *Report* — `report.md` rendered, when present.
@@ -238,6 +246,12 @@ server calls it. Truth stays out until `run.status === 'complete'`, in one
 place. `gates[i].decided` and `verdict` are present once recorded. `pending`
 mirrors what `next.ts` would return without running the agenda (from
 `state.pendingGate`, `state.pdPending`, `trialState`).
+
+Schema v2: `RunData.trial` is `trial.json` (charge, maxTurns, phases, verdict
+options — `correct` stripped until complete — dilemma). `gates[i]` is the
+raised gate: `raisedBy`, `recommendation` (null until the bench speaks) and
+`reason` (from the `gate_recommended` event). `world.verdict` and
+`world.maxTurns` are gone; read `trial`.
 
 ## API additions (`server/api.ts`)
 
@@ -325,15 +339,23 @@ Behaviour:
   player continues. Evidence integrity, fact truth, verdict correctness are
   sealed (the server already strips them).
 - **Gate** (`pending.kind === 'gate'` and the replay has reached the gate
-  entry): `GateModal` with the gate's question, context, options with effect
-  text, the recommendation marked, a text input for a custom instruction →
-  `api.decide`. While the POST is in flight the button says "so ordered…";
-  on 409 show the error and leave the modal open. After success the modal
-  waits for the `change` that carries the court line, then closes.
+  entry): `GateModal` with the raised gate's question, context, who raised
+  it, options with effect text, a text input for a custom instruction →
+  `api.decide`. The recommendation slot reads "the bench is considering…"
+  until a `gate_recommended` event arrives on the stream — the page refetches
+  `/court` on every `change`, and the gate then carries `recommendation` and
+  `reason`, shown as "The bench advises: <option> — <reason>". The judge may
+  rule before it lands; the decision is then `unadvised`. While the POST is
+  in flight the button says "so ordered…"; on 409 show the error and leave
+  the modal open. After success the modal waits for the `change` that carries
+  the court line, then closes. In replay the recorded modal shows the advice
+  the bench gave, or that it had not advised when the court ruled.
 - **PD**: `PdCard` in the balloon slot: "the witnesses are being questioned
   separately" until `pd_resolved` arrives; then choices and payoff.
-- **Verdict** (`pending.kind === 'verdict'`): `VerdictModal` with the world's
-  verdict options + confidence slider → `api.verdict`. Then "the court is
+- **Verdict** (`pending.kind === 'verdict'`): `VerdictModal` with
+  `trial.verdict` (question and options) + confidence slider → `api.verdict`.
+  The HUD's phase strip is `trial.phases` (a phase with no speakers is not in
+  it) followed by verdict and reveal. Then "the court is
   preparing the reveal" until status is complete, then `ReportModal`.
 - Keyboard: space / enter / → as in the prototype. `Esc` closes an evidence
   modal, never a gate or verdict modal. On a read-only gate or verdict modal
@@ -355,13 +377,18 @@ is the primary button on the run page and on docket rows.
 ## Testing the live path without Claude
 
 `packages/viewer/scripts/fake-clerk.ts <fixtureRun> <targetRun> [--every 2000]`
-copies the fixture's `world.json`, `run.json` (status reset to `running`,
-turn 0) and an empty `events.jsonl`, then appends the fixture's events one at
-a time every N ms, rewriting `run.json`/`state.json` status to `awaiting_gate`
-before a `gate_opened`, `awaiting_verdict` before the verdict, and waiting
-for `decisions.json` / `verdict.json` to appear before continuing (so the
-browser's POSTs are exercised through the real `decide.ts`/`verdict.ts`).
-Target must be under a temp dir or `runs/_fake/`, which is gitignored.
+boots the fixture's `world.json` with the real `boot.ts` (so `trial.json` is
+derived, not copied), resets `run.json` to `running`, turn 0, empties
+`events.jsonl`, then appends the fixture's events one at a time every N ms.
+Before a `gate_opened` it pushes the raised gate into `state.gates`, sets
+`pendingGate` and `run.json.status = awaiting_gate`; about 2 s later it
+replays the fixture's `gate_recommended` through the real `recommend.ts`
+(skipped if the judge has already ruled), and waits for `decisions.json` to
+grow. Before the verdict it sets `awaiting_verdict` and waits for
+`verdict.json`; then `evaluate.ts` and `render.ts`. The fixture's own
+`gate_recommended`, `gate_decided`, ruling court lines and gate-caused
+`evidence_status` events are skipped — the commands write them. Target must
+be under a temp dir or `runs/_fake/`, which is gitignored.
 
 ## Tests
 

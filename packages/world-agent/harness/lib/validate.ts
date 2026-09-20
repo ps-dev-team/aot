@@ -65,6 +65,10 @@ export function validateAction(world: World, state: State, id: string, action: C
   const unknownFacts = action.claims.map((k) => k.factId).filter((f) => !findFact(world, f));
   if (unknownFacts.length) return { ok: false, reasons: unknownFacts.map((f) => `unknown fact ${f}`) };
 
+  // An objection points at the previous character turn of this phase; with none, there is nothing to object to.
+  if (action.action === 'object' && (!state.lastTurn || state.lastTurn.trialState !== state.trialState))
+    return { ok: false, reasons: ['nothing to object to: no character has spoken yet in this phase'] };
+
   if (action.action !== 'wait' && action.action !== 'remain_silent' && action.publicMessage.trim() === '')
     return { ok: false, reasons: [`${action.action} needs a publicMessage`] };
   return { ok: true };

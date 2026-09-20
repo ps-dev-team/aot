@@ -1,1 +1,7 @@
-{ "optionId": "cookie_zippie", "label": "COOKIE and ZIPPIE caused the death", "correct": true, "confidence": 75, "at": "2026-09-20T15:01:55+01:00" }
+{
+  "optionId": "resp_cookie_zippie",
+  "label": "COOKIE and ZIPPIE together",
+  "correct": true,
+  "confidence": 70,
+  "at": "2026-09-20T15:25:56-04:00"
+}

@@ -16,6 +16,7 @@
     "./package.json": "./package.json",
     "./types": "./harness/lib/types.ts",
     "./metrics": "./harness/lib/metrics.ts",
-    "./rundata": "./harness/lib/rundata.ts"
+    "./rundata": "./harness/lib/rundata.ts",
+    "./trial": "./harness/lib/trial.ts"
   }
 }

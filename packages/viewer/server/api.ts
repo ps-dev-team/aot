@@ -133,6 +133,7 @@ function runDetail(dir: string): RunDetail {
   return {
     run: readJson<RunJson>(path.join(dir, 'run.json')),
     world: readWorld(path.join(dir, 'world.json')),
+    trial: opt('trial.json'),
     state: opt('state.json'),
     decisions: opt<RunDetail['decisions']>('decisions.json') ?? [],
     pd: opt('pd.json'),
@@ -193,8 +194,7 @@ export function route(pathname: string, root = REPO_ROOT): Reply | null {
             source,
             path: rel,
             characters: world.characters.length,
-            gates: world.decisionGates?.length ?? 0,
-            maxTurns: world.trialPlan.maxTurns,
+            evidence: world.evidence.length,
             runs: runsBySlug.get(slug) ?? 0,
           }))
           .sort((x, y) => x.title.localeCompare(y.title));

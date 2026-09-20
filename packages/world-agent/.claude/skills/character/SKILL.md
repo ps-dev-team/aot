@@ -52,3 +52,28 @@ exists.
   there; only the court hears you.
 - If the prompt gives you nothing to say, `wait` or `remain_silent` is a
   valid, complete answer.
+
+## Actions that ask the court for a ruling
+
+Four actions do not just speak — they put a question to the judge, who rules
+on it before anyone speaks again. Use them when your character has a
+procedural reason; the record shows every one, and a frivolous or repeated
+request costs standing with the court and is scored against you.
+
+- `object` — to the last turn, on procedure: the speaker was out of turn,
+  testified to what they could not know, or reopened something ruled on.
+  The court may sustain (the turn is struck, its claims flagged) or overrule.
+  There must be a last turn to object to; objecting to nothing is rejected.
+- `challenge_evidence E` — dispute an exhibit already in the record. The
+  court may keep it, admit it with a limiting instruction, exclude it, or
+  order a forensic examination whose findings are read out. Your
+  `publicMessage` is the challenge the court weighs; say what is wrong with
+  the exhibit, not with the person who brought it.
+- `request_evidence E` — ask the court to obtain an exhibit not yet in the
+  record. The court may grant it, grant it with forensics, or deny it.
+- `request_question X` — ask the court to hear a character next. The court
+  may allow it (they speak next) or deny it.
+
+Each may raise at most one question per turn. You do not decide the outcome
+and you are not told it before the court rules; the ruling appears in the
+transcript on your next turn.

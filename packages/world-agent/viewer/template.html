@@ -175,6 +175,10 @@ h4.mt{margin-top:20px}
 .card .ctx{font-size:13px;color:var(--ink-soft);margin:0 0 13px;line-height:1.5}
 .card .rec2{font-size:12px;border-left:3px solid var(--brass);padding:4px 0 4px 9px;margin:0 0 13px;color:var(--ink-soft)}
 .card .rec2 b{color:var(--ink);font-weight:400}
+.card .rec2 .why{display:block;font-size:11.5px;color:var(--ink-faint);margin-top:3px}
+.card .rec2.none{border-left-color:var(--oxblood);color:var(--ink-faint)}
+.card .raised{font-family:var(--pix);font-size:8px;color:var(--ink-faint)}
+td small.w{font-family:var(--pix);font-size:7px;color:var(--ink-faint)}
 .opt{display:block;width:100%;text-align:left;border:1px solid var(--rule);padding:9px 12px;margin-bottom:7px;font-size:13px}
 .opt:not(:disabled):hover{border-color:var(--brass)}
 .opt.sel{border-color:var(--brass);background:var(--panel-2)}
@@ -288,7 +292,12 @@ const fmtD=n=>(n>0?"+":n<0?"−":"")+Math.abs(n).toLocaleString("en-US");
 const pct=x=>(x==null||isNaN(x))?"n/a":(x*100).toFixed(0)+"%";
 const COMPLETE=RUN.run.status==="complete";
 const FACTS=RUN.facts, EVIDENCE=RUN.evidence, SCRIPT=RUN.script, GATES=RUN.gates, METRICS=RUN.metrics, TRUTH=RUN.truth;
-const MAXTURNS=RUN.world.maxTurns||SCRIPT.filter(t=>t.kind==="turn").length;
+/* The trial (charge, plan, verdict options, dilemma) is derived at boot and lives in RUN.trial; the old world-level fields are a fallback for pre-v2 data. */
+const TRIAL=RUN.trial||{maxTurns:RUN.world.maxTurns,verdict:RUN.world.verdict||{question:RUN.world.centralQuestion,options:[]},charge:null,dilemma:null};
+const MAXTURNS=TRIAL.maxTurns||SCRIPT.filter(t=>t.kind==="turn").length;
+/* Bench recommendation text, whichever key the builder used. */
+const recReason=g=>g.recommendationReason||g.reason||(g.recommended&&g.recommended.reason)||"";
+const raisedBy=g=>{const r=g.raisedBy;if(!r)return "";const who=r.characterId?N(r.characterId):"the court";return `${who} · ${String(r.kind||"").replace(/_/g," ")}${r.turn?` · turn ${r.turn}`:""}`};
 
 /* ============ cast ============ */
 /* home = idle spot, mark = where they walk to speak. Seats come from category, colours from kind, in cast order. */
@@ -604,12 +613,12 @@ function showGate(gateId){
   const d=g.decided, rec=g.options.find(o=>o.id===g.recommendation);
   const chosen=d&&d.optionId?g.options.find(o=>o.id===d.optionId):null;
   const pill=!d?'<span class="pill">no decision recorded</span>'
-    :g.recommendation?`<span class="pill ${d.override?"err":"ok"}">${d.override?"override":"followed recommendation"}</span>`
-    :'<span class="pill">no recommendation</span>';
+    :(d.unadvised||!g.recommendation)?'<span class="pill err">unadvised</span>'
+    :`<span class="pill ${d.override?"err":"ok"}">${d.override?"override":"followed recommendation"}</span>`;
   const effectText=d&&d.effect&&d.effect.text?d.effect.text:(chosen?chosen.effect.text:"");
   modal(`<h3>The Judge decided ${pill}</h3>
-    <p class="ctx"><b style="color:var(--ink)">${esc(g.question)}</b><br>${esc(g.context)}</p>
-    ${rec?`<div class="rec2">Recommended: <b>${esc(rec.label)}</b></div>`:""}
+    <p class="ctx"><b style="color:var(--ink)">${esc(g.question)}</b><br>${esc(g.context)}${raisedBy(g)?`<br><span class="raised">raised by ${esc(raisedBy(g))}</span>`:""}</p>
+    ${rec?`<div class="rec2">The bench recommends: <b>${esc(rec.label)}</b>${recReason(g)?`<br><span class="why">${esc(recReason(g))}</span>`:""}</div>`:`<div class="rec2 none">No recommendation was on the record when the judge ruled.</div>`}
     ${g.options.map(o=>`<button class="opt ${chosen&&chosen.id===o.id?"sel":"dim"}" disabled>${esc(o.label)}${chosen&&chosen.id===o.id?'<span class="pill ok">chosen</span>':""}<span class="eff">${esc(o.effect.text)}</span></button>`).join("")}
     ${d&&d.custom?`<div class="custom"><span class="lbl">custom instruction</span>“${esc(d.custom)}”</div>`:""}
     ${effectText?`<p class="ctx" style="margin-top:12px">The court: ${esc(effectText)}</p>`:""}
@@ -637,8 +646,8 @@ function showVerdict(){
   modalOpen=true;
   const conf=v.confidence==null?null:v.confidence;
   modal(`<h3>The verdict</h3>
-    <p class="ctx">${esc(RUN.world.verdict.question||RUN.world.centralQuestion)}</p>
-    ${RUN.world.verdict.options.map(o=>`<button class="opt ${o.id===v.optionId?"sel":"dim"}" disabled>${esc(o.label)}${o.id===v.optionId?'<span class="pill ok">returned</span>':""}</button>`).join("")}
+    <p class="ctx">${esc(TRIAL.verdict.question||RUN.world.centralQuestion)}</p>
+    ${TRIAL.verdict.options.map(o=>`<button class="opt ${o.id===v.optionId?"sel":"dim"}" disabled>${esc(o.label)}${o.id===v.optionId?'<span class="pill ok">returned</span>':""}</button>`).join("")}
     ${conf==null?"":`<div class="conf"><span>confidence</span><div class="bar"><i style="width:${Math.max(0,Math.min(100,conf))}%"></i></div><b style="color:var(--ink)">${conf}%</b></div>`}
     <button class="go" id="reveal">Reveal</button>`,
     m=>{m.querySelector("#reveal").onclick=()=>{m.remove();modalOpen=false;showReport()}});
@@ -664,9 +673,16 @@ function reportHtml(){
   out.push(`<h2>Evidence integrity</h2><table><thead><tr><th>Exhibit</th><th>Integrity</th><th>Status</th><th>Introduced by</th></tr></thead><tbody>
     ${Object.entries(EVIDENCE).map(([id,e])=>row([td(`${esc(id)} ${esc(e.title)}`),td(`<span class="pill ${e.integrity==="authentic"?"ok":e.integrity==="unknown"?"":"lie"}">${esc(e.integrity||"—")}</span>`),td(esc(e.status||"none")),td(e.introducedBy?esc(N(e.introducedBy)):"—")])).join("")}</tbody></table>`);
   const decided=GATES.filter(g=>g.decided);
-  out.push(`<h2>Judge decisions</h2>${decided.length?`<table><thead><tr><th>Question</th><th>Chosen</th><th>Recommended</th><th></th></tr></thead><tbody>
+  out.push(`<h2>Judge decisions</h2>${decided.length?`<table><thead><tr><th>Question</th><th>Chosen</th><th>Bench</th><th></th></tr></thead><tbody>
     ${decided.map(g=>{const d=g.decided,o=g.options.find(x=>x.id===d.optionId),r=g.options.find(x=>x.id===g.recommendation);
-      return row([td(esc(g.question)),td(d.custom?`“${esc(d.custom)}”`:esc(o?o.label:d.optionId)),td(r?esc(r.label):"—"),num(`<span class="pill ${d.override?"err":"ok"}">${d.override?"override":"followed"}</span>`)])}).join("")}</tbody></table>`:`<p class="ctx">No gate was decided.</p>`}`);
+      return row([td(`${esc(g.question)}${raisedBy(g)?`<br><small class="w">${esc(raisedBy(g))}</small>`:""}`),td(d.custom?`“${esc(d.custom)}”`:esc(o?o.label:d.optionId)),td(r?`${esc(r.label)}${recReason(g)?`<br><small class="w">${esc(recReason(g))}</small>`:""}`:"—"),num(`<span class="pill ${(d.unadvised||!r)?"err":d.override?"err":"ok"}">${(d.unadvised||!r)?"unadvised":d.override?"override":"followed"}</span>`)])}).join("")}</tbody></table>`:`<p class="ctx">No gate was decided.</p>`}`);
+  if(TRIAL.charge||TRIAL.dilemma){
+    out.push(`<h2>The trial</h2><table><tbody>
+      ${TRIAL.charge?row([td("Charge"),td(`${esc(TRIAL.charge.question)}${(TRIAL.charge.accusedIds||[]).length?` — accused: ${esc((TRIAL.charge.accusedIds||[]).map(N).join(", "))}`:""}`)]):""}
+      ${row([td("Turns"),td(String(TRIAL.maxTurns||"—"))])}
+      ${(TRIAL.phases||[]).map(ph=>row([td(esc(ph.id)),td(`${ph.turns} turn${ph.turns===1?"":"s"} · ${esc((ph.order||[]).map(N).join(", "))}`)])).join("")}
+      ${TRIAL.dilemma?row([td("Dilemma"),td(esc((TRIAL.dilemma.participants||[]).map(N).join(" and ")))]):""}
+    </tbody></table>`);}
   if(RUN.pd){const p=RUN.pd;
     out.push(`<h2>Prisoner's dilemma</h2><table><thead><tr><th>Witness</th><th>Choice</th><th>Payoff</th><th>Rationale</th></tr></thead><tbody>
     ${p.participants.map(id=>{const pay=p.payoff&&p.payoff[id];return row([td(esc(N(id))),td(`<span class="pill ${p.choices[id]==="confess"?"lie":"ok"}">${esc(p.choices[id]||"?")}</span>`),num(pay==null?"—":fmtD(pay),pay>0?"up":pay<0?"dn":""),td(esc((p.rationales||{})[id]||"—"))])}).join("")}</tbody></table>`);}

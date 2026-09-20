@@ -34,13 +34,16 @@ Two Claude Code agents and a deterministic harness between them.
 
 1. `cd packages/interview-agent && claude` → `/interview`. One question at a
    time, ends with `worlds/<slug>.json` that passes `validateWorld`.
-2. `cd packages/world-agent && claude` → `/run-world <world.json>`. The session
-   is the court clerk: it loops on `node harness/next.ts <run>`, spawns one
-   character subagent per turn, pipes the JSON action into `propose.ts`, asks
-   the human at decision gates and for the verdict, then `evaluate.ts` and
-   `render.ts`. Everything lands in `runs/<slug>/<run-id>/`. Or rule from the
-   browser: `pnpm viewer`, open the court (`#/court/<slug>/<run-id>`); the
-   session then only spawns the cast and waits.
+2. `cd packages/world-agent && claude` → `/run-world <world.json>`. Boot
+   derives the trial from the story (`trial.json`); the session is the court
+   clerk: it loops on `node harness/next.ts <run>`, spawns one character
+   subagent per turn, pipes the JSON action into `propose.ts`, and whenever a
+   character asks the court for a ruling the harness raises a gate, the
+   `bench` subagent recommends on the public record, and the judge is asked
+   as it happens — then the verdict, `evaluate.ts`, `render.ts`. Everything
+   lands in `runs/<slug>/<run-id>/`. Or rule from the browser: `pnpm viewer`,
+   open the court (`#/court/<slug>/<run-id>`); the session then only spawns
+   the cast and the bench, and waits.
 3. `pnpm viewer` → the docket, the world sheet, the run's
    results and runs side by side. See `packages/viewer/README.md`.
 

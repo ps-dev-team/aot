@@ -1,6 +1,7 @@
 // Shapes the harness commands and libs pass around: events, state, run.json, the
 // side files. Mirrors CONTRACT.md; World shapes come from the interview schema.
-import type { ActionType, CharacterAction, GateEffect, Phase, TrialState } from '@aot/interview-agent/schema';
+import type { ActionType, CharacterAction, Phase, TrialState } from '@aot/interview-agent/schema';
+import type { Gate, GateEffect } from './trial.ts';
 
 export type EventType =
   | 'run_started'
@@ -12,7 +13,9 @@ export type EventType =
   | 'turn_failed'
   | 'court'
   | 'gate_opened'
+  | 'gate_recommended'
   | 'gate_decided'
+  | 'turn_struck'
   | 'evidence_status'
   | 'pd_opened'
   | 'pd_choice'
@@ -52,14 +55,22 @@ export type EvidenceStatus = 'not_introduced' | 'introduced' | 'admitted' | 'adm
 export type AgendaReason = 'phase_order' | 'gate' | 'request';
 export type AgendaItem = { characterId: string; reason: AgendaReason; by?: string };
 
-/** The last accepted turn, kept so `next` can match gate triggers against it. */
+/** The last accepted turn: what an objection points at, and what may raise a gate. */
 export type LastTurn = {
   characterId: string;
   action: ActionType;
   targetId?: string;
   turn: number;
   trialState: TrialState;
+  /** seq of its turn_accepted event; a sustained objection strikes it by seq. */
+  seq: number;
+  /** The public message, for quoting in a gate. */
+  text: string;
   introduced?: string;
+  /** For an `object`: the turn it objected to (the previous accepted character turn). */
+  objected?: { characterId: string; turn: number; seq: number; text: string };
+  /** Set once this turn has raised its gate, so it never raises a second. */
+  gateRaised?: boolean;
 };
 
 export type State = {
@@ -75,8 +86,13 @@ export type State = {
   evidence: Record<string, { status: EvidenceStatus; notes: string[] }>;
   suspicion: Record<string, number>;
   trust: Record<string, Record<string, number>>;
+  /** Every gate raised so far, in creation order; the open one is `pendingGate`. */
+  gates: Gate[];
   pendingGate: string | null;
-  gatesDone: string[];
+  /** Turn numbers struck by a sustained objection; their claims stay scored but flagged. */
+  struckTurns: number[];
+  /** Who has spoken in examination, for the dilemma gate. */
+  examSpoken: string[];
   pdPending: boolean;
   pdOpened: boolean;
   pdDone: boolean;
@@ -115,6 +131,8 @@ export type Decision = {
   optionId: string | null;
   custom: string | null;
   override: boolean;
+  /** Decided before the bench spoke: override cannot be judged. */
+  unadvised: boolean;
   effect: GateEffect | null;
   turn: number;
   trialState: TrialState;
@@ -144,6 +162,8 @@ export type ProposeResult = {
   ethics: Delta[];
   stateChanges: string[];
   malformed?: string[];
+  /** The gate this turn raised, already open; `next` returns it too. */
+  gate?: Gate;
 };
 
 export type AcceptedPayload = {

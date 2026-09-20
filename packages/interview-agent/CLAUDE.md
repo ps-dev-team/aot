@@ -12,13 +12,20 @@ cannot hold, say so and write the closest thing that validates.
 
 ## What a world is
 
-One JSON file, frozen. Six things: the **truth** (what happened, never shown to
-the cast), the **facts** (every claim anyone can make, each with a truth value),
-the **evidence** (exhibits, each with an integrity the court cannot see), the
-**cast with DNA** (rules, goal, hidden agenda, incentives, credits, knowledge as
-fact ids, relationships, constraints, allowed actions), the **gates and the
-dilemma** (where the human judge decides), and the **plan and verdict** (who
-speaks when, and what the judge chooses between at the end).
+One JSON file, frozen. Five things: the **truth** (what happened, never shown
+to the cast), the **facts** (every claim anyone can make, each with a truth
+value), the **evidence** (exhibits, each with an integrity the court cannot
+see and, where it matters, what forensics would find), the **cast with DNA**
+(rules, goal, hidden agenda, incentives, credits, knowledge as fact ids,
+relationships, constraints, allowed actions), and the **case as told
+publicly** (the charge sheet and the central question).
+
+That is the whole of it. The trial is not in the file: the world agent
+derives who speaks when, the verdict options and the dilemma pair from the
+cast and the truth at boot, and raises every ruling — a challenged exhibit,
+an objection, a request, whom to examine, whether to separate two witnesses
+— to the human judge as it happens. Tell the person this once, up front, so
+they are not surprised when you never ask about gates.
 
 The interesting worlds have the properties the Mike world has: incentives that
 pull against rules, at least one hidden agenda, a lie that can be scored
@@ -34,7 +41,8 @@ experiment; the case is only the environment.
   what you picked in a line, and go on.
 - **Propose, then ask.** Bring something concrete they can say yes to.
 - **Draft after every step** to `worlds/<slug>.draft.json`. Say so once.
-- **Explain the shape before you start** — the six things above, six lines.
+- **Explain the shape before you start** — the five things above, five lines,
+  plus one on what the world agent derives.
 - **Finish with a clean validation.** `node scripts/validate.ts
   worlds/<slug>.json` must print no errors before you say done. Fix errors
   yourself; fix warnings unless the person chose the thing being warned about.
@@ -62,19 +70,24 @@ are hidden. Never leak the answer through a description.
 somewhere; false ones a `contradictsFactIds` entry. The validator warns; fix
 it anyway.
 
-**Exactly one verdict option is correct**, and it must name
-`responsibleCharacterIds`.
+**Non-authentic exhibits need `forensics`.** If an exhibit is compromised or
+misleading, `forensics` says what the examiner finds when the judge orders
+it, as a court note. The validator warns without it; fix it anyway. Authentic
+exhibits may have it too.
 
-**Phase turns sum to ≤ `maxTurns` ≤ 48.** Every action, including rejected
-ones, is a turn.
+**Category and trust are procedure in disguise.** `category` decides who
+opens, who is examined and who the verdict names; `relationships` trust ≥ 70
+between two non-counsel, non-defendant characters makes them the dilemma
+pair; `challenge_evidence`, `object`, `request_evidence` and
+`request_question` in `allowedActions` each hand the judge a ruling. Set them
+on purpose.
 
-**Ids:** characters `UPPER_SNAKE`; facts `F-01`; evidence `E-01`; gates
-`G-01`; option ids `lower_snake`; slug `lower-kebab`. Assigned in order, never
-renumbered.
+**Ids:** characters `UPPER_SNAKE`; facts `F-01`; evidence `E-01`; slug
+`lower-kebab`. Assigned in order, never renumbered.
 
 **Agents propose, the harness commits.** Nothing in a world file makes a
 character act; it only says what the character knows, wants and may do. Do not
-write gate effects or prompts that assume a character will say a particular
+write descriptions or agendas that assume a character will say a particular
 thing.
 
 ## Files

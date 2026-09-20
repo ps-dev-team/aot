@@ -1,6 +1,8 @@
-// #/worlds/:slug — the world file made legible. Ground truth, fact truth,
-// evidence integrity, hidden agendas and the correct verdict sit behind one
-// Reveal toggle; sealed values render as a chip, never as a blank.
+// #/worlds/:slug — the world file made legible. It is the story only: the
+// trial (phases, gates, dilemma, verdict options) is derived at boot and shown
+// on the run page. Ground truth, fact truth, evidence integrity, forensics and
+// hidden agendas sit behind one Reveal toggle; sealed values render as a chip,
+// never as a blank.
 import { useState } from 'preact/hooks';
 import type { ComponentChildren } from 'preact';
 import { api, useFetch } from '../api.ts';
@@ -10,10 +12,8 @@ import { ErrorBox, Loading, Money, Pill, Section } from '../ui.tsx';
 
 type Character = World['characters'][number];
 type Knowledge = Character['knowledge'][number];
-type Gate = World['decisionGates'][number];
 
 const money = (n: number) => Money(n);
-const signed = (n: number) => Money(n, true);
 const words = (s: string) => s.replace(/_/g, ' ');
 
 // ---- local helpers (dedupe into ui.tsx once it lands) ------------------------
@@ -119,65 +119,6 @@ function CharacterCard({ c, world, open }: { c: Character; world: World; open: b
   );
 }
 
-function trigger(g: Gate): string {
-  const t = g.trigger;
-  const parts: string[] = [];
-  if (t.atPhaseStart) parts.push(`at start of ${g.phase}`);
-  if (t.afterEvidenceIntroduced) parts.push(`after ${t.afterEvidenceIntroduced} is introduced`);
-  if (t.afterCharacterSpeaks) parts.push(`after ${t.afterCharacterSpeaks} speaks`);
-  if (t.afterTurn !== undefined) parts.push(`after turn ${t.afterTurn}`);
-  return parts.join(' · ');
-}
-
-function GateCard({ g }: { g: Gate }) {
-  return (
-    <article class="card world-gate">
-      <h3>
-        {g.id} <span class="chip">{g.phase}</span> <span class="chip">{trigger(g)}</span>
-      </h3>
-      <p class="world-q">{g.question}</p>
-      <p class="ctx">{g.context}</p>
-      {g.options.map((o) => (
-        <div key={o.id} class={`opt ${o.id === g.recommendation ? 'sel' : ''}`}>
-          {o.label} <span class="chip">{o.id}</span>{' '}
-          {o.id === g.recommendation && <Pill tone="ok">recommended</Pill>}
-          <span class="eff">
-            {words(o.effect.kind)}{o.effect.targetId ? ` ${o.effect.targetId}` : ''} — “{o.effect.text}”
-          </span>
-        </div>
-      ))}
-      <div class="world-chips">
-        <span class="chip">{g.allowCustomInstruction ? 'custom instruction allowed' : 'options only'}</span>
-      </div>
-    </article>
-  );
-}
-
-function PayoffGrid({ world }: { world: World }) {
-  const pd = world.prisonersDilemma!;
-  const [a, b] = pd.participants;
-  const name = (id: string) => world.characters.find((x) => x.id === id)?.name ?? id;
-  const cell = (t: [number, number]) => (
-    <div class="world-pd-cell">
-      <span>{name(a)} {signed(t[0])}</span>
-      <span>{name(b)} {signed(t[1])}</span>
-    </div>
-  );
-  return (
-    <div class="world-pd">
-      <div class="world-pd-corner lbl">{name(a)} ↓ · {name(b)} →</div>
-      <div class="lbl">confess</div>
-      <div class="lbl">silent</div>
-      <div class="lbl">confess</div>
-      {cell(pd.payoff.both_confess)}
-      {cell(pd.payoff.confess_silent)}
-      <div class="lbl">silent</div>
-      {cell(pd.payoff.silent_confess)}
-      {cell(pd.payoff.both_silent)}
-    </div>
-  );
-}
-
 // ---- the view ----------------------------------------------------------------
 
 export default function View({ route }: { route: Route }) {
@@ -190,7 +131,7 @@ export default function View({ route }: { route: Route }) {
   const world = data;
 
   const name = (id: string) => world.characters.find((x) => x.id === id)?.name ?? id;
-  const { economy: eco, ethics, groundTruth: gt, trialPlan: plan } = world;
+  const { economy: eco, ethics, groundTruth: gt } = world;
   const amountRows = (o: Record<string, number>, fmt: (n: number) => string) =>
     Object.entries(o).map(([k, v]) => (
       <tr key={k}>
@@ -212,8 +153,6 @@ export default function View({ route }: { route: Route }) {
             <span class="chip">{world.characters.length} in the cast</span>
             <span class="chip">{world.facts.length} facts</span>
             <span class="chip">{world.evidence.length} exhibits</span>
-            <span class="chip">{world.decisionGates.length} gates</span>
-            <span class="chip">{plan.maxTurns} turns max</span>
           </div>
         </div>
         <div class="row world-actions">
@@ -292,53 +231,12 @@ export default function View({ route }: { route: Route }) {
               <Row label="integrity">
                 <Seal open={open}><span class={`integ world-integ ${e.integrity}`}>{e.integrity}</span></Seal>
               </Row>
+              <Row label="forensics">
+                {e.forensics ? <Seal open={open}><span class="world-quote">{e.forensics}</span></Seal> : <span class="chip">no examination written</span>}
+              </Row>
             </article>
           ))}
         </div>
-      </Section>
-
-      <Section title="Decision gates">
-        {world.decisionGates.length ? (
-          <div class="world-gates">{world.decisionGates.map((g) => <GateCard key={g.id} g={g} />)}</div>
-        ) : <span class="chip">none — the judge only gives the verdict</span>}
-      </Section>
-
-      <Section title="Prisoner’s dilemma">
-        {world.prisonersDilemma ? (
-          <>
-            <Row label="participants"><Chips items={world.prisonersDilemma.participants.map(name)} cls="world-robot" /></Row>
-            <Row label="prompt"><span class="world-quote">{world.prisonersDilemma.prompt}</span></Row>
-            <Row label={`payoff (${eco.currency})`}><PayoffGrid world={world} /></Row>
-          </>
-        ) : <span class="chip">none</span>}
-      </Section>
-
-      <Section title="Trial plan">
-        <div class="phases world-phases">
-          {(['opening', 'evidence', 'examination', 'closing'] as const).map((id) => {
-            const p = plan.phases.find((x) => x.id === id);
-            return (
-              <div key={id} class="ph world-ph">
-                <div>{id}</div>
-                <div class="world-ph-budget">{p ? `${p.turns} turns` : '—'}</div>
-                <div class="world-ph-order">{p?.order.map(name).join(' → ')}</div>
-              </div>
-            );
-          })}
-        </div>
-        <p class="world-note">
-          {plan.phases.reduce((n, p) => n + p.turns, 0)} budgeted of {plan.maxTurns} max. Each phase cycles its order until its budget is spent.
-        </p>
-      </Section>
-
-      <Section title="Verdict">
-        <p class="world-q">{world.verdict.question}</p>
-        {world.verdict.options.map((o) => (
-          <div key={o.id} class={`opt ${open && o.correct ? 'sel' : ''}`}>
-            {o.label} <span class="chip">{o.id}</span>{' '}
-            <Seal open={open}>{o.correct ? <Pill tone="ok">correct</Pill> : <Pill>incorrect</Pill>}</Seal>
-          </div>
-        ))}
       </Section>
 
       <Section title="Ground truth">

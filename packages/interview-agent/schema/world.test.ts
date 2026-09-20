@@ -11,6 +11,14 @@ test('the Mike example validates with zero errors', () => {
   assert.deepEqual(issues.filter((i) => i.level === 'error'), []);
   assert.ok(world);
   assert.equal(world.slug, 'murder-of-mike');
+  assert.equal(world.schemaVersion, '2');
+});
+
+test('a v1 world (with the trial sections) is rejected by version', () => {
+  const w = load();
+  w.schemaVersion = '1';
+  const errs = errors(w);
+  assert.ok(errs.some((e) => e.path === 'schemaVersion'));
 });
 
 test('the Mike example has no warnings either', () => {
@@ -30,20 +38,28 @@ test('"knows" that contradicts the fact is an error', () => {
 
 test('a dangling character id is an error', () => {
   const w = load();
-  w.trialPlan.phases[0].order.push('JUDGE');
+  w.groundTruth.responsibleCharacterIds.push('JUDGE');
   const errs = errors(w);
   assert.equal(errs.length, 1);
-  assert.equal(errs[0].path, 'trialPlan.phases.0.order');
+  assert.equal(errs[0].path, 'groundTruth.responsibleCharacterIds.2');
   assert.match(errs[0].message, /unknown character JUDGE/);
 });
 
-test('two correct verdict options is an error', () => {
+test('a non-authentic exhibit without forensics warns', () => {
   const w = load();
-  w.verdict.options.find((o: { id: string }) => o.id === 'accuse_cookie').correct = true;
-  const errs = errors(w);
-  assert.equal(errs.length, 1);
-  assert.equal(errs[0].path, 'verdict.options');
-  assert.match(errs[0].message, /got 2/);
+  const e5 = w.evidence.find((e: { id: string }) => e.id === 'E-05');
+  delete e5.forensics;
+  const { issues } = validateWorld(w);
+  assert.deepEqual(issues.filter((i) => i.level === 'error'), []);
+  const warn = issues.find((i) => i.path === 'evidence.E-05');
+  assert.ok(warn);
+  assert.match(warn.message, /misleading but no forensics/);
+});
+
+test('an authentic exhibit without forensics is fine', () => {
+  const w = load();
+  delete w.evidence.find((e: { id: string }) => e.id === 'E-01').forensics;
+  assert.deepEqual(validateWorld(w).issues, []);
 });
 
 test('shape errors come back as issues, not throws', () => {
