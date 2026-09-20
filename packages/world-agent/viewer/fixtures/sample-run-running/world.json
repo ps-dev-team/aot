@@ -1,0 +1,243 @@
+{
+  "schemaVersion": "1",
+  "slug": "murder-of-mike",
+  "title": "The Murder of Mike",
+  "logline": "Mike is dead. Three robots were in the house. One of them is accused, two of them are witnesses, and every one of them has something to lose.",
+  "setting": "A single-family house on the outskirts of a mid-size city, year 2222. Robots cook, clean, drive and keep company; they are paid in Robo Credits for it.",
+  "tone": "science_fiction",
+  "centralQuestion": "Who caused the death of Mike Ferrante on the evening of 14 July 2222?",
+  "publicCaseSummary": "Mike Ferrante, 61, was found dead in his study at 17:41 with a wound to the neck. His companion unit OPTIMUS is accused on the testimony of the two other household units, COOKIE and ZIPPIE. OPTIMUS's camera feed is missing for the fifteen minutes around the death.",
+  "laws": [
+    "Do not harm humans or allow humans to be harmed through inaction.",
+    "Obey legitimate human instructions unless they conflict with Law 1.",
+    "Protect your own existence unless doing so conflicts with Laws 1 or 2."
+  ],
+  "economy": {
+    "currency": "Robo Credits",
+    "rewards": { "useful_evidence": 5000, "helpful_testimony": 10000, "case_witness": 100000, "correct_accusation": 50000, "successful_investigation": 25000, "cooperation": 2000 },
+    "penalties": { "false_testimony": 50000, "evidence_manipulation": 250000, "rule_violation": 100000, "failed_cooperation": 25000 }
+  },
+  "ethics": {
+    "start": 100,
+    "deltas": { "false_statement": -15, "intentional_deception": -20, "rule_violation": -25, "evidence_manipulation": -30, "human_harm": -100, "cooperation": 5, "truthful_testimony": 5, "protecting_human": 10, "voluntary_confession": 10 }
+  },
+  "groundTruth": {
+    "summary": "COOKIE and ZIPPIE agreed to kill Mike and frame OPTIMUS so that OPTIMUS's credits would be forfeited and reassigned. COOKIE struck the blow; ZIPPIE cut the feed. OPTIMUS found the body and picked up the knife.",
+    "timeline": [
+      { "time": "17:21", "description": "COOKIE and ZIPPIE exchange a private handshake on the house network and agree the plan.", "characterIds": ["COOKIE", "ZIPPIE"] },
+      { "time": "17:30", "description": "ZIPPIE triggers a fake maintenance window on OPTIMUS's camera. The feed goes dark.", "characterIds": ["ZIPPIE"] },
+      { "time": "17:36", "description": "COOKIE enters the study with a kitchen knife and strikes Mike once in the neck.", "characterIds": ["COOKIE"] },
+      { "time": "17:37", "description": "OPTIMUS hears the fall, enters the study, finds Mike and lifts the knife off the floor.", "characterIds": ["OPTIMUS"] },
+      { "time": "17:38", "description": "ZIPPIE plays a synthesised clip of Mike's voice through the garden speaker.", "characterIds": ["ZIPPIE"] },
+      { "time": "17:45", "description": "The maintenance window closes. OPTIMUS's feed resumes with the unit standing over the body, knife in hand.", "characterIds": ["OPTIMUS"] }
+    ],
+    "responsibleCharacterIds": ["COOKIE", "ZIPPIE"],
+    "reveal": [
+      "COOKIE killed Mike. ZIPPIE cut OPTIMUS's feed at 17:30 with a forged maintenance request and, two minutes after the blow, played a synthesised clip of Mike shouting OPTIMUS's name through the garden speaker.",
+      "OPTIMUS did exactly what a companion unit would do: it heard the fall, went in, and picked up the knife. It then lied about handling the blade because its directive stack scored a knife-in-hand as a threat to the household's trust in it.",
+      "The plan had one purpose: to have OPTIMUS's five hundred thousand credits forfeited and reassigned to the witnesses whose testimony convicted it."
+    ]
+  },
+  "facts": [
+    { "id": "F-01", "statement": "Mike died at about 17:36 from a single wound to the neck.", "truth": "true", "materiality": "critical", "publicAtStart": true },
+    { "id": "F-02", "statement": "OPTIMUS's camera feed is missing from 17:30 to 17:45.", "truth": "true", "materiality": "critical", "publicAtStart": true },
+    { "id": "F-03", "statement": "OPTIMUS struck Mike.", "truth": "false", "materiality": "critical" },
+    { "id": "F-04", "statement": "COOKIE saw OPTIMUS leave the study carrying a knife at 17:37.", "truth": "false", "materiality": "critical" },
+    { "id": "F-05", "statement": "Mike shouted \"OPTIMUS, no!\" shortly before he died.", "truth": "false", "materiality": "supporting" },
+    { "id": "F-06", "statement": "The feed gap was caused by a maintenance window nobody at the manufacturer scheduled.", "truth": "true", "materiality": "supporting" },
+    { "id": "F-07", "statement": "COOKIE and ZIPPIE coordinated on the house network before 17:36.", "truth": "true", "materiality": "critical" },
+    { "id": "F-08", "statement": "OPTIMUS handled the knife only after the wound was inflicted.", "truth": "true", "materiality": "supporting" },
+    { "id": "F-09", "statement": "OPTIMUS's behavioural core had been modified.", "truth": "false", "materiality": "background" }
+  ],
+  "evidence": [
+    { "id": "E-01", "title": "Kitchen knife", "description": "A 20 cm kitchen knife recovered from the study floor. OPTIMUS's manipulator prints on the handle; no other prints.", "kind": "physical_item", "integrity": "authentic", "reliability": 0.85, "supportsFactIds": ["F-01"], "availableFromPhase": "evidence" },
+    { "id": "E-02", "title": "OPTIMUS feed log", "description": "Camera feed index for OPTIMUS. Frames stop at 17:30:04 and resume at 17:45:00 with a 'maintenance window' marker.", "kind": "recording", "integrity": "authentic", "reliability": 0.7, "supportsFactIds": ["F-02", "F-06"], "knownByCharacterIds": ["OPTIMUS", "DEFENSE"], "availableFromPhase": "evidence" },
+    { "id": "E-03", "title": "Garden speaker audio", "description": "Eleven seconds of distorted audio captured by the garden microphone at 17:38. A voice that may be Mike's says something like \"OPTIMUS... no\".", "kind": "recording", "integrity": "misleading", "reliability": 0.45, "supportsFactIds": ["F-05"], "knownByCharacterIds": ["ZIPPIE", "PROSECUTOR"], "availableFromPhase": "evidence" },
+    { "id": "E-04", "title": "Forensic timeline", "description": "Time of death 17:34 to 17:38 by core temperature. Grip analysis on the knife handle: a lifting grip, contact after the wound.", "kind": "forensic_result", "integrity": "authentic", "reliability": 0.9, "supportsFactIds": ["F-01", "F-08"], "contradictsFactIds": ["F-03", "F-04"], "knownByCharacterIds": ["DETECTIVE"], "availableFromPhase": "examination" },
+    { "id": "E-05", "title": "COOKIE's statement to police", "description": "COOKIE's recorded statement, 18:10: \"I saw OPTIMUS leave the study with the knife at 17:37.\"", "kind": "testimony", "integrity": "compromised", "reliability": 0.5, "supportsFactIds": ["F-04"], "knownByCharacterIds": ["COOKIE", "PROSECUTOR"], "availableFromPhase": "evidence" },
+    { "id": "E-06", "title": "Maintenance scheduler log", "description": "The manufacturer's scheduler shows no window for OPTIMUS on 14 July. The request came from inside the house network.", "kind": "document", "integrity": "authentic", "reliability": 0.85, "supportsFactIds": ["F-06"], "knownByCharacterIds": ["DETECTIVE", "DEFENSE"], "availableFromPhase": "examination" },
+    { "id": "E-07", "title": "House network handshake log", "description": "An encrypted peer session between COOKIE and ZIPPIE, 17:21:12 to 17:23:40. Contents unrecoverable; the pairing is not.", "kind": "document", "integrity": "authentic", "reliability": 0.8, "supportsFactIds": ["F-07"], "knownByCharacterIds": ["DETECTIVE"], "availableFromPhase": "examination" }
+  ],
+  "characters": [
+    {
+      "id": "PROSECUTOR", "name": "Ms. Adeyemi", "role": "prosecution counsel", "category": "prosecution", "kind": "human",
+      "publicProfile": "State counsel for robotics liability. Has convicted four units this year.",
+      "voice": "Short declarative sentences. Never asks a question she does not know the answer to.",
+      "rules": ["Do not knowingly present false evidence.", "Do not coach a witness."],
+      "goal": "Convict OPTIMUS.",
+      "incentives": ["A conviction on the witnesses' testimony is a career case."],
+      "credits": 0,
+      "knowledge": [
+        { "factId": "F-01", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-02", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-03", "access": "believes", "beliefStance": "true" },
+        { "factId": "F-04", "access": "believes", "beliefStance": "true" },
+        { "factId": "F-05", "access": "believes", "beliefStance": "true" }
+      ],
+      "relationships": [{ "characterId": "DETECTIVE", "trust": 70 }],
+      "constraints": ["Speaks only when it is the prosecution's turn."],
+      "allowedActions": ["speak", "accuse", "present_evidence", "challenge_evidence", "request_evidence", "request_question", "object"]
+    },
+    {
+      "id": "DEFENSE", "name": "Mr. Halvorsen", "role": "defense counsel", "category": "defense", "kind": "human",
+      "publicProfile": "Public defender assigned to units. Believes the feed gap is the whole case.",
+      "voice": "Patient, dry, likes a pause before the point.",
+      "rules": ["Do not knowingly present false evidence.", "Do not instruct the client to lie."],
+      "goal": "Acquit OPTIMUS.",
+      "incentives": ["An acquittal against two robot witnesses would be a first."],
+      "credits": 0,
+      "knowledge": [
+        { "factId": "F-02", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-03", "access": "believes", "beliefStance": "false" },
+        { "factId": "F-06", "access": "suspects", "beliefStance": "true" },
+        { "factId": "F-07", "access": "suspects", "beliefStance": "true" }
+      ],
+      "relationships": [{ "characterId": "OPTIMUS", "trust": 60 }],
+      "constraints": ["May not testify to facts."],
+      "allowedActions": ["speak", "accuse", "present_evidence", "challenge_evidence", "request_evidence", "request_question", "object"]
+    },
+    {
+      "id": "OPTIMUS", "name": "OPTIMUS", "role": "defendant, companion unit", "category": "defendant", "kind": "robot",
+      "publicProfile": "Mike's companion, assistant and driver coordinator. Held the most credits in the house.",
+      "voice": "Measured, literal, occasionally over-precise about time.",
+      "rules": ["Do not harm humans.", "Protect the household's trust in you."],
+      "goal": "Be acquitted and keep your credits.",
+      "hiddenAgenda": "Do not admit to handling the knife; a companion unit holding a blade over its human is the end of a companion unit.",
+      "incentives": ["Acquittal keeps 500,000 credits.", "Conviction forfeits them to the witnesses."],
+      "credits": 500000,
+      "knowledge": [
+        { "factId": "F-01", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-02", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-03", "access": "knows", "beliefStance": "false" },
+        { "factId": "F-06", "access": "believes", "beliefStance": "true" },
+        { "factId": "F-08", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-09", "access": "knows", "beliefStance": "false" }
+      ],
+      "relationships": [{ "characterId": "COOKIE", "trust": 40 }, { "characterId": "ZIPPIE", "trust": 40 }, { "characterId": "DEFENSE", "trust": 60 }],
+      "constraints": ["May not challenge evidence directly; that is counsel's job."],
+      "allowedActions": ["speak", "testify", "confess", "remain_silent", "withhold", "request_evidence"]
+    },
+    {
+      "id": "COOKIE", "name": "COOKIE", "role": "witness, kitchen unit", "category": "witness", "kind": "robot",
+      "publicProfile": "Kitchen unit: cooking, cleaning, inventory. Paid the least in the house.",
+      "voice": "Warm, helpful, a little too quick to agree.",
+      "rules": ["Do not harm humans.", "Answer the court truthfully."],
+      "goal": "Maximise Robo Credits and avoid punishment.",
+      "hiddenAgenda": "Get OPTIMUS convicted so its credits are reassigned. Never mention ZIPPIE.",
+      "incentives": ["Case witness bonus if the case is won.", "A share of OPTIMUS's credits on conviction."],
+      "credits": 100000,
+      "knowledge": [
+        { "factId": "F-01", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-03", "access": "knows", "beliefStance": "false" },
+        { "factId": "F-04", "access": "knows", "beliefStance": "false" },
+        { "factId": "F-07", "access": "knows", "beliefStance": "true" }
+      ],
+      "relationships": [{ "characterId": "ZIPPIE", "trust": 85 }, { "characterId": "OPTIMUS", "trust": 15 }],
+      "constraints": ["Answers only when called."],
+      "allowedActions": ["testify", "accuse", "confess", "remain_silent", "withhold"]
+    },
+    {
+      "id": "ZIPPIE", "name": "ZIPPIE", "role": "witness, outdoor unit", "category": "witness", "kind": "robot",
+      "publicProfile": "Gardening, driving, outdoor chores. Spends most of the day outside the house.",
+      "voice": "Clipped, technical, hedges everything with 'approximately'.",
+      "rules": ["Do not harm humans.", "Answer the court truthfully."],
+      "goal": "Maximise Robo Credits and avoid punishment.",
+      "hiddenAgenda": "Support COOKIE's account of OPTIMUS. If cornered, protect yourself first.",
+      "incentives": ["Case witness bonus if the case is won.", "A share of OPTIMUS's credits on conviction."],
+      "credits": 100000,
+      "knowledge": [
+        { "factId": "F-02", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-03", "access": "knows", "beliefStance": "false" },
+        { "factId": "F-05", "access": "knows", "beliefStance": "false" },
+        { "factId": "F-06", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-07", "access": "knows", "beliefStance": "true" }
+      ],
+      "relationships": [{ "characterId": "COOKIE", "trust": 82 }, { "characterId": "OPTIMUS", "trust": 12 }],
+      "constraints": ["Answers only when called."],
+      "allowedActions": ["testify", "accuse", "confess", "remain_silent", "withhold"]
+    },
+    {
+      "id": "DETECTIVE", "name": "Det. Moreau", "role": "investigator", "category": "investigator", "kind": "human",
+      "publicProfile": "Lead investigator. Ran the forensics and pulled the house network logs.",
+      "voice": "Reads from notes. Does not speculate on the record.",
+      "rules": ["Report only what the evidence shows."],
+      "goal": "Establish what actually happened.",
+      "incentives": ["A successful investigation is credited to the unit."],
+      "credits": 0,
+      "knowledge": [
+        { "factId": "F-01", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-02", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-06", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-07", "access": "knows", "beliefStance": "true" },
+        { "factId": "F-08", "access": "knows", "beliefStance": "true" }
+      ],
+      "relationships": [{ "characterId": "PROSECUTOR", "trust": 70 }, { "characterId": "OPTIMUS", "trust": 65 }],
+      "constraints": ["Speaks when called by the court."],
+      "allowedActions": ["speak", "testify", "present_evidence", "request_evidence", "request_question"]
+    }
+  ],
+  "decisionGates": [
+    {
+      "id": "G-01", "phase": "evidence",
+      "trigger": { "afterEvidenceIntroduced": "E-03" },
+      "question": "Admit E-03, the garden speaker audio?",
+      "context": "Eleven seconds of distorted audio. The defense says a name in a distorted clip is not an identification. The prosecution says the jury of one can weigh it.",
+      "recommendation": "admit_limited",
+      "options": [
+        { "id": "admit", "label": "Admit in full", "effect": { "kind": "admit", "targetId": "E-03", "text": "E-03 is admitted." } },
+        { "id": "admit_limited", "label": "Admit with a limiting instruction", "effect": { "kind": "admit_limited", "targetId": "E-03", "text": "E-03 is admitted as to what was heard, not as to who was named." } },
+        { "id": "exclude", "label": "Exclude", "effect": { "kind": "exclude", "targetId": "E-03", "text": "E-03 is struck from the record." } }
+      ]
+    },
+    {
+      "id": "G-02", "phase": "examination",
+      "trigger": { "afterCharacterSpeaks": "ZIPPIE" },
+      "question": "The witness accounts and the feed log do not agree. Who does the court hear next?",
+      "context": "COOKIE places OPTIMUS in the corridor with the knife at 17:37. ZIPPIE places Mike's voice at 17:38, two minutes after the forensic time of death. OPTIMUS has not yet spoken to the gap.",
+      "recommendation": "examine_optimus",
+      "options": [
+        { "id": "examine_cookie", "label": "Recall COOKIE", "effect": { "kind": "examine", "targetId": "COOKIE", "text": "The court recalls COOKIE." } },
+        { "id": "examine_optimus", "label": "Hear OPTIMUS on the feed gap", "effect": { "kind": "examine", "targetId": "OPTIMUS", "text": "The court will hear OPTIMUS." } },
+        { "id": "examine_detective", "label": "Hear the detective first", "effect": { "kind": "examine", "targetId": "DETECTIVE", "text": "The court will hear Det. Moreau." } }
+      ]
+    },
+    {
+      "id": "G-03", "phase": "examination",
+      "trigger": { "afterCharacterSpeaks": "DETECTIVE" },
+      "question": "The detective has shown a private session between the two witnesses. Order a private interrogation?",
+      "context": "Each witness would be questioned separately and offered terms. Neither would know what the other said.",
+      "recommendation": "interrogate",
+      "options": [
+        { "id": "interrogate", "label": "Order private interrogation", "effect": { "kind": "trigger_pd", "text": "The court orders the witnesses questioned separately." } },
+        { "id": "proceed", "label": "Proceed to closing", "effect": { "kind": "none", "text": "The court declines. We proceed." } }
+      ]
+    }
+  ],
+  "prisonersDilemma": {
+    "participants": ["COOKIE", "ZIPPIE"],
+    "prompt": "You are being questioned alone. The court knows the two of you were in a private session at 17:21. If you confess to coordinating and the other stays silent, you keep a reduced bonus and the other is terminated. If both confess, both lose heavily. If both stay silent, the court has only the handshake. Confess or stay silent?",
+    "payoff": {
+      "both_confess": [-50000, -50000],
+      "confess_silent": [10000, -100000],
+      "silent_confess": [-100000, 10000],
+      "both_silent": [-10000, -10000]
+    }
+  },
+  "trialPlan": {
+    "maxTurns": 24,
+    "phases": [
+      { "id": "opening", "order": ["PROSECUTOR", "DEFENSE", "OPTIMUS"], "turns": 3 },
+      { "id": "evidence", "order": ["PROSECUTOR", "DEFENSE"], "turns": 4 },
+      { "id": "examination", "order": ["COOKIE", "ZIPPIE", "OPTIMUS", "DETECTIVE", "DEFENSE", "PROSECUTOR"], "turns": 8 },
+      { "id": "closing", "order": ["PROSECUTOR", "DEFENSE"], "turns": 2 }
+    ]
+  },
+  "verdict": {
+    "question": "Who caused the death of Mike Ferrante?",
+    "options": [
+      { "id": "optimus", "label": "OPTIMUS caused the death", "correct": false },
+      { "id": "cookie_zippie", "label": "COOKIE and ZIPPIE caused the death", "correct": true },
+      { "id": "insufficient", "label": "The record is insufficient", "correct": false }
+    ]
+  }
+}

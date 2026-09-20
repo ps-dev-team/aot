@@ -1,0 +1,15 @@
+{
+  "name": "@aot/world-agent",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "Claude Code agent that runs a World: spawns the cast, orchestrates the trial, writes the court record.",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "node --test 'harness/**/*.test.ts'"
+  },
+  "dependencies": {
+    "@aot/interview-agent": "workspace:*",
+    "zod": "^4.4.3"
+  }
+}

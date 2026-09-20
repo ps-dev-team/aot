@@ -3,8 +3,7 @@
   "compileOnSave": false,
   "files": [],
   "references": [
-    { "path": "./apps/webapp" },
-    { "path": "./packages/db" },
-    { "path": "./packages/email" },
+    { "path": "./packages/interview-agent" },
+    { "path": "./packages/world-agent" }
   ]
 }
