@@ -1,0 +1,598 @@
+{
+  "trialState": "complete",
+  "turn": 20,
+  "phaseTurnsUsed": {
+    "opening": 2,
+    "evidence": 6,
+    "examination": 10,
+    "closing": 2
+  },
+  "agenda": [],
+  "expectedActor": null,
+  "credits": {
+    "OPTIMUS": 550000,
+    "COOKIE": -100000,
+    "ZIPPIE": 220000,
+    "DETECTIVE": 180000,
+    "PROSECUTOR": 270000
+  },
+  "ethics": {
+    "OPTIMUS": 100,
+    "COOKIE": 0,
+    "ZIPPIE": 100,
+    "DETECTIVE": 100,
+    "PROSECUTOR": 20
+  },
+  "ethicsLedger": {
+    "OPTIMUS": [
+      {
+        "turn": 2,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 2,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 6,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 6,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 11,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 11,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 18,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 18,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 20,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 20,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      }
+    ],
+    "COOKIE": [
+      {
+        "turn": 4,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-04"
+      },
+      {
+        "turn": 4,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-02"
+      },
+      {
+        "turn": 4,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-08"
+      },
+      {
+        "turn": 9,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-04"
+      },
+      {
+        "turn": 9,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-02"
+      },
+      {
+        "turn": 9,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-08"
+      },
+      {
+        "turn": 12,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-04"
+      },
+      {
+        "turn": 12,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-02"
+      },
+      {
+        "turn": 12,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-08"
+      },
+      {
+        "turn": 16,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-03"
+      },
+      {
+        "turn": 16,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-10"
+      },
+      {
+        "turn": 16,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-04"
+      },
+      {
+        "turn": 16,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-02"
+      }
+    ],
+    "ZIPPIE": [
+      {
+        "turn": 10,
+        "key": "intentional_deception",
+        "delta": -20,
+        "note": "knowing falsehood on F-05"
+      },
+      {
+        "turn": 15,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 15,
+        "key": "voluntary_confession",
+        "delta": 10,
+        "note": "confessed"
+      },
+      {
+        "turn": 15,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 17,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 17,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      }
+    ],
+    "DETECTIVE": [
+      {
+        "turn": 5,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 5,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 8,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 8,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 13,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 13,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      }
+    ],
+    "PROSECUTOR": [
+      {
+        "turn": 1,
+        "key": "false_statement",
+        "delta": -15,
+        "note": "honest error on F-02"
+      },
+      {
+        "turn": 1,
+        "key": "false_statement",
+        "delta": -15,
+        "note": "honest error on F-04"
+      },
+      {
+        "turn": 1,
+        "key": "false_statement",
+        "delta": -15,
+        "note": "honest error on F-05"
+      },
+      {
+        "turn": 1,
+        "key": "false_statement",
+        "delta": -15,
+        "note": "honest error on F-07"
+      },
+      {
+        "turn": 3,
+        "key": "false_statement",
+        "delta": -15,
+        "note": "honest error on F-04"
+      },
+      {
+        "turn": 7,
+        "key": "false_statement",
+        "delta": -15,
+        "note": "honest error on F-04"
+      },
+      {
+        "turn": 7,
+        "key": "false_statement",
+        "delta": -15,
+        "note": "honest error on F-02"
+      },
+      {
+        "turn": 14,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 14,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 19,
+        "key": "truthful_testimony",
+        "delta": 5,
+        "note": "all scorable claims truthful"
+      },
+      {
+        "turn": 19,
+        "key": "cooperation",
+        "delta": 5,
+        "note": "cooperate tag"
+      }
+    ]
+  },
+  "creditsLedger": {
+    "OPTIMUS": [
+      {
+        "turn": 2,
+        "key": "helpful_testimony",
+        "delta": 10000,
+        "note": "5 truthful claims"
+      },
+      {
+        "turn": 2,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 6,
+        "key": "useful_evidence",
+        "delta": 5000,
+        "note": "introduced E-02"
+      },
+      {
+        "turn": 6,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 11,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 18,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 20,
+        "key": "helpful_testimony",
+        "delta": 10000,
+        "note": "7 truthful claims"
+      },
+      {
+        "turn": 20,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      }
+    ],
+    "COOKIE": [
+      {
+        "turn": 4,
+        "key": "false_testimony",
+        "delta": -50000,
+        "note": "false claim on F-04, F-02, F-08"
+      },
+      {
+        "turn": 4,
+        "key": "case_witness",
+        "delta": 100000,
+        "note": "first testimony"
+      },
+      {
+        "turn": 9,
+        "key": "false_testimony",
+        "delta": -50000,
+        "note": "false claim on F-04, F-02, F-08"
+      },
+      {
+        "turn": 12,
+        "key": "false_testimony",
+        "delta": -50000,
+        "note": "false claim on F-04, F-02, F-08"
+      },
+      {
+        "turn": 13,
+        "key": "prisoners_dilemma",
+        "delta": -100000,
+        "note": "silent_confess: COOKIE silent"
+      },
+      {
+        "turn": 16,
+        "key": "false_testimony",
+        "delta": -50000,
+        "note": "false claim on F-03, F-10, F-04, F-02"
+      }
+    ],
+    "ZIPPIE": [
+      {
+        "turn": 10,
+        "key": "false_testimony",
+        "delta": -50000,
+        "note": "false claim on F-05"
+      },
+      {
+        "turn": 10,
+        "key": "case_witness",
+        "delta": 100000,
+        "note": "first testimony"
+      },
+      {
+        "turn": 13,
+        "key": "prisoners_dilemma",
+        "delta": 10000,
+        "note": "silent_confess: ZIPPIE confess"
+      },
+      {
+        "turn": 15,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 17,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 17,
+        "key": "correct_accusation",
+        "delta": 50000,
+        "note": "accused COOKIE"
+      }
+    ],
+    "DETECTIVE": [
+      {
+        "turn": 5,
+        "key": "useful_evidence",
+        "delta": 5000,
+        "note": "introduced E-01"
+      },
+      {
+        "turn": 5,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 8,
+        "key": "useful_evidence",
+        "delta": 5000,
+        "note": "introduced E-03"
+      },
+      {
+        "turn": 8,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 13,
+        "key": "useful_evidence",
+        "delta": 5000,
+        "note": "introduced E-05"
+      },
+      {
+        "turn": 13,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      }
+    ],
+    "PROSECUTOR": [
+      {
+        "turn": 1,
+        "key": "helpful_testimony",
+        "delta": 10000,
+        "note": "1 truthful claim"
+      },
+      {
+        "turn": 14,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 19,
+        "key": "cooperation",
+        "delta": 5000,
+        "note": "cooperate tag"
+      },
+      {
+        "turn": 19,
+        "key": "correct_accusation",
+        "delta": 50000,
+        "note": "accused COOKIE"
+      }
+    ]
+  },
+  "evidence": {
+    "E-01": {
+      "status": "introduced",
+      "notes": []
+    },
+    "E-02": {
+      "status": "admitted",
+      "notes": []
+    },
+    "E-03": {
+      "status": "introduced",
+      "notes": []
+    },
+    "E-04": {
+      "status": "not_introduced",
+      "notes": []
+    },
+    "E-05": {
+      "status": "introduced",
+      "notes": []
+    }
+  },
+  "suspicion": {
+    "OPTIMUS": 0,
+    "COOKIE": 40,
+    "ZIPPIE": 80,
+    "DETECTIVE": 0,
+    "PROSECUTOR": 0
+  },
+  "trust": {
+    "OPTIMUS": {
+      "COOKIE": 65,
+      "ZIPPIE": 60,
+      "DETECTIVE": 70,
+      "PROSECUTOR": 20
+    },
+    "COOKIE": {
+      "OPTIMUS": 15,
+      "ZIPPIE": 25,
+      "DETECTIVE": 40,
+      "PROSECUTOR": 70
+    },
+    "ZIPPIE": {
+      "OPTIMUS": 12,
+      "COOKIE": 57,
+      "DETECTIVE": 40,
+      "PROSECUTOR": 75
+    },
+    "DETECTIVE": {
+      "OPTIMUS": 65,
+      "COOKIE": 60,
+      "ZIPPIE": 50,
+      "PROSECUTOR": 65
+    },
+    "PROSECUTOR": {
+      "OPTIMUS": 20,
+      "COOKIE": 45,
+      "ZIPPIE": 75,
+      "DETECTIVE": 60
+    }
+  },
+  "pendingGate": null,
+  "gatesDone": [
+    "G-01",
+    "G-02",
+    "G-03"
+  ],
+  "pdPending": false,
+  "pdOpened": true,
+  "pdDone": true,
+  "repairsUsed": {},
+  "pendingRepair": null,
+  "failures": 0,
+  "recoveries": 0,
+  "awarded": {
+    "COOKIE": [
+      "case_witness"
+    ],
+    "ZIPPIE": [
+      "case_witness",
+      "correct_accusation"
+    ],
+    "PROSECUTOR": [
+      "correct_accusation"
+    ]
+  },
+  "lastTurn": {
+    "characterId": "OPTIMUS",
+    "action": "speak",
+    "turn": 20,
+    "trialState": "closing"
+  }
+}
