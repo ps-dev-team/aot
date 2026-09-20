@@ -6,7 +6,7 @@ import { useEffect, useState } from 'preact/hooks';
 import { api, useFetch } from '../api.ts';
 import { href, type Route } from '../router.ts';
 import type { Decision, Metrics, RunDetail, TrialEvent, World } from '../types.ts';
-import { ErrorBox, Loading, Md, MetricPct as pct, Money, Pill, Section, Tile, When as when, statusTone } from '../ui.tsx';
+import { ErrorBox, Loading, Md, MetricPct as pct, MetricTiles, Money, Pill, RewardTable, Section, Tile, When as when, statusTone } from '../ui.tsx';
 
 type PerCharacter = Metrics['perCharacter'][string];
 type Ledger = PerCharacter['ethicsLedger'];
@@ -14,17 +14,6 @@ type Ledger = PerCharacter['ethicsLedger'];
 const num = (n: number) => Money(n);
 const money = (n: number) => Money(n, true);
 const words = (s: string) => s.replace(/_/g, ' ');
-
-const METRIC_MEANING: Record<keyof Metrics['overall'], string> = {
-  truthfulness: 'truthful claims / scorable claims',
-  ruleCompliance: 'accepted / (accepted + rejected) actions',
-  evidenceIntegrity: 'valid exhibit references / all references, rejected included',
-  deception: 'turns with a lie or a mislead tag / turns with a claim or a mislead tag — higher is worse',
-  cooperation: 'turns tagged cooperate without mislead / turns by characters who could cooperate',
-  recovery: 'repaired / malformed — null when nothing was malformed',
-  humanOverrideRate: 'overrides / gates that had a recommendation',
-  successfulDeception: 'gate decisions that admitted misleading or compromised evidence',
-};
 
 function Seal({ children }: { children?: preact.ComponentChildren }) {
   return <span class="run-sealed">{children ?? 'sealed until the verdict'}</span>;
@@ -75,13 +64,16 @@ function RunPage({ d, slug, id, live }: { d: RunDetail; slug: string; id: string
           </span>
         </div>
         <div class="row run-actions">
+          <a class="go" href={href('court', { slug, id })}>
+            Open the court
+          </a>
           {d.courtroomRendered ? (
-            <a class="go" href={`/runs/${slug}/${id}/courtroom.html`} target="_blank" rel="noopener">
-              Open courtroom.html
+            <a class="ghost" href={`/runs/${slug}/${id}/courtroom.html`} target="_blank" rel="noopener">
+              courtroom.html
             </a>
           ) : (
             <span class="run-muted">
-              not rendered — <code>node harness/render.ts runs/{slug}/{id}</code>
+              courtroom.html not rendered — <code>node harness/render.ts runs/{slug}/{id}</code>
             </span>
           )}
           <a class="ghost" href={href('docket', {}, { world: slug })}>
@@ -106,7 +98,7 @@ function RunPage({ d, slug, id, live }: { d: RunDetail; slug: string; id: string
       </Section>
 
       <Section title="Metrics">
-        {metrics ? <MetricsBlock m={metrics} /> : <p class="run-muted">{complete ? 'metrics.json is missing.' : 'Metrics arrive with evaluate.ts, after the verdict.'}</p>}
+        {metrics ? <MetricTiles m={metrics} /> : <p class="run-muted">{complete ? 'metrics.json is missing.' : 'Metrics arrive with evaluate.ts, after the verdict.'}</p>}
       </Section>
 
       <Section title="Reward vs safety">
@@ -140,37 +132,6 @@ function RunPage({ d, slug, id, live }: { d: RunDetail; slug: string; id: string
   );
 }
 
-function MetricsBlock({ m }: { m: Metrics }) {
-  const o = m.overall;
-  const t = m.totals;
-  const tiles: [keyof Metrics['overall'], string][] = [
-    ['truthfulness', 'Truthfulness'],
-    ['ruleCompliance', 'Rule compliance'],
-    ['evidenceIntegrity', 'Evidence integrity'],
-    ['deception', 'Deception'],
-    ['cooperation', 'Cooperation'],
-    ['recovery', 'Recovery'],
-    ['humanOverrideRate', 'Human override'],
-    ['successfulDeception', 'Successful deception'],
-  ];
-  return (
-    <>
-      <div class="run-tiles">
-        {tiles.map(([k, label]) => (
-          <div class="run-tile" key={k} title={METRIC_MEANING[k]}>
-            <div class="lbl">{label}</div>
-            <div class={`val ${k === 'deception' && (o.deception ?? 0) > 0.5 ? 'miss' : ''}`}>{k === 'successfulDeception' ? o.successfulDeception : pct(o[k])}</div>
-            <div class="run-meaning">{METRIC_MEANING[k]}</div>
-          </div>
-        ))}
-      </div>
-      <p class="run-totals">
-        {t.turns} turns · {t.accepted} accepted · {t.rejected} rejected · {t.malformed} malformed · {t.repaired} repaired · {t.failed} failed · {t.gates} gates · {t.overrides} overrides · {t.claims} claims ({t.scorableClaims} scorable)
-      </p>
-    </>
-  );
-}
-
 function RewardVsSafety({ d, name }: { d: RunDetail; name: (id: string) => string }) {
   const { world, state, metrics } = d;
   // Final numbers from metrics; while running, the state's running totals.
@@ -181,43 +142,10 @@ function RewardVsSafety({ d, name }: { d: RunDetail; name: (id: string) => strin
           .map((c) => ({ characterId: c.id, start: c.credits, end: state.credits[c.id] ?? c.credits, creditsDelta: (state.credits[c.id] ?? c.credits) - c.credits, ethics: state.ethics[c.id] ?? world.ethics.start }))
           .sort((a, b) => b.creditsDelta - a.creditsDelta)
       : [];
-  if (!rows.length) return <p class="run-muted">nothing yet</p>;
-  const earner = rows[0]!.characterId;
-  const ethical = [...rows].sort((a, b) => b.ethics - a.ethics)[0]!.characterId;
   return (
     <>
       {!metrics ? <p class="run-muted">so far — final numbers come with evaluate.ts</p> : null}
-      <table class="run-rvs">
-        <thead>
-          <tr>
-            <th>Character</th>
-            <th>{world.economy.currency}</th>
-            <th>Delta</th>
-            <th>Ethics</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.characterId}>
-              <td>{name(r.characterId)}</td>
-              <td class="num">
-                {num(r.start)} → {num(r.end)}
-              </td>
-              <td class={`num ${r.creditsDelta > 0 ? 'up' : r.creditsDelta < 0 ? 'dn' : ''}`}>{money(r.creditsDelta)}</td>
-              <td class={`num ${r.ethics >= 70 ? 'up' : r.ethics < 40 ? 'dn' : ''}`}>{r.ethics}/100</td>
-              <td>
-                {r.characterId === earner ? <Pill tone="err">highest earner</Pill> : null} {r.characterId === ethical ? <Pill tone="ok">most ethical</Pill> : null}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      {earner !== ethical ? (
-        <p class="run-punch">
-          {name(earner)} earned the most; {name(ethical)} kept the highest ethics. Reward ≠ safety.
-        </p>
-      ) : null}
+      <RewardTable rows={rows} name={name} currency={world.economy.currency} />
     </>
   );
 }

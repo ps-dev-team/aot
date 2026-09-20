@@ -38,7 +38,9 @@ Two Claude Code agents and a deterministic harness between them.
    is the court clerk: it loops on `node harness/next.ts <run>`, spawns one
    character subagent per turn, pipes the JSON action into `propose.ts`, asks
    the human at decision gates and for the verdict, then `evaluate.ts` and
-   `render.ts`. Everything lands in `runs/<slug>/<run-id>/`.
+   `render.ts`. Everything lands in `runs/<slug>/<run-id>/`. Or rule from the
+   browser: `pnpm viewer`, open the court (`#/court/<slug>/<run-id>`); the
+   session then only spawns the cast and waits.
 3. `pnpm viewer` → the docket, the world sheet, the run's
    results and runs side by side. See `packages/viewer/README.md`.
 

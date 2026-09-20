@@ -98,7 +98,10 @@ function Runs({ runs, filter }: { runs: RunSummary[]; filter: string | null }) {
                     <input type="checkbox" checked={on} disabled={disabled} onChange={() => toggle(r)} title={disabled ? 'same world only' : 'compare'} />
                   </td>
                   <td class="id">
-                    <a href={href('run', { slug: r.worldSlug, id: r.id })}>{r.id}</a>
+                    <a href={href('run', { slug: r.worldSlug, id: r.id })}>{r.id}</a>{' '}
+                    <a class="chip rep" href={href('court', { slug: r.worldSlug, id: r.id })} title="open the court">
+                      court
+                    </a>
                   </td>
                   <td>
                     <a href={href('world', { slug: r.worldSlug })}>{r.worldTitle}</a>

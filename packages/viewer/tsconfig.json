@@ -10,7 +10,7 @@
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
     "lib": ["es2022", "dom", "dom.iterable"],
-    "types": []
+    "types": ["node"]
   },
   "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": ["node_modules", "dist"]

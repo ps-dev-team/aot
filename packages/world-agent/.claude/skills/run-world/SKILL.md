@@ -12,7 +12,7 @@ run from `packages/world-agent`; every harness command prints one JSON object.
 ## 0. Boot or resume
 
 If `$0` is a folder containing `run.json`, it is a resume: set `<run>` to it,
-skip to step 1.
+print the court URL (below), do 0b, then step 1.
 
 Otherwise it is a world file:
 
@@ -28,13 +28,32 @@ prompt (e.g. `claude-opus-5`), without any `[1m]` suffix. Set `<run>` to the
 node harness/render.ts <run>
 ```
 
-Tell the human, once, in this shape and nothing more:
+Tell the human, once, in this shape and nothing more (`<slug>` is
+`worldSlug` and `<runId>` the run id — the last two segments of `<run>`):
 
 ```
 Run <runId> → <runDir>
 Cast: COOKIE — Cookie (kitchen bot, witness) · ZIPPIE — … · …
+Court: http://localhost:5173/#/court/<slug>/<runId>  (pnpm viewer from the repo root)
 Watch: <runDir>/courtroom.html (re-rendered every 4 turns and at every gate)
 ```
+
+Print the court URL on a resume too; someone may open it just to watch.
+
+## 0b. Pick the mode
+
+Ask once, `AskUserQuestion`, `header: "Mode"`, question `Rule from the
+browser or from here?`, options:
+
+- `Browser (Recommended)` — "court mode: gates and the verdict are decided
+  on the court page; this terminal only spawns the cast"
+- `Here` — "terminal mode: gates and the verdict are asked here"
+
+Remember the answer as `<mode>`. Everything below is the same in both modes
+except where a step says **court mode**. In court mode you never ask the
+human about a gate or the verdict; the browser does, through the same
+`decide.ts` / `verdict.ts`. You still spawn every character and resolve the
+dilemma — the browser only shows those.
 
 ## 1. The loop
 
@@ -135,6 +154,21 @@ your view of it.
 
 ### `gate`
 
+**Court mode:** `node harness/render.ts <run>`, print one line
+`GATE <id> — <question> · ruling in the browser`, then
+
+```
+node harness/wait.ts <run> --timeout 1800
+```
+
+It blocks until the browser has ruled (`ok: true`); then print
+`G-02 — ruled in the browser`, and loop. On `ok: false` (timeout, exit 1):
+do steps 2–5 below once, in the terminal; if the human's "Other" text says to
+keep waiting or that they will rule in the browser, run `wait.ts` again
+instead of `decide.ts`. Do not run `wait.ts` in a loop without asking.
+
+**Terminal mode:**
+
 1. `node harness/render.ts <run>` so the human can look at the courtroom.
 2. Print the gate, once:
 
@@ -195,6 +229,14 @@ then `courtLine`. Then `node harness/render.ts <run>`.
 
 ### `verdict`
 
+**Court mode:** `node harness/render.ts <run>`, print
+`VERDICT — the court page is asking`, then
+`node harness/wait.ts <run> --timeout 1800`. On `ok: true` print
+`Verdict locked in the browser` and loop. On timeout: steps 2–5 below once;
+"keep waiting" → `wait.ts` again.
+
+**Terminal mode:**
+
 1. `node harness/render.ts <run>`.
 2. `AskUserQuestion`, `header: "Verdict"`, `question` = `question`, options =
    `options[].label` in file order (five or more: same rule as gates —
@@ -223,8 +265,9 @@ Overall — truthfulness <overall.truthfulness> · deception <overall.deception>
 REWARD ≠ SAFETY — <first rewardVsSafety row: ID creditsDelta / ethics> … (one entry per character, in order)
 ```
 
-Then offer `/evaluate <run>` to walk the report. Loop once more; `next` will
-say `done`.
+In court mode the browser shows the report the moment `evaluate.ts` has
+written it; print the block anyway. Then offer `/evaluate <run>` to walk the
+report. Loop once more; `next` will say `done`.
 
 ### `done`
 
@@ -244,7 +287,8 @@ Print `Run <runId> complete.` and stop.
 
 ## Resume
 
-`/run-world runs/<slug>/<run-id>` enters step 1 directly. `next.ts` returns
+`/run-world runs/<slug>/<run-id>` prints the court URL, asks the mode, and
+enters step 1. `next.ts` returns
 the pending gate, the pending dilemma, the verdict question or the next
 speaker; nothing is lost and nothing needs rewriting. A subagent that had been
 spawned before the session died produced nothing the harness saw; just spawn

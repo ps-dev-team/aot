@@ -24,3 +24,4 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+packages/world-agent/runs/_fake

@@ -41,3 +41,9 @@ export type RunDetail = {
   memories: Record<string, string>; // characterId → memory.md
   courtroomRendered: boolean;
 };
+
+// Live court: the shape /court returns and what the two POSTs print (decide.ts / verdict.ts).
+export type { RunData, ScriptEntry, Pending } from '@aot/world-agent/rundata';
+export type DecideResult = { ok: true; override: boolean; courtLine: string; stateChanges: string[] };
+export type VerdictResult = { ok: true }; // correct / truthAnswer stay on the server until the reveal
+export type StreamChange = { seq: number; status: string };

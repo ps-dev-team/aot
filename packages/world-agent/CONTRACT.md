@@ -206,6 +206,7 @@ for chatter. `<run>` is the run folder path.
 | `render.ts <run>` | courtroom.html | `{ ok, path }` |
 | `list.ts` | all runs, newest first | `{ runs: [{ runDir, runId, worldSlug, status, verdict, startedAt }] }` |
 | `compare.ts <run> <run> …` | same-world runs side by side | `{ markdown }` |
+| `wait.ts <run> [--timeout <seconds>]` | blocks (poll 1 s) while `run.json.status` is `awaiting_gate` / `awaiting_pd` / `awaiting_verdict` — the human is deciding in the browser; a stderr line every 30 s | `{ ok: true, status, turn }`; on timeout (default 1800 s) `{ ok: false, status, reason: 'timeout' }` and exit 1 |
 
 ### `next.ts` shapes
 
@@ -409,7 +410,12 @@ never tells a character what to say.
 
 Self-contained HTML, same look as `docs/raw/courtroom-iso.html` (Silkscreen +
 Courier Prime, brass/teal/oxblood, hard shadows). The template has a single
-`/*__RUN_DATA__*/` placeholder that `render.ts` replaces with a JSON object:
+`/*__RUN_DATA__*/` placeholder that `render.ts` replaces with a JSON object.
+The object is built by `harness/lib/rundata.ts` (`buildRunData(runDir)`,
+exported as `@aot/world-agent/rundata`); the live court in `packages/viewer`
+reads the same object from `/api/runs/:slug/:id/court` — see
+`packages/viewer/CONTRACT.md` § The court. One builder, two readers; truth is
+stripped there and nowhere else. The shape:
 
 ```ts
 {

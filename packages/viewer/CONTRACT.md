@@ -202,3 +202,174 @@ a missing run 404s, a path escape is refused. Client code is not unit
 tested; `pnpm typecheck` covers it.
 
 Root `pnpm typecheck` / `test` / `lint` include this package.
+
+---
+
+# The court (live, interactive)
+
+`#/court/:slug/:id` is the isometric courtroom of `docs/raw/courtroom-iso.html`
+inside the viewer, driven by the run folder: a finished run replays; a running
+run plays each turn as it lands and the human rules on gates and returns the
+verdict **in the browser**. The Claude Code session in `packages/world-agent`
+keeps being the clerk (it spawns the cast); it no longer asks the human
+anything when the court is open.
+
+Still true: **agents propose, the harness commits.** The viewer's POST routes
+do nothing themselves — they run `decide.ts` / `verdict.ts`, the same commands
+the skill runs, and return their JSON. The viewer never writes a run file.
+
+## One data shape, two producers
+
+`render.ts` already turns a run folder into the object the standalone
+`courtroom.html` reads (world-agent `CONTRACT.md` § Viewer). That builder moves
+to `packages/world-agent/harness/lib/rundata.ts`:
+
+```ts
+export type RunData = { … as in world-agent CONTRACT § Viewer … } & {
+  pending: null | { kind: 'gate', gateId } | { kind: 'pd' } | { kind: 'verdict' } | { kind: 'evaluate' };
+  seq: number;                                  // last event seq, for the live diff
+  expectedActor: string | null;                 // from state.json, for the "X is thinking" line
+};
+export function buildRunData(runDir: string): RunData;
+```
+
+exported as `@aot/world-agent/rundata`. `render.ts` calls it; the viewer
+server calls it. Truth stays out until `run.status === 'complete'`, in one
+place. `gates[i].decided` and `verdict` are present once recorded. `pending`
+mirrors what `next.ts` would return without running the agenda (from
+`state.pendingGate`, `state.pdPending`, `trialState`).
+
+## API additions (`server/api.ts`)
+
+| Route | Does |
+| --- | --- |
+| `GET /api/runs/:slug/:id/court` | `RunData` |
+| `GET /api/runs/:slug/:id/stream` | SSE. `fs.watch` on the run folder, debounced 300 ms; each change sends `event: change\ndata: {"seq": n, "status": "…"}`. A `: ping` comment every 15 s. Closes when the client does. |
+| `POST /api/runs/:slug/:id/decide` | body `{ gateId, optionId }` or `{ gateId, custom }` → runs `node harness/decide.ts <run> <gateId> --option <id> \| --custom "<text>"` with `cwd = packages/world-agent`; returns its JSON and status (200, or 409 with `{ error }` when the command fails). |
+| `POST /api/runs/:slug/:id/verdict` | body `{ optionId, confidence }` → `verdict.ts`. Same handling, but answers `{ ok: true }` only — `correct` and `truthAnswer` stay on the server until the reveal. |
+
+POST bodies are JSON, ≤ 4 KB, fields validated (ids `[A-Za-z0-9_-]{1,64}`, custom ≤ 500
+chars, confidence 0–100). Path segments are `[a-z0-9_-]+` so `runs/_fake/<id>` is reachable. Commands run through `execFile('node', [...])`, never a
+shell. A POST while `pending` does not match (e.g. decide when no gate is
+pending) is refused 409 before running anything.
+
+Client (`src/api.ts`):
+
+```ts
+api.court(slug, id): Promise<RunData>
+api.stream(slug, id, onChange: (m: { seq: number; status: string }) => void): () => void   // returns close()
+api.decide(slug, id, body): Promise<DecideResult>
+api.verdict(slug, id, body): Promise<VerdictResult>
+```
+
+## `wait.ts` (world-agent harness)
+
+`node harness/wait.ts <run> [--timeout <seconds>]` blocks until `run.json.status`
+is no longer `awaiting_gate` / `awaiting_pd` / `awaiting_verdict` (poll 1 s), then
+prints `{ ok: true, status, turn }`. On timeout (default 1800) prints
+`{ ok: false, status, reason: 'timeout' }` and exits 1. Nothing else touches the
+run. While waiting it prints one line to **stderr** every 30 s so the terminal
+shows it is alive.
+
+## The skill (`run-world`)
+
+`/run-world <world.json>` gains a mode. After `boot`, the skill prints the court
+URL (`http://localhost:5173/#/court/<slug>/<runId>`) and asks once: *rule from
+the browser or from here?* In **court mode** the loop is:
+
+```
+gate     → wait.ts (the human decides in the browser) → continue
+pd       → unchanged (the cast decides; the browser only shows it)
+verdict  → wait.ts → continue
+evaluate → evaluate.ts, render.ts → the browser shows the report
+```
+
+Terminal mode is unchanged. A timeout from `wait.ts` falls back to asking in
+the terminal, once, then returns to waiting.
+
+## The page (`src/views/Court.tsx` + `src/court/*`)
+
+Layout is the prototype's: stage (canvas + overlay balloon + tap zone) with the
+HUD under it, aside with tabs **Record · Cast · Ledger** (Ledger replaces the
+prototype's Runtime: credits and ethics per character, live). Body does not
+scroll on this page; at phone width the aside drops under the stage (prototype
+breakpoint). Top bar stays (back to the run page, world title, run id, status
+pill).
+
+```
+src/court/iso.ts       drawRoom, drawPerson, iso(), screenOf() — ported from the prototype; the
+                       room is the same for every world. Cast marks: the court at the bench; the
+                       witness stand for witnesses/experts/investigators; prosecution and
+                       defense tables by category; extra cast on the gallery bench.
+src/court/player.ts    script → animation state. Input: RunData.script (growing). Owns idx,
+                       mode auto|manual, playing, typewriter, per-character home/mark/pos,
+                       the current balloon. `advance()`, `setMode()`, `play/pause`,
+                       `append(entries)` for live turns. Pure of DOM except the canvas.
+src/court/palette.ts   colours per character from id + kind (deterministic), so a cast with no
+                       art still looks like the prototype (robots get a visor).
+src/court/modals.tsx   GateModal, VerdictModal, EvidenceModal, PdCard, ReportModal — see below.
+src/views/Court.tsx    loads /court, opens /stream, feeds player.append on change, mounts modals
+                       from `pending`.
+```
+
+Behaviour:
+
+- **Replay** (status complete): Auto/Manual exactly like the prototype; gate
+  entries show `GateModal` in read-only form (the recorded ruling + Continue);
+  the verdict entry shows the recorded verdict; at the end `ReportModal` from
+  `metrics` (never recomputed); evidence modals show integrity.
+- **Live** (any other status): the player plays what exists, then waits at
+  the end with a "the clerk is working — <expected actor> is thinking" line in
+  the balloon slot (from `state.expectedActor`). On `change` from the stream
+  the page refetches `/court`, appends `script.slice(oldLength)`, and the
+  player continues. Evidence integrity, fact truth, verdict correctness are
+  sealed (the server already strips them).
+- **Gate** (`pending.kind === 'gate'` and the replay has reached the gate
+  entry): `GateModal` with the gate's question, context, options with effect
+  text, the recommendation marked, a text input for a custom instruction →
+  `api.decide`. While the POST is in flight the button says "so ordered…";
+  on 409 show the error and leave the modal open. After success the modal
+  waits for the `change` that carries the court line, then closes.
+- **PD**: `PdCard` in the balloon slot: "the witnesses are being questioned
+  separately" until `pd_resolved` arrives; then choices and payoff.
+- **Verdict** (`pending.kind === 'verdict'`): `VerdictModal` with the world's
+  verdict options + confidence slider → `api.verdict`. Then "the court is
+  preparing the reveal" until status is complete, then `ReportModal`.
+- Keyboard: space / enter / → as in the prototype. `Esc` closes an evidence
+  modal, never a gate or verdict modal. On a read-only gate or verdict modal
+  (replay), space / enter are Continue.
+- The tab title shows the phase and turn.
+
+`ReportModal` reuses the run page's sections where it can (import from
+`src/views/Run.tsx` or lift shared pieces into `src/ui.tsx`); it must show at
+least: verdict vs truth, what actually happened, metrics, reward vs safety,
+decisions, and a link to the run page.
+
+## The standalone `courtroom.html`
+
+Stays. `render.ts` keeps writing it from the same `buildRunData`; the
+template's replay JS is not ported back from the viewer in this step. The run
+page's "Open courtroom.html" becomes secondary; "Open the court" (→ `#/court`)
+is the primary button on the run page and on docket rows.
+
+## Testing the live path without Claude
+
+`packages/viewer/scripts/fake-clerk.ts <fixtureRun> <targetRun> [--every 2000]`
+copies the fixture's `world.json`, `run.json` (status reset to `running`,
+turn 0) and an empty `events.jsonl`, then appends the fixture's events one at
+a time every N ms, rewriting `run.json`/`state.json` status to `awaiting_gate`
+before a `gate_opened`, `awaiting_verdict` before the verdict, and waiting
+for `decisions.json` / `verdict.json` to appear before continuing (so the
+browser's POSTs are exercised through the real `decide.ts`/`verdict.ts`).
+Target must be under a temp dir or `runs/_fake/`, which is gitignored.
+
+## Tests
+
+- `rundata.test.ts` in world-agent: `buildRunData(fixture)` equals what
+  `render.ts` injected before the move (snapshot of the fixture's data).
+- `api.test.ts`: `/court` answers, `/decide` refuses when nothing is pending,
+  refuses a bad body, and runs the command when a gate is pending (against a
+  temp run made by `boot.ts` of the Mike example); `/stream` sends a `change`
+  after a file write.
+- `player.test.ts`: append after the end continues; a gate entry stops the
+  player; manual advance finishes the typewriter first.
