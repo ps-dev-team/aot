@@ -1,0 +1,31 @@
+{
+  "name": "@aot/db",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "@aot/source": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.1",
+    "tslib": "^2.3.0"
+  },
+  "scripts": {
+    "start": "set -a; . ../../apps/webapp/.env.local; set +a; supabase start",
+    "stop": "set -a; . ../../apps/webapp/.env.local; set +a; supabase stop",
+    "restart": "pnpm stop && pnpm start",
+    "reset": "set -a; . ../../apps/webapp/.env.local; set +a; supabase db reset && pnpm types",
+    "migrate": "set -a; . ../../apps/webapp/.env.local; set +a; supabase migration up --local",
+    "types": "supabase gen types typescript --db-url postgresql://postgres:postgres@127.0.0.1:54622/postgres > src/types/database.types.ts"
+  }
+}

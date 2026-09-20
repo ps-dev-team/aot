@@ -1,0 +1,13 @@
+# Add files here to ignore them from prettier formatting
+/dist
+/coverage
+/.nx/cache
+/.nx/workspace-data
+.nx/self-healing
+
+# Generated, and owned by the tool that generates them. Prettier reformats all
+# three, which turns `pnpm format` into a thousand-line diff nobody asked for
+# and a merge conflict on the next `pnpm install` or `pnpm db:types`.
+pnpm-lock.yaml
+next-env.d.ts
+packages/db/src/types/database.types.ts

@@ -1,0 +1,77 @@
+project_id = "aot"
+
+# Ports live in a per-project block so more than one local stack can run at
+# once — which is the normal case here, not the exception.
+[api]
+enabled = true
+port = 54621
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54622
+shadow_port = 54620
+major_version = 17
+
+[db.pooler]
+enabled = false
+
+[studio]
+enabled = true
+port = 54623
+api_url = "http://127.0.0.1"
+
+# The local inbox. Auth emails and anything the app sends with
+# EMAIL_TRANSPORT=smtp land in the same place, which is the point of exposing
+# the SMTP port: one inbox to check, not two.
+[inbucket]
+enabled = true
+port = 54624
+smtp_port = 54625
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+# Every URL an auth link is allowed to send someone back to. A link whose
+# redirect is not on this list is refused, which is what stops a crafted signup
+# turning our email into someone else's redirect.
+additional_redirect_urls = ["http://localhost:3000/callback", "http://127.0.0.1:3000/callback"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+minimum_password_length = 12
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = true
+secure_password_change = true
+max_frequency = "5s"
+otp_length = 6
+otp_expiry = 3600
+
+# Supabase does not render our auth email — this route does.
+#
+# It calls us with the user and the token it minted; `@aot/email` writes the
+# email and Resend (or Mailpit locally) delivers it. `host.docker.internal` is
+# how the container reaches the Next dev server on the host.
+[auth.hook.send_email]
+enabled = true
+uri = "http://host.docker.internal:3000/api/auth/email"
+secrets = "env(AUTH_EMAIL_HOOK_SECRET)"
+
+[auth.external.google]
+enabled = true
+client_id = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_SECRET)"
+redirect_uri = ""
+url = ""
+# Required for local sign-in with Google: skips the nonce check on the local stack.
+skip_nonce_check = true
